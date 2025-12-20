@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os  # もし無ければ追加
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -43,6 +45,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ★これを追加！
+    # ... 他の行はそのまま ...
+]
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',テスト用のため一時的につけているが、後悔する時はかならず#を外すこと
@@ -74,11 +79,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# 本番ならPostgreSQL、開発ならいつものSQLiteを使う魔法の設定
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'),
+        conn_max_age=600
+    )
 }
 
 
@@ -123,7 +129,6 @@ LOGOUT_REDIRECT_URL = 'home'  # ログアウトしたらトップページ('home
 # 画像ファイルの保存場所設定
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-import os
 
 # （他の設定...）
 
@@ -160,3 +165,6 @@ SESSION_COOKIE_SECURE = True
 # 4. SameSite属性を調整（Noneにすると緩くなる）
 CSRF_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SAMESITE = 'None'
+# 静的ファイル（CSSなど）の設定
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
