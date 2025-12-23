@@ -2,27 +2,17 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib.auth.models import User
-from django.http import HttpResponse
+# 不要になった User, HttpResponse のインポートは削除しました
 
 # 貴方様のプロジェクト構成に合わせて、jobsアプリのviewsを読み込みます
 from jobs import views
 
-# --- ここから：緊急用管理者作成コード ---
-def create_emergency_admin(request):
-    # ユーザー名 'admin' がいない場合のみ作成
-    if not User.objects.filter(username='admin').exists():
-        User.objects.create_superuser('admin', 'admin@example.com', 'AdminPass123!')
-        return HttpResponse("<h1>成功！</h1><p>新しいDBに管理者を作成しました。<br>ユーザー名: admin<br>パスワード: AdminPass123!</p>")
-    else:
-        return HttpResponse("<h1>確認</h1><p>管理者は既に存在しています。<br>パスワード: AdminPass123! で試してみてください。</p>")
-# --- ここまで ---
+# --- 緊急用コード（関数）はすべて削除しました ---
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     
-    # 緊急用のURL
-    path('emergency-create/', create_emergency_admin),
+    # --- 緊急用のURLも削除しました ---
 
     # トップページ
     path('', views.home, name='home'),
