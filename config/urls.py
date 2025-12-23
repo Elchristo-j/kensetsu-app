@@ -5,6 +5,9 @@ from django.conf.urls.static import static
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 
+# 貴方様のプロジェクト構成に合わせて、jobsアプリのviewsを読み込みます
+from jobs import views
+
 # --- ここから：緊急用管理者作成コード ---
 def create_emergency_admin(request):
     # ユーザー名 'admin' がいない場合のみ作成
@@ -21,12 +24,25 @@ urlpatterns = [
     # 緊急用のURL
     path('emergency-create/', create_emergency_admin),
 
-    # トップページなど
-    path('', include('jobs.urls')), 
+    # トップページ
+    path('', views.home, name='home'),
+
+    # 詳細ページ
+    path('job/<int:job_id>/', views.job_detail, name='job_detail'),
+
+    # 仕事作成
+    path('create/', views.create_job, name='create_job'),
+
+    # 応募ボタン
+    path('job/<int:job_id>/apply/', views.apply_job, name='apply_job'),
+
+    # 応募者リストページ
+    path('job/<int:job_id>/applicants/', views.job_applicants, name='job_applicants'),
+
+    # ログイン機能
     path('accounts/', include('accounts.urls')),
 ]
 
-# 画像表示の設定
+# 画像表示のための設定
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    
