@@ -1,60 +1,86 @@
 /* static/css/style.css */
 
-/* --- パフェ流：和モダン・モノトーン変数の定義 --- */
+/* :root - 色の定義（パレットと役割の分離） */
 :root {
-    --main-black: #1a1a1a;   /* 墨色：威厳ある黒 */
-    --main-white: #ffffff;   /* 真白：清潔感 */
-    --bg-gray:    #f8f9fa;   /* 胡粉：目に優しい背景 */
-    --concrete:   #dee2e6;   /* コンクリート：境界線 */
-    --text-color: #333333;   /* 文字色：読みやすい黒 */
-    --accent-gray:#6c757d;   /* 渋いグレー */
+    /* --- 1. カラーパレット (素材そのものの色) --- */
+    /* 墨色・改 (Sumiiro Deep): #1a1a1aよりわずかに深く、青みを含ませてモニター映えを意識 */
+    --color-sumi-deep: #15151a; 
+    /* 真白 (Pure White) */
+    --color-white:     #ffffff;
+    /* 胡粉 (Gofun): 背景用オフホワイト */
+    --color-offwhite:  #f8f9fa;
+    /* コンクリート (Concrete): 境界線用 */
+    --color-concrete:  #dee2e6;
+    /* 鉄御納戸 (Tetsu-onando): アクセントの渋いグレー */
+    --color-iron-gray: #6c757d;
+
+    /* --- 2. セマンティック変数 (どこに何の色を使うか) --- */
+    /* ここを分けるのが、将来の修正を楽にする「プロの技」です */
+    
+    /* サイト全体の基本色 */
+    --body-bg:       var(--color-offwhite);
+    --body-text:     #333333;
+
+    /* ヘッダー専用設定 */
+    /* もし将来「ヘッダーだけ青にしたい」となっても、ここを変えるだけで済みます */
+    --header-bg:     var(--color-sumi-deep); 
+    --header-text:   var(--color-white);
+
+    /* ボタン・UI用設定 */
+    --btn-primary-bg: var(--color-sumi-deep);
+    --btn-primary-text: var(--color-white);
 }
 
-/* 全体の設定 */
+/* --- 全体の設定 --- */
 body {
-    background-color: var(--bg-gray);
-    color: var(--text-color);
+    background-color: var(--body-bg);
+    color: var(--body-text);
+    /* 建設業界らしい信頼感のあるフォントスタック、素晴らしいです */
     font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-    /* ↑建設らしい、ゴシック体の力強いフォント指定 */
 }
 
 /* --- ナビゲーションバー（ヘッダー） --- */
+/* Bootstrapなどのフレームワークをお使いとお見受けしましたので、詳細度を意識しています */
 .navbar-custom {
-    background-color: var(--main-black);
-    color: var(--main-white);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* わずかな影で立体感を */
+    background-color: var(--header-bg); /* 変数名を変更 */
+    color: var(--header-text);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15); /* 影を少し広げて、重機のようなドッシリ感を演出 */
 }
 
 .navbar-custom .navbar-brand,
 .navbar-custom .nav-link {
-    color: var(--main-white);
-    font-weight: bold;
-    letter-spacing: 0.05em; /* 文字間隔を少し広げて視認性アップ */
+    color: var(--header-text);
+    font-weight: 700; /* boldより数値指定の方がブラウザ差が少なく確実です */
+    letter-spacing: 0.05em;
+    transition: color 0.3s ease; /* ホバー時の変化を滑らかに */
 }
 
 .navbar-custom .nav-link:hover {
-    color: var(--concrete); /* マウスを乗せた時はコンクリート色に */
+    color: var(--color-concrete);
+    /* 下線が出ないように念の為指定 */
+    text-decoration: none;
 }
 
-/* --- ボタンのスタイル（男性的で押しやすく） --- */
+/* --- ボタンのスタイル --- */
 .btn-monotone {
-    background-color: var(--main-black);
-    color: var(--main-white);
-    border: 1px solid var(--main-black);
-    border-radius: 4px; /* 丸みを抑えた、四角く力強いデザイン */
-    padding: 10px 20px; /* 指でタップしやすい広めの余白 */
-    transition: all 0.3s;
+    background-color: var(--btn-primary-bg); /* 変数名を変更 */
+    color: var(--btn-primary-text);
+    border: 1px solid var(--btn-primary-bg);
+    border-radius: 4px; 
+    padding: 10px 24px; /* 横幅を少し広げ、より押しやすく */
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* 「カチッ」とした心地よい動作感 */
 }
 
 .btn-monotone:hover {
-    background-color: var(--main-white);
-    color: var(--main-black);
+    background-color: var(--color-white);
+    color: var(--btn-primary-bg);
+    border-color: var(--btn-primary-bg);
 }
 
-/* --- カード（求人票など）のデザイン --- */
+/* --- カードのデザイン --- */
 .card-custom {
-    background-color: var(--main-white);
-    border: 1px solid var(--concrete);
-    border-radius: 0; /* 角張ったデザインで堅牢さを表現 */
+    background-color: var(--color-white);
+    border: 1px solid var(--color-concrete);
+    border-radius: 0; 
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
