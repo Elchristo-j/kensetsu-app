@@ -22,8 +22,11 @@ urlpatterns = [
     # 応募者リストページ
     path('job/<int:job_id>/applicants/', views.job_applicants, name='job_applicants'),
 
-    # ★追加：チャットルームへの道
+    # チャットルームへの道
     path('application/<int:application_id>/chat/', views.chat_room, name='chat_room'),
+
+    # ★追加：採用機能への道（これが足りていませんでした！）
+    path('application/<int:application_id>/adopt/', views.adopt_applicant, name='adopt_applicant'),
 
     # ログイン機能
     path('accounts/', include('accounts.urls')),
