@@ -2,18 +2,11 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-# 不要になった User, HttpResponse のインポートは削除しました
-
-# 貴方様のプロジェクト構成に合わせて、jobsアプリのviewsを読み込みます
 from jobs import views
-
-# --- 緊急用コード（関数）はすべて削除しました ---
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     
-    # --- 緊急用のURLも削除しました ---
-
     # トップページ
     path('', views.home, name='home'),
 
@@ -29,10 +22,13 @@ urlpatterns = [
     # 応募者リストページ
     path('job/<int:job_id>/applicants/', views.job_applicants, name='job_applicants'),
 
+    # ★追加：チャットルームへの道
+    path('application/<int:application_id>/chat/', views.chat_room, name='chat_room'),
+
     # ログイン機能
     path('accounts/', include('accounts.urls')),
 ]
 
-# 画像表示のための設定
+# 画像表示の設定
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,87 +1,41 @@
-<!doctype html>
-<html lang="ja">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>メッセージ | 建設マッチング</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        /* チャット風のデザイン調整 */
-        .chat-container {
-            background-color: #f5f5f5;
-            height: 60vh;
-            overflow-y: scroll;
-            padding: 20px;
-            border-radius: 10px;
-        }
-        .message-bubble {
-            max-width: 70%;
-            padding: 10px 15px;
-            border-radius: 15px;
-            margin-bottom: 10px;
-            position: relative;
-        }
-        /* 自分のメッセージ（右側・緑） */
-        .my-message {
-            background-color: #dcf8c6;
-            margin-left: auto; /* 右寄せ */
-            border-bottom-right-radius: 0;
-        }
-        /* 相手のメッセージ（左側・白） */
-        .other-message {
-            background-color: #ffffff;
-            margin-right: auto; /* 左寄せ */
-            border-bottom-left-radius: 0;
-            border: 1px solid #ddd;
-        }
-    </style>
-  </head>
-  <body class="bg-white">
+{% extends 'base.html' %}
+{% load static %}
 
-    <div class="container mt-3" style="max-width: 600px;">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <a href="{% url 'mypage' %}" class="btn btn-outline-secondary btn-sm">&lt; 戻る</a>
-            <h5 class="mb-0 fw-bold">
-                {{ application.job.title }}
-            </h5>
-            <div style="width: 50px;"></div> </div>
-
-        <div class="chat-container shadow-inner mb-3" id="chatBox">
-            {% for message in messages %}
-                <div class="d-flex flex-column {% if message.sender == user %}align-items-end{% else %}align-items-start{% endif %}">
-                    
-                    <div class="small text-muted mb-1">
-                        {{ message.sender.username }}
-                    </div>
-
-                    <div class="message-bubble {% if message.sender == user %}my-message{% else %}other-message{% endif %}">
-                        {{ message.content|linebreaksbr }}
-                    </div>
-                    
-                    <div class="small text-muted mb-3" style="font-size: 0.7rem;">
-                        {{ message.created_at|date:"m/d H:i" }}
-                    </div>
-                </div>
-            {% empty %}
-                <p class="text-center text-muted py-5">まだメッセージはありません。<br>挨拶を送ってみましょう！</p>
-            {% endfor %}
-        </div>
-
-        <form method="post">
-            {% csrf_token %}
-            <div class="input-group">
-                {{ form.content }}
-                <button class="btn btn-primary fw-bold" type="submit">送信</button>
-            </div>
-        </form>
+{% block content %}
+<div class="container mt-4 mb-5">
+  <div class="card shadow-sm border-0">
+    
+    <div class="card-header text-white py-3 d-flex justify-content-between align-items-center" style="background-color: #15151a;">
+      <h5 class="mb-0 fw-bold">💬 チャット: {{ application.job.title }}</h5>
+      <a href="{% url 'home' %}" class="btn btn-sm btn-outline-light">トップへ戻る</a>
     </div>
 
-    <script>
-        window.onload = function() {
-            var chatBox = document.getElementById("chatBox");
-            chatBox.scrollTop = chatBox.scrollHeight;
-        };
-    </script>
+    <div class="card-body bg-light" style="height: 400px; overflow-y: scroll;">
+      {% for message in application.messages.all %}
+        <div class="d-flex mb-3 {% if message.sender == user %}justify-content-end{% endif %}">
+          <div class="card border-0 shadow-sm" style="max-width: 70%; {% if message.sender == user %}background-color: #d1e7dd;{% else %}background-color: white;{% endif %}">
+            <div class="card-body p-2 px-3">
+              <strong class="d-block small text-muted mb-1">{{ message.sender.username }}</strong>
+              <p class="mb-0">{{ message.content|linebreaksbr }}</p>
+              <small class="text-muted" style="font-size: 0.7em;">{{ message.created_at|date:"m/d H:i" }}</small>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <p class="text-center text-muted py-5">まだメッセージはありません。<br>挨拶を送ってみましょう！</p>
+      {% endfor %}
+    </div>
 
-  </body>
-</html>
+    <div class="card-footer bg-white py-3">
+      <form method="post" class="d-flex gap-2">
+        {% csrf_token %}
+        {{ form.content }}
+        <button type="submit" class="btn btn-monotone fw-bold px-4" style="background-color: #15151a !important; color: white !important;">
+          送信
+        </button>
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

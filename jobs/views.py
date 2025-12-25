@@ -1,15 +1,15 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q  # ★検索のために追加（Qオブジェクト）
-from .models import Job, Application
-from .forms import JobForm
+from django.db.models import Q  # ★検索機能用
+from .models import Job, Application, Message
+from .forms import JobForm, MessageForm
 
-# トップページ（検索機能付き）
+# トップページ（検索機能付き：既存の機能を維持）
 def home(request):
     # すべての仕事を取得（新しい順）
     jobs = Job.objects.order_by('-id')
     
-    # 検索機能：もしURLに 'query' というキーワードが含まれていたら...
+    # 検索機能
     query = request.GET.get('query')
     if query:
         # タイトル(title) または 内容(description) にキーワードが含まれるものを探す
@@ -51,3 +51,26 @@ def job_applicants(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     applications = job.applications.all()
     return render(request, 'jobs/job_applicants.html', {'job': job, 'applications': applications})
+
+# ★追加：チャットルーム機能
+@login_required
+def chat_room(request, application_id):
+    application = get_object_or_404(Application, pk=application_id)
+    
+    # セキュリティ：関係ない人は見ちゃダメ（応募者本人か、募集主だけ）
+    if request.user != application.applicant and request.user != application.job.created_by:
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.application = application
+            message.sender = request.user
+            message.save()
+            # 投稿したら同じページを再読み込みして更新
+            return redirect('chat_room', application_id=application_id)
+    else:
+        form = MessageForm()
+    
+    return render(request, 'jobs/chat_room.html', {'application': application, 'form': form})
