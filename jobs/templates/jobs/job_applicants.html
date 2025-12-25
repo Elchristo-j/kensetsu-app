@@ -1,98 +1,90 @@
-<!doctype html>
-<html lang="ja">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>応募者リスト | 建設マッチング</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  </head>
-  <body class="bg-light">
+{% extends 'base.html' %}
+{% load static %}
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
-      <div class="container">
-        <a class="navbar-brand" href="{% url 'home' %}">🏗️ 建設マッチング</a>
-      </div>
-    </nav>
-
-    <div class="container">
-      <div class="card shadow-sm">
-        <div class="card-header bg-white py-3">
-          <h5 class="mb-0 fw-bold">
-            「{{ job.title }}」への応募者一覧
-            {% if job.is_closed %}
-                <span class="badge bg-danger ms-2">募集終了</span>
-            {% else %}
-                <span class="badge bg-success ms-2">募集中</span>
-            {% endif %}
-          </h5>
-        </div>
-        <div class="card-body">
-          
-          {% if applications %}
-            <div class="table-responsive">
-              <table class="table table-hover align-middle">
-                <thead class="table-light">
-                  <tr>
-                    <th>応募者名</th>
-                    <th>応募日時</th>
-                    <th>ステータス</th>
-                    <th>アクション</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for app in applications %}
-                  <tr class="{% if app.status == 'accepted' %}table-success{% elif app.status == 'rejected' %}table-secondary{% endif %}">
-                    <td class="fw-bold">
-                      <div class="d-flex align-items-center">
-                        {% if app.applicant.profile.image %}
-                            <img src="{{ app.applicant.profile.image.url }}" class="rounded-circle border me-2" width="40" height="40" style="object-fit: cover;">
-                        {% else %}
-                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">👤</div>
-                        {% endif %}
-                        {{ app.applicant.username }}
-                      </div>
-                    </td>
-                    <td>
-                      {{ app.applied_at|date:"Y/m/d H:i" }}
-                    </td>
-                    <td>
-                        {% if app.status == 'accepted' %}
-                            <span class="badge bg-success">採用！</span>
-                        {% elif app.status == 'rejected' %}
-                            <span class="badge bg-secondary">不採用</span>
-                        {% else %}
-                            <span class="badge bg-warning text-dark">選考中</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                      <a href="{% url 'chat_room' app.id %}" class="btn btn-outline-primary btn-sm me-1">
-                        💬 チャット
-                      </a>
-                      
-                      {% if not job.is_closed and app.status == 'applied' %}
-                        <a href="{% url 'adopt_applicant' app.id %}" class="btn btn-success btn-sm" onclick="return confirm('本当にこの人を採用しますか？\n他の応募者は自動的に不採用となります。');">
-                            ✅ 採用する
-                        </a>
-                      {% endif %}
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          {% else %}
-            <div class="alert alert-info text-center my-4">
-              まだ応募者は一人もいません。
-            </div>
-          {% endif %}
-
-        </div>
-        <div class="card-footer text-center bg-white py-3">
-          <a href="{% url 'mypage' %}" class="text-decoration-none">← マイページに戻る</a>
-        </div>
-      </div>
+{% block content %}
+<div class="container mt-4">
+  
+  <div class="card shadow-sm border-0">
+    <div class="card-header text-white py-3 d-flex justify-content-between align-items-center" style="background-color: #15151a;">
+      <h5 class="mb-0 fw-bold">
+        👥 「{{ job.title }}」への応募者一覧
+        {% if job.is_closed %}
+            <span class="badge bg-danger ms-2">募集終了</span>
+        {% else %}
+            <span class="badge bg-success ms-2">募集中</span>
+        {% endif %}
+      </h5>
+      <a href="{% url 'job_detail' job.id %}" class="btn btn-sm btn-outline-light">案件に戻る</a>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
-</html>
+    <div class="card-body p-0">
+      {% if applications %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-4">応募者名</th>
+                <th>応募日時</th>
+                <th>ステータス</th>
+                <th>アクション</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for app in applications %}
+                <tr class="{% if app.status == 'accepted' %}table-success{% elif app.status == 'rejected' %}table-secondary{% endif %}">
+                  <td class="ps-4">
+                    <div class="d-flex align-items-center">
+                      {% if app.applicant.profile.image %}
+                        <img src="{{ app.applicant.profile.image.url }}" class="rounded-circle border me-2" width="40" height="40" style="object-fit: cover;">
+                      {% else %}
+                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                          <span class="small" style="font-size: 0.6rem;">No Img</span>
+                        </div>
+                      {% endif %}
+                      
+                      <div class="fw-bold">{{ app.applicant.username }}</div>
+                    </div>
+                  </td>
+                  <td>
+                    {{ app.applied_at|date:"Y/m/d H:i" }}
+                  </td>
+                  <td>
+                    {% if app.status == 'accepted' %}
+                        <span class="badge bg-success">採用！</span>
+                    {% elif app.status == 'rejected' %}
+                        <span class="badge bg-secondary">不採用</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">選考中</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <a href="{% url 'chat_room' app.id %}" class="btn btn-sm btn-monotone text-white shadow-sm me-1" style="background-color: #15151a !important; border: 1px solid #15151a;">
+                      💬 チャット
+                    </a>
+
+                    {% if not job.is_closed and app.status == 'applied' %}
+                      <a href="{% url 'adopt_applicant' app.id %}" class="btn btn-success btn-sm" onclick="return confirm('本当にこの人を採用しますか？\n他の応募者は自動的に不採用となります。');">
+                          ✅ 採用する
+                      </a>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-center py-5 text-muted">
+          <p class="fs-5 mb-0">まだ応募者は一人もいません。</p>
+          <p class="small mt-2">応募が来るのを待ちましょう！</p>
+        </div>
+      {% endif %}
+    </div>
+    
+    <div class="card-footer text-center bg-white py-3 border-top-0">
+        <a href="{% url 'job_detail' job.id %}" class="text-decoration-none">← 案件詳細に戻る</a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
