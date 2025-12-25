@@ -24,11 +24,31 @@
           {{ form.description }}
         </div>
 
-        <div class="mb-4">
-          <label class="form-label fw-bold">{{ form.price.label }}</label>
-          <div class="input-group">
-            <span class="input-group-text">¥</span>
-            {{ form.price }}
+        <div class="row mb-4">
+          <div class="col-8">
+            <label class="form-label fw-bold">{{ form.price.label }}</label>
+            <div class="input-group">
+              <span class="input-group-text">¥</span>
+              {{ form.price }}
+            </div>
+          </div>
+          <div class="col-4">
+            <label class="form-label fw-bold">{{ form.unit.label }}</label>
+            {{ form.unit }}
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-6">
+            <label class="form-label fw-bold">{{ form.headcount.label }}</label>
+            <div class="input-group">
+              {{ form.headcount }}
+              <span class="input-group-text">人</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-bold">{{ form.deadline.label }}</label>
+            {{ form.deadline }}
           </div>
         </div>
 

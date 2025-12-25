@@ -15,30 +15,38 @@
       
       <div class="card shadow-sm border-0">
         <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
-          <h6 class="text-muted small">お仕事詳細</h6>
-          <h2 class="fw-bold">{{ job.title }}</h2>
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="text-muted small mb-0">お仕事詳細</h6>
+            <span class="badge bg-danger">募集中：あと {{ job.headcount }} 人</span>
+          </div>
+          <h2 class="fw-bold mt-2">{{ job.title }}</h2>
         </div>
         
         <div class="card-body p-4">
           <div class="mb-4">
-            <span class="badge bg-primary fs-6">報酬: ¥{{ job.price }}</span>
-            <span class="text-muted ms-2 small">ID: {{ job.id }}</span>
+            <h3 class="fw-bold text-dark">
+              ¥{{ job.price }} <span class="fs-6 text-muted fw-normal">/ {{ job.get_unit_display }}</span>
+            </h3>
+            <span class="text-muted small">掲載日: {{ job.created_at|date:"Y/m/d" }}</span>
+            {% if job.deadline %}
+              <span class="text-danger small ms-2 fw-bold">⚠️ 期限: {{ job.deadline|date:"Y/m/d" }} まで</span>
+            {% endif %}
           </div>
 
           <div class="table-responsive mb-4">
             <table class="table table-bordered">
               <tbody>
                 <tr>
-                  <th class="bg-light w-25 align-middle">金額</th>
-                  <td class="fs-5 fw-bold text-dark">¥{{ job.price }} <span class="fs-6 text-muted fw-normal">/ 日</span></td>
-                </tr>
-                <tr>
-                  <th class="bg-light align-middle">勤務地</th>
+                  <th class="bg-light w-25 align-middle">勤務地</th>
                   <td>{{ job.created_by.profile.location|default:"未設定" }}</td> 
                 </tr>
                 <tr>
                   <th class="bg-light align-middle">工期</th>
                   <td>3ヶ月（即日〜）</td> 
+                </tr>
+                <tr>
+                  <th class="bg-light align-middle">募集人数</th>
+                  <td>残り {{ job.headcount }} 名</td> 
                 </tr>
               </tbody>
             </table>
