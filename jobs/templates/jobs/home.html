@@ -7,7 +7,7 @@
         <div class="col-md-8">
             <form class="d-flex shadow-sm" method="get" action="{% url 'home' %}">
                 <input class="form-control form-control-lg border-0 rounded-start" type="search" name="query" placeholder="キーワードで探す（例：大阪、塗装、日当）" value="{{ query|default:'' }}" aria-label="Search">
-                <button class="btn btn-primary px-4 fw-bold rounded-end" type="submit">検索</button>
+                <button class="btn btn-monotone px-4 fw-bold rounded-end" type="submit">検索</button>
             </form>
         </div>
     </div>
@@ -37,7 +37,7 @@
                         </p>
                     </div>
                     <div class="card-footer bg-white border-top-0">
-                        <a href="{% url 'job_detail' job.id %}" class="btn btn-primary w-100">詳細を見る</a>
+                        <a href="{% url 'job_detail' job.id %}" class="btn btn-monotone w-100">詳細を見る</a>
                     </div>
                 </div>
             </div>
