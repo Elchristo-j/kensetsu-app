@@ -89,31 +89,48 @@
             
             {% if user == job.created_by %}
               <div class="alert alert-secondary border-0">
-                <p class="fw-bold mb-2">📢 あなたが募集した仕事です</p>
-                <a href="{% url 'job_applicants' job.id %}" class="btn btn-dark rounded-pill px-4 shadow-sm">
-                  👥 応募者リストを確認する
-                </a>
+                <p class="fw-bold mb-3">📢 あなたが募集した仕事です</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="{% url 'job_applicants' job.id %}" class="btn btn-dark rounded-pill px-4 shadow-sm">
+                    👥 応募者リストを確認
+                    </a>
+                    
+                    <a href="{% url 'delete_job' job.id %}" class="btn btn-outline-danger rounded-pill px-4" onclick="return confirm('本当にこの募集を削除しますか？\n（復元できません）');">
+                    🗑 削除する
+                    </a>
+                </div>
               </div>
 
             {% else %}
-              <p class="mb-3 fw-bold">この仕事に興味がありますか？</p>
               
               {% if user.is_authenticated %}
-                {% if job.is_closed %}
-                   <button class="btn btn-secondary btn-lg px-5 rounded-pill" disabled>募集終了</button>
+                {% if is_applied %}
+                    <div class="alert alert-success border-0">
+                        <p class="fw-bold mb-2">✅ すでに応募済みです</p>
+                        <a href="{% url 'cancel_application' job.id %}" class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="return confirm('応募を取り消しますか？');">
+                            応募をキャンセルする
+                        </a>
+                    </div>
+
+                {% elif not job.is_closed %}
+                    <p class="mb-3 fw-bold">この仕事に興味がありますか？</p>
+                    <form action="{% url 'apply_job' job.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-lg px-5 shadow rounded-pill" style="background-color: #15151a !important; color: white !important; font-weight: bold;">
+                        この仕事に応募する
+                        </button>
+                    </form>
+
                 {% else %}
-                  <form action="{% url 'apply_job' job.id %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-lg px-5 shadow rounded-pill" style="background-color: #15151a !important; color: white !important; font-weight: bold;">
-                      この仕事に応募する
-                    </button>
-                  </form>
+                   <button class="btn btn-secondary btn-lg px-5 rounded-pill" disabled>募集終了しました</button>
                 {% endif %}
+
               {% else %}
                 <div class="alert alert-warning" role="alert">
                   応募するには <a href="{% url 'login' %}" class="alert-link">ログイン</a> が必要です。
                 </div>
               {% endif %}
+
             {% endif %}
 
           </div>
