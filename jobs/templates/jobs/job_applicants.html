@@ -9,9 +9,9 @@
       <h5 class="mb-0 fw-bold">
         👥 「{{ job.title }}」への応募者一覧
         {% if job.is_closed %}
-            <span class="badge bg-danger ms-2">募集終了</span>
+            <span class="badge bg-secondary ms-2">募集終了</span>
         {% else %}
-            <span class="badge bg-success ms-2">募集中</span>
+            <span class="badge bg-success ms-2">募集中（残り{{ job.headcount }}人）</span>
         {% endif %}
       </h5>
       <a href="{% url 'job_detail' job.id %}" class="btn btn-sm btn-outline-light">案件に戻る</a>
@@ -41,13 +41,10 @@
                           <span class="small" style="font-size: 0.6rem;">No Img</span>
                         </div>
                       {% endif %}
-                      
                       <div class="fw-bold">{{ app.applicant.username }}</div>
                     </div>
                   </td>
-                  <td>
-                    {{ app.applied_at|date:"Y/m/d H:i" }}
-                  </td>
+                  <td>{{ app.applied_at|date:"Y/m/d H:i" }}</td>
                   <td>
                     {% if app.status == 'accepted' %}
                         <span class="badge bg-success">採用！</span>
@@ -63,7 +60,7 @@
                     </a>
 
                     {% if not job.is_closed and app.status == 'applied' %}
-                      <a href="{% url 'adopt_applicant' app.id %}" class="btn btn-success btn-sm" onclick="return confirm('本当にこの人を採用しますか？\n他の応募者は自動的に不採用となります。');">
+                      <a href="{% url 'adopt_applicant' app.id %}" class="btn btn-success btn-sm" onclick="return confirm('この人を採用しますか？\n（定員に達すると自動的に募集終了となります）');">
                           ✅ 採用する
                       </a>
                     {% endif %}
@@ -75,8 +72,7 @@
         </div>
       {% else %}
         <div class="text-center py-5 text-muted">
-          <p class="fs-5 mb-0">まだ応募者は一人もいません。</p>
-          <p class="small mt-2">応募が来るのを待ちましょう！</p>
+          <p class="fs-5 mb-0">まだ応募者はいません。</p>
         </div>
       {% endif %}
     </div>
