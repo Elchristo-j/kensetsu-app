@@ -3,30 +3,40 @@
 
 {% block content %}
 
-<div class="bg-light py-5 mb-5">
-  <div class="container text-center">
-    <h1 class="display-5 fw-bold mb-3">現場と職人をつなぐ</h1>
-    <p class="text-muted mb-4">あなたの条件に合う仕事や人材が、ここなら見つかります。</p>
-    
-    <div class="row justify-content-center">
-      <div class="col-md-8">
-        <form class="d-flex shadow-sm" method="get" action="">
-          <input class="form-control form-control-lg border-0" type="search" name="query" placeholder="キーワードを入力（例：大阪 塗装）" value="{{ query|default:'' }}">
-          <button class="btn btn-lg px-4 fw-bold" type="submit" style="background-color: #15151a; color: white;">検索</button>
-        </form>
-      </div>
+<div class="hero-section mb-5 position-relative">
+  <div class="container position-relative z-2 text-center text-white py-5">
+    <div class="py-lg-5">
+        <h1 class="display-4 fw-bold mb-3 ls-1">現場と職人をつなぐ</h1>
+        <p class="lead mb-5 text-white-50 mx-auto" style="max-width: 600px;">
+            あなたの条件に合う仕事や人材が、<br>ここならきっと見つかります。
+        </p>
+        
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <form class="d-flex bg-white p-2 rounded-pill shadow-lg search-bar-hover" method="get" action="">
+                    <input class="form-control form-control-lg border-0 rounded-pill ps-4" type="search" name="query" placeholder="キーワード検索（例：大阪 塗装）" value="{{ query|default:'' }}" style="outline: none; box-shadow: none;">
+                    <button class="btn btn-dark rounded-pill px-4 fw-bold ms-2" type="submit" style="background-color: #15151a;">
+                        検索
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
   </div>
+  
+  <div class="hero-bg-overlay"></div>
 </div>
 
 <div class="container mb-5">
-  <h4 class="fw-bold mb-4 border-start border-4 ps-3" style="border-color: #15151a !important;">
-    {% if query %}
-      "{{ query }}" の検索結果
-    {% else %}
-      新着の仕事
-    {% endif %}
-  </h4>
+  <div class="d-flex align-items-center mb-4">
+    <h4 class="fw-bold mb-0 border-start border-4 ps-3" style="border-color: #15151a !important;">
+        {% if query %}
+        "{{ query }}" の検索結果
+        {% else %}
+        新着の仕事
+        {% endif %}
+    </h4>
+  </div>
 
   <div class="row">
     {% for job in jobs %}
@@ -61,14 +71,17 @@
             </p>
           </div>
           
-          <div class="card-footer bg-white border-top-0 pb-3">
+          <div class="card-footer bg-white border-top-0 pb-3" style="z-index: 20; position: relative;">
             <div class="d-flex align-items-center">
-              {% if job.created_by.profile.image %}
-                <img src="{{ job.created_by.profile.image.url }}" class="rounded-circle me-2" width="30" height="30" style="object-fit: cover;">
-              {% else %}
-                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px; font-size: 0.6rem;">👤</div>
-              {% endif %}
-              <small class="text-muted">{{ job.created_by.username }}</small>
+              <a href="{% url 'profile_detail' job.created_by.id %}" class="d-flex align-items-center text-decoration-none text-dark">
+                  {% if job.created_by.profile.image %}
+                    <img src="{{ job.created_by.profile.image.url }}" class="rounded-circle me-2 border" width="30" height="30" style="object-fit: cover;">
+                  {% else %}
+                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px; font-size: 0.6rem;">👤</div>
+                  {% endif %}
+                  <small class="text-muted hover-underline">{{ job.created_by.username }}</small>
+              </a>
+              
               <small class="text-muted ms-auto">{{ job.created_at|date:"m/d" }}</small>
             </div>
           </div>
@@ -84,11 +97,48 @@
 </div>
 
 <style>
+  /* ヒーローセクションのデザイン */
+  .hero-section {
+    background-color: #15151a; /* 濃いグレー */
+    overflow: hidden;
+  }
+  
+  .hero-bg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.1;
+    /* 方眼紙のようなグリッドパターン */
+    background-image: linear-gradient(#ffffff 1px, transparent 1px),
+                      linear-gradient(90deg, #ffffff 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 1;
+  }
+  
+  .ls-1 {
+      letter-spacing: 0.05em;
+  }
+
+  /* カードのホバーエフェクト */
   .job-card {
-    transition: transform 0.2s;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
   .job-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+  }
+
+  .hover-underline:hover {
+      text-decoration: underline;
+  }
+  
+  .search-bar-hover {
+      transition: transform 0.2s;
+  }
+  .search-bar-hover:hover {
+      transform: scale(1.02);
   }
 </style>
 

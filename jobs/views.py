@@ -1,14 +1,13 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.contrib.auth.models import User # ★追加：ユーザー情報を扱うため
 from .models import Job, Application, Message
 from .forms import JobForm, MessageForm
 
-# トップページ（修正：募集中のものだけ表示）
+# トップページ（募集中のものだけ表示）
 def home(request):
-    # 募集終了していない（is_closed=False）仕事だけを取得
     jobs = Job.objects.filter(is_closed=False).order_by('-id')
-    
     query = request.GET.get('query')
     if query:
         jobs = jobs.filter(
@@ -16,15 +15,12 @@ def home(request):
         )
     return render(request, 'jobs/home.html', {'jobs': jobs, 'query': query})
 
-# 詳細ページ（修正：応募済みかどうかの確認を追加）
+# 詳細ページ
 def job_detail(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
-    
-    # 自分がこの仕事に応募済みかチェックする
     is_applied = False
     if request.user.is_authenticated:
         is_applied = Application.objects.filter(job=job, applicant=request.user).exists()
-
     return render(request, 'jobs/job_detail.html', {'job': job, 'is_applied': is_applied})
 
 # 仕事作成ページ
@@ -41,14 +37,12 @@ def create_job(request):
         form = JobForm()
     return render(request, 'jobs/create_job.html', {'form': form})
 
-# 案件削除機能（★新規追加）
+# 案件削除機能
 @login_required
 def delete_job(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
-    # 募集主以外は削除できない
     if job.created_by != request.user:
         return redirect('home')
-    
     job.delete()
     return redirect('home')
 
@@ -58,23 +52,18 @@ def apply_job(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     if job.created_by == request.user:
         return redirect('job_detail', job_id=job.id)
-
     application, created = Application.objects.get_or_create(job=job, applicant=request.user)
     return redirect('chat_room', application_id=application.id)
 
-# 応募キャンセル機能（★新規追加）
+# 応募キャンセル機能
 @login_required
 def cancel_application(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
-    # 自分の応募を探す
     application = get_object_or_404(Application, job=job, applicant=request.user)
-    
-    # もし「採用済み」だった場合、キャンセルするなら募集枠を1つ戻す必要がある
     if application.status == 'accepted':
         job.headcount += 1
-        job.is_closed = False # 枠が空いたので募集再開
+        job.is_closed = False
         job.save()
-
     application.delete()
     return redirect('job_detail', job_id=job.id)
 
@@ -84,7 +73,6 @@ def job_applicants(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     if job.created_by != request.user:
         return redirect('home')
-
     applications = job.applications.all()
     return render(request, 'jobs/job_applicants.html', {'job': job, 'applications': applications})
 
@@ -92,9 +80,6 @@ def job_applicants(request, job_id):
 @login_required
 def chat_room(request, application_id):
     application = get_object_or_404(Application, pk=application_id)
-    # if request.user != application.applicant and request.user != application.job.created_by:
-    #     return redirect('home')
-
     if request.method == 'POST':
         form = MessageForm(request.POST)
         if form.is_valid():
@@ -105,7 +90,6 @@ def chat_room(request, application_id):
             return redirect('chat_room', application_id=application_id)
     else:
         form = MessageForm()
-    
     return render(request, 'jobs/chat_room.html', {'application': application, 'form': form})
 
 # 採用機能
@@ -113,19 +97,15 @@ def chat_room(request, application_id):
 def adopt_applicant(request, application_id):
     application = get_object_or_404(Application, pk=application_id)
     job = application.job
-    
     if request.user != job.created_by:
         return redirect('home')
     if application.status == 'accepted':
         return redirect('job_applicants', job_id=job.id)
-
     application.status = 'accepted'
     application.save()
-
     if job.headcount > 0:
         job.headcount -= 1
         job.save()
-
     if job.headcount <= 0:
         job.is_closed = True
         job.save()
@@ -133,5 +113,18 @@ def adopt_applicant(request, application_id):
         for app in other_applications:
             app.status = 'rejected'
             app.save()
-
     return redirect('job_applicants', job_id=job.id)
+
+# ★新規追加：プロフィール詳細機能
+@login_required
+def profile_detail(request, user_id):
+    # 見たいユーザーの情報を取得
+    target_user = get_object_or_404(User, pk=user_id)
+    
+    # そのユーザーが作成した過去の案件（新しい順）
+    jobs = Job.objects.filter(created_by=target_user).order_by('-created_at')
+
+    return render(request, 'jobs/profile_detail.html', {
+        'target_user': target_user,
+        'jobs': jobs
+    })
