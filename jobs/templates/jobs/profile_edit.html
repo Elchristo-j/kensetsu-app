@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 600px;">
+  
+  <div class="card shadow border-0 mb-5">
+    <div class="card-header text-white py-3" style="background-color: #15151a;">
+      <h4 class="mb-0 fw-bold">👤 プロフィールを編集</h4>
+    </div>
+    
+    <div class="card-body p-4">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="mb-4">
+          <label class="form-label fw-bold">{{ form.image.label }}</label>
+          <div class="mb-2">
+            {% if form.instance.image %}
+              <img src="{{ form.instance.image.url }}" class="rounded-circle border" width="80" height="80" style="object-fit: cover;">
+              <p class="small text-muted mt-1">現在の画像</p>
+            {% endif %}
+          </div>
+          {{ form.image }}
+          <div class="form-text">新しい画像を選択すると変更されます。</div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-bold">{{ form.location.label }}</label>
+          {{ form.location }}
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-bold">{{ form.description.label }}</label>
+          {{ form.description }}
+        </div>
+
+        <div class="d-grid gap-2 mt-5">
+          <button type="submit" class="btn btn-lg fw-bold shadow rounded-pill" style="background-color: #15151a; color: white; border: none;">
+            変更を保存する
+          </button>
+          
+          <a href="{% url 'profile_detail' user.id %}" class="btn btn-outline-secondary rounded-pill">
+            キャンセルして戻る
+          </a>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
