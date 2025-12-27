@@ -3,39 +3,43 @@
 
 {% block content %}
 <div class="container mt-4 mb-5">
-  <div class="card shadow-sm border-0">
-    
-    <div class="card-header text-white py-3 d-flex justify-content-between align-items-center" style="background-color: #15151a;">
-      <h5 class="mb-0 fw-bold">💬 チャット: {{ application.job.title }}</h5>
-      <a href="{% url 'home' %}" class="btn btn-sm btn-outline-light">トップへ戻る</a>
-    </div>
-
-    <div class="card-body bg-light" style="height: 400px; overflow-y: scroll;">
-      {% for message in application.messages.all %}
-        <div class="d-flex mb-3 {% if message.sender == user %}justify-content-end{% endif %}">
-          <div class="card border-0 shadow-sm" style="max-width: 70%; {% if message.sender == user %}background-color: #d1e7dd;{% else %}background-color: white;{% endif %}">
-            <div class="card-body p-2 px-3">
-              <strong class="d-block small text-muted mb-1">{{ message.sender.username }}</strong>
-              <p class="mb-0">{{ message.content|linebreaksbr }}</p>
-              <small class="text-muted" style="font-size: 0.7em;">{{ message.created_at|date:"m/d H:i" }}</small>
-            </div>
-          </div>
+    <div class="card shadow-sm border-0">
+        <div class="card-header text-white py-3 d-flex justify-content-between align-items-center" style="background-color: #15151a;">
+            <h5 class="mb-0 fw-bold">💬 チャット: {{ application.job.title }}</h5>
+            <a href="{% url 'home' %}" class="btn btn-sm btn-outline-light">トップへ戻る</a>
         </div>
-      {% empty %}
-        <p class="text-center text-muted py-5">まだメッセージはありません。<br>挨拶を送ってみましょう！</p>
-      {% endfor %}
-    </div>
 
-    <div class="card-footer bg-white py-3">
-      <form method="post" class="d-flex gap-2">
-        {% csrf_token %}
-        {{ form.content }}
-        <button type="submit" class="btn btn-monotone fw-bold px-4" style="background-color: #15151a !important; color: white !important;">
-          送信
-        </button>
-      </form>
-    </div>
+        <div class="card-body bg-light" id="chat-box" style="height: 400px; overflow-y: scroll;">
+            {% for message in application.messages.all %}
+                <div class="d-flex mb-3 {% if message.sender == user %}justify-content-end{% else %}justify-content-start{% endif %}">
+                    <div class="card border-0 shadow-sm" style="max-width: 70%; border-radius: 15px;">
+                        <div class="card-body p-2 px-3 {% if message.sender == user %}bg-dark text-white text-end{% else %}bg-white{% endif %}" style="border-radius: 15px;">
+                            <strong class="d-block small {% if message.sender == user %}text-light{% else %}text-muted{% endif %} mb-1">{{ message.sender.username }}</strong>
+                            <p class="mb-0">{{ message.content|linebreaksbr }}</p>
+                            <small class="{% if message.sender == user %}text-light{% else %}text-muted{% endif %}" style="font-size: 0.7em;">{{ message.created_at|date:"m/d H:i" }}</small>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-center text-muted py-5">まだメッセージはありません。<br>挨拶を送ってみましょう！</p>
+            {% endfor %}
+        </div>
 
-  </div>
+        <div class="card-footer bg-white py-3 border-top-0">
+            <form method="post" class="d-flex gap-2">
+                {% csrf_token %}
+                <input type="text" name="content" class="form-control rounded-pill" placeholder="メッセージを入力..." required>
+                <button type="submit" class="btn fw-bold px-4 rounded-pill text-white" style="background-color: #15151a;">
+                    送信
+                </button>
+            </form>
+        </div>
+    </div>
 </div>
+
+<script>
+    // 自動で一番下までスクロール
+    var chatBox = document.getElementById('chat-box');
+    chatBox.scrollTop = chatBox.scrollHeight;
+</script>
 {% endblock %}
