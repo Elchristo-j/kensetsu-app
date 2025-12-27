@@ -4,7 +4,7 @@
 {% block content %}
 <div class="container mt-5" style="max-width: 600px;">
   
-  <div class="card shadow border-0">
+  <div class="card shadow border-0 mb-5">
     <div class="card-header text-white py-3" style="background-color: #15151a;">
       <h4 class="mb-0 fw-bold">🔨 新しい仕事を募集する</h4>
     </div>
@@ -17,11 +17,13 @@
         <div class="mb-4">
           <label class="form-label fw-bold">{{ form.title.label }}</label>
           {{ form.title }}
+          {% if form.title.errors %}<div class="text-danger small">{{ form.title.errors }}</div>{% endif %}
         </div>
 
         <div class="mb-4">
           <label class="form-label fw-bold">{{ form.description.label }}</label>
           {{ form.description }}
+          {% if form.description.errors %}<div class="text-danger small">{{ form.description.errors }}</div>{% endif %}
         </div>
 
         <div class="row mb-4">
@@ -31,10 +33,24 @@
               <span class="input-group-text">¥</span>
               {{ form.price }}
             </div>
+            {% if form.price.errors %}<div class="text-danger small">{{ form.price.errors }}</div>{% endif %}
           </div>
           <div class="col-4">
             <label class="form-label fw-bold">{{ form.unit.label }}</label>
             {{ form.unit }}
+          </div>
+        </div>
+
+        <div class="row mb-4">
+          <div class="col-6">
+            <label class="form-label fw-bold">{{ form.prefecture.label }}</label>
+            {{ form.prefecture }}
+            {% if form.prefecture.errors %}<div class="text-danger small">{{ form.prefecture.errors }}</div>{% endif %}
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-bold">{{ form.city.label }}</label>
+            {{ form.city }}
+            {% if form.city.errors %}<div class="text-danger small">{{ form.city.errors }}</div>{% endif %}
           </div>
         </div>
 
@@ -45,10 +61,12 @@
               {{ form.headcount }}
               <span class="input-group-text">人</span>
             </div>
+            {% if form.headcount.errors %}<div class="text-danger small">{{ form.headcount.errors }}</div>{% endif %}
           </div>
           <div class="col-6">
             <label class="form-label fw-bold">{{ form.deadline.label }}</label>
             {{ form.deadline }}
+            {% if form.deadline.errors %}<div class="text-danger small">{{ form.deadline.errors }}</div>{% endif %}
           </div>
         </div>
 
