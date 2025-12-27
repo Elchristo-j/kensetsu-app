@@ -2,55 +2,23 @@
 {% load static %}
 
 {% block content %}
+<div style="background: red; color: white; padding: 10px; text-align: center; font-weight: bold;">
+    【警告】この赤いバーが見えていれば、正しいファイルを編集しています
+</div>
+
 <div class="container mt-5" style="max-width: 600px;">
-  
   <div class="card shadow border-0 mb-5">
-    <div class="card-header text-white py-3" style="background-color: #15151a !important; border-bottom: none;">
-      <h4 class="mb-0 fw-bold">👤 プロフィールを編集</h4>
+    <div class="card-header text-white py-3" style="background-color: #15151a !important;">
+      <h4 class="mb-0 fw-bold text-white">👤 プロフィールを編集</h4>
     </div>
-    
     <div class="card-body p-4">
-
-      {% if form.errors %}
-        <div class="alert alert-danger small">入力内容に不備があります。</div>
-      {% endif %}
-
       <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        
-        <div class="mb-4 text-center">
-          <label class="form-label d-block fw-bold text-start">{{ form.image.label }}</label>
-          <div class="mb-3">
-            {% if form.instance.image %}
-              <img src="{{ form.instance.image.url }}" class="rounded-circle border shadow-sm" width="100" height="100" style="object-fit: cover;">
-            {% else %}
-              <div class="rounded-circle bg-secondary mx-auto d-flex align-items-center justify-content-center" style="width: 100px; height: 100px; color: white; font-size: 2rem;">👤</div>
-            {% endif %}
-          </div>
-          {{ form.image }}
-          <div class="form-text mt-2 text-start small text-muted">正方形の画像が綺麗に表示されます。</div>
-        </div>
-
-        <hr class="my-4" style="opacity: 0.1;">
-
-        <div class="mb-4">
-          <label class="form-label fw-bold">{{ form.location.label }}</label>
-          {{ form.location }}
-        </div>
-
-        <div class="mb-4">
-          <label class="form-label fw-bold">{{ form.description.label }}</label>
-          {{ form.description }}
-        </div>
-
+        {{ form.as_p }}
         <div class="d-grid gap-2 mt-5">
-          <button type="submit" class="btn btn-lg fw-bold shadow-sm rounded-pill text-white" style="background-color: #15151a !important; border: none !important;">
+          <button type="submit" class="btn btn-lg fw-bold text-white" style="background-color: #15151a !important; border: none; border-radius: 50px;">
             変更を保存する
           </button>
-          
-          <a href="{% url 'profile_detail' user.id %}" class="btn btn-outline-secondary rounded-pill border-0">
-            キャンセルして戻る
-          </a>
         </div>
       </form>
     </div>
@@ -58,10 +26,9 @@
 </div>
 
 <style>
-  /* フォームの枠線が青くならないように調整 */
-  .form-control:focus {
+  .navbar, .navbar-custom, .btn-primary, .bg-primary {
+    background-color: #15151a !important;
     border-color: #15151a !important;
-    box-shadow: 0 0 0 0.25rem rgba(21, 21, 26, 0.1) !important;
   }
 </style>
 {% endblock %}
