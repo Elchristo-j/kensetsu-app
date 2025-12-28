@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# 都道府県のリスト
+# 都道府県リスト（定数として管理）
 PREFECTURES = [
     ('北海道', '北海道'), ('青森県', '青森県'), ('岩手県', '岩手県'), ('宮城県', '宮城県'), ('秋田県', '秋田県'), ('山形県', '山形県'), ('福島県', '福島県'),
     ('茨城県', '茨城県'), ('栃木県', '栃木県'), ('群馬県', '群馬県'), ('埼玉県', '埼玉県'), ('千葉県', '千葉県'), ('東京都', '東京都'), ('神奈川県', '神奈川県'),
@@ -13,54 +13,29 @@ PREFECTURES = [
 ]
 
 class Job(models.Model):
-    title = models.CharField(max_length=100)
-    description = models.TextField()
-    price = models.IntegerField()
+    title = models.CharField(max_length=100, verbose_name="仕事のタイトル")
+    description = models.TextField(verbose_name="仕事内容の詳細")
+    price = models.IntegerField(verbose_name="金額")
     
-    UNIT_CHOICES = [
-        ('日', '日給'),
-        ('時', '時給'),
-        ('件', '1件あたり'),
-    ]
-    unit = models.CharField(max_length=10, choices=UNIT_CHOICES, default='日')
+    UNIT_CHOICES = [('日', '日給'), ('時', '時給'), ('件', '1件あたり')]
+    unit = models.CharField(max_length=10, choices=UNIT_CHOICES, default='日', verbose_name="単位")
     
-    # エリア機能
-    prefecture = models.CharField(max_length=10, choices=PREFECTURES, default='東京都', verbose_name="都道府県")
-    city = models.CharField(max_length=50, default='', verbose_name="市区町村")
+    # 都道府県をChoice（選択式）に厳格化
+    prefecture = models.CharField(
+        max_length=10, 
+        choices=PREFECTURES, 
+        default='東京都', 
+        verbose_name="都道府県"
+    )
+    city = models.CharField(max_length=50, blank=True, default='', verbose_name="市区町村")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    deadline = models.DateTimeField(null=True, blank=True)
+    deadline = models.DateField(null=True, blank=True, verbose_name="募集期限") # DateFieldに変更
     
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    
-    is_closed = models.BooleanField(default=False)
-    headcount = models.IntegerField(default=1)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='jobs')
+    is_closed = models.BooleanField(default=False, verbose_name="募集終了")
+    headcount = models.IntegerField(default=1, verbose_name="募集人数")
 
     def __str__(self):
         return self.title
-
-class Application(models.Model):
-    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='applications')
-    applicant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
-    applied_at = models.DateTimeField(auto_now_add=True)
-    
-    STATUS_CHOICES = [
-        ('applied', '選考中'),
-        ('accepted', '採用'),
-        ('rejected', '不採用'),
-    ]
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='applied')
-
-    def __str__(self):
-        return f"{self.applicant.username} -> {self.job.title}"
-
-class Message(models.Model):
-    application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='messages')
-    sender = models.ForeignKey(User, on_delete=models.CASCADE)
-    content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Message by {self.sender.username}"
-    # 変更
