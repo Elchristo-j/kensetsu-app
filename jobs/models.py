@@ -57,3 +57,13 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message by {self.sender.username}"
+   # jobs/models.py の末尾に追加
+class Notification(models.Model):
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    message = models.CharField(max_length=255)
+    link = models.CharField(max_length=255, blank=True, null=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Notification for {self.recipient.username}"     

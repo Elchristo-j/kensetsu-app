@@ -5,8 +5,15 @@
 <div class="container mt-5" style="max-width: 600px;">
   
   <div class="card shadow border-0 mb-5">
+    {# ヘッダー：新規作成と編集でタイトルを動的に切り替えます #}
     <div class="card-header text-white py-3" style="background-color: #15151a;">
-      <h4 class="mb-0 fw-bold">🔨 新しい仕事を募集する</h4>
+      <h4 class="mb-0 fw-bold">
+        {% if is_edit %}
+          📝 募集内容を編集する
+        {% else %}
+          🔨 新しい仕事を募集する
+        {% endif %}
+      </h4>
     </div>
     
     <div class="card-body p-4">
@@ -71,11 +78,16 @@
         </div>
 
         <div class="d-grid gap-2 mt-5">
+          {# ボタン：状況に合わせて文言を切り替え、ユーザーの確信を促します #}
           <button type="submit" class="btn btn-lg fw-bold shadow rounded-pill" style="background-color: #15151a !important; color: white !important; border: 1px solid #15151a !important;">
-            募集を開始する
+            {% if is_edit %}
+              変更を保存する
+            {% else %}
+              募集を開始する
+            {% endif %}
           </button>
           
-          <a href="{% url 'home' %}" class="btn btn-outline-secondary rounded-pill">
+          <a href="{% if is_edit %}{% url 'job_detail' form.instance.id %}{% else %}{% url 'home' %}{% endif %}" class="btn btn-outline-secondary rounded-pill">
             キャンセルして戻る
           </a>
         </div>
