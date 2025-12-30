@@ -1,145 +1,38 @@
 {% extends 'base.html' %}
-{% load static %}
-
 {% block content %}
-
-<div class="hero-section mb-5 position-relative">
-  <div class="container position-relative z-2 text-center text-white py-5">
-    <div class="py-lg-5">
-        <h1 class="display-4 fw-bold mb-3 ls-1">現場と職人をつなぐ</h1>
-        <p class="lead mb-5 text-white-50 mx-auto" style="max-width: 600px;">
-            あなたの条件に合う仕事や人材が、<br>ここならきっと見つかります。
-        </p>
-        
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <form class="d-flex bg-white p-2 rounded-pill shadow-lg search-bar-hover" method="get" action="">
-                    <input class="form-control form-control-lg border-0 rounded-pill ps-4" type="search" name="query" placeholder="キーワード検索（例：大阪 塗装）" value="{{ query|default:'' }}" style="outline: none; box-shadow: none;">
-                    <button class="btn btn-dark rounded-pill px-4 fw-bold ms-2" type="submit" style="background-color: #15151a;">
-                        検索
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-  </div>
-  
-  <div class="hero-bg-overlay"></div>
-</div>
-
-<div class="container mb-5">
-  <div class="d-flex align-items-center mb-4">
-    <h4 class="fw-bold mb-0 border-start border-4 ps-3" style="border-color: #15151a !important;">
-        {% if query %}
-        "{{ query }}" の検索結果
-        {% else %}
-        新着の仕事
-        {% endif %}
-    </h4>
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold">🛠️ お仕事を探す</h4>
+    <form class="d-flex" method="get">
+      <input class="form-control me-2 rounded-pill" type="search" name="query" placeholder="地域や仕事内容で検索" value="{{ query }}">
+      <button class="btn btn-dark rounded-pill px-4" type="submit">検索</button>
+    </form>
   </div>
 
-  <div class="row">
+  <div class="row row-cols-1 row-cols-md-2 g-4">
     {% for job in jobs %}
-      <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm border-0 job-card position-relative">
-          
-          <div class="position-absolute top-0 end-0 m-3" style="z-index: 10;">
-             {% if job.is_closed %}
-               <span class="badge bg-secondary shadow-sm">募集終了</span>
-             {% else %}
-               <span class="badge bg-success shadow-sm">募集中</span>
-             {% endif %}
-          </div>
-
-          <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
-             <span class="badge rounded-pill bg-light text-dark border text-truncate" style="max-width: 80%;">
-               {{ job.created_by.profile.location|default:"エリア未設定" }}
-             </span>
-          </div>
-
-          <div class="card-body pt-2">
-            <h5 class="card-title fw-bold">
-              <a href="{% url 'job_detail' job.id %}" class="text-decoration-none text-dark stretched-link">
-                {{ job.title }}
-              </a>
-            </h5>
-            <h6 class="card-subtitle mb-2 text-primary fw-bold">
-              ¥{{ job.price }} <span class="text-muted small fw-normal">/ {{ job.get_unit_display }}</span>
-            </h6>
-            <p class="card-text text-secondary small text-truncate">
-              {{ job.description }}
-            </p>
-          </div>
-          
-          <div class="card-footer bg-white border-top-0 pb-3" style="z-index: 20; position: relative;">
-            <div class="d-flex align-items-center">
-              <a href="{% url 'profile_detail' job.created_by.id %}" class="d-flex align-items-center text-decoration-none text-dark">
-                  {% if job.created_by.profile.image %}
-                    <img src="{{ job.created_by.profile.image.url }}" class="rounded-circle me-2 border" width="30" height="30" style="object-fit: cover;">
-                  {% else %}
-                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px; font-size: 0.6rem;">👤</div>
-                  {% endif %}
-                  <small class="text-muted hover-underline">{{ job.created_by.username }}</small>
-              </a>
-              
-              <small class="text-muted ms-auto">{{ job.created_at|date:"m/d" }}</small>
+      <div class="col">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between">
+              {# ここを修正：プロフィールの場所ではなく、仕事の都道府県と市区町村を表示 #}
+              <span class="badge bg-light text-dark mb-2">📍 {{ job.prefecture }}{{ job.city }}</span>
+              <span class="text-muted small">¥{{ job.price }} / {{ job.get_unit_display }}</span>
+            </div>
+            <h5 class="card-title fw-bold">{{ job.title }}</h5>
+            <p class="card-text text-secondary small">{{ job.description|truncatechars:80 }}</p>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <span class="small text-muted">募集者: {{ job.created_by.username }}</span>
+              <a href="{% url 'job_detail' job.id %}" class="btn btn-sm btn-outline-dark rounded-pill px-3">詳細を見る</a>
             </div>
           </div>
-
         </div>
       </div>
     {% empty %}
       <div class="col-12 text-center py-5">
-        <p class="text-muted">条件に合う仕事は見つかりませんでした。</p>
+        <p class="text-muted">現在、該当するお仕事はありません。</p>
       </div>
     {% endfor %}
   </div>
 </div>
-
-<style>
-  /* ヒーローセクションのデザイン */
-  .hero-section {
-    background-color: #15151a; /* 濃いグレー */
-    overflow: hidden;
-  }
-  
-  .hero-bg-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0.1;
-    /* 方眼紙のようなグリッドパターン */
-    background-image: linear-gradient(#ffffff 1px, transparent 1px),
-                      linear-gradient(90deg, #ffffff 1px, transparent 1px);
-    background-size: 40px 40px;
-    z-index: 1;
-  }
-  
-  .ls-1 {
-      letter-spacing: 0.05em;
-  }
-
-  /* カードのホバーエフェクト */
-  .job-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  .job-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
-  }
-
-  .hover-underline:hover {
-      text-decoration: underline;
-  }
-  
-  .search-bar-hover {
-      transition: transform 0.2s;
-  }
-  .search-bar-hover:hover {
-      transform: scale(1.02);
-  }
-</style>
-
 {% endblock %}
