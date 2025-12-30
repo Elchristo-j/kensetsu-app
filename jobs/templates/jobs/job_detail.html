@@ -1,40 +1,29 @@
 {% extends 'base.html' %}
-{% load static %}
-
 {% block content %}
 <div class="container mt-4 mb-5">
-  
   <div class="mb-3">
-    <a href="{% url 'home' %}" class="text-decoration-none text-secondary">
-      &lt; 一覧に戻る
-    </a>
+    <a href="{% url 'home' %}" class="text-decoration-none text-secondary">&lt; 一覧に戻る</a>
   </div>
-
   <div class="row justify-content-center">
     <div class="col-lg-8">
-      
       <div class="card shadow-sm border-0">
         <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
           <div class="d-flex justify-content-between align-items-center">
             <h6 class="text-muted small mb-0">お仕事詳細</h6>
-            
-            {% if job.is_closed %}
-              <span class="badge bg-secondary">募集終了</span>
-            {% else %}
-              <span class="badge bg-danger">募集中：あと {{ job.headcount }} 人</span>
-            {% endif %}
+            <span class="badge {% if job.is_closed %}bg-secondary{% else %}bg-danger{% endif %}">
+              {% if job.is_closed %}募集終了{% else %}募集中：あと {{ job.headcount }} 人{% endif %}
+            </span>
           </div>
           <h2 class="fw-bold mt-2">{{ job.title }}</h2>
         </div>
         
         <div class="card-body p-4">
           <div class="mb-4">
-            <h3 class="fw-bold text-dark">
-              ¥{{ job.price }} <span class="fs-6 text-muted fw-normal">/ {{ job.get_unit_display }}</span>
-            </h3>
+            <h3 class="fw-bold text-dark">¥{{ job.price }} <span class="fs-6 text-muted fw-normal">/ {{ job.get_unit_display }}</span></h3>
             <span class="text-muted small">掲載日: {{ job.created_at|date:"Y/m/d" }}</span>
-            {% if job.deadline %}
-              <span class="text-danger small ms-2 fw-bold">⚠️ 期限: {{ job.deadline|date:"Y/m/d" }} まで</span>
+            {# 更新日時を表示 #}
+            {% if job.updated_at != job.created_at %}
+              <span class="text-muted small ms-2">(最終更新: {{ job.updated_at|date:"Y/m/d H:i" }})</span>
             {% endif %}
           </div>
 
@@ -42,12 +31,12 @@
             <table class="table table-bordered">
               <tbody>
                 <tr>
-                  <th class="bg-light w-25 align-middle">勤務地</th>
-                  {# プロフィールの場所ではなく、仕事の都道府県と市区町村を表示するように修正しました #}
+                  <th class="bg-light w-25">勤務地</th>
+                  {# ここを県＋市に修正 #}
                   <td>{{ job.prefecture }}{{ job.city }}</td> 
                 </tr>
                 <tr>
-                  <th class="bg-light align-middle">募集人数</th>
+                  <th class="bg-light">募集人数</th>
                   <td>残り {{ job.headcount }} 名</td> 
                 </tr>
               </tbody>
@@ -55,91 +44,30 @@
           </div>
 
           <h5 class="fw-bold border-bottom pb-2 mb-3">仕事内容</h5>
-          <div class="mb-5">
-            <p class="text-secondary" style="white-space: pre-wrap;">{{ job.description|linebreaks }}</p>
-          </div>
+          <p class="text-secondary mb-5" style="white-space: pre-wrap;">{{ job.description }}</p>
 
           <h5 class="fw-bold border-bottom pb-2 mb-3">募集者情報</h5>
-          <div class="card bg-light border-0 mb-5">
-            <div class="card-body">
-              <div class="d-flex align-items-start">
-                <div class="me-3">
-                  {% if job.created_by.profile.image %}
-                    <img src="{{ job.created_by.profile.image.url }}" class="rounded-circle border border-white shadow-sm" width="60" height="60" style="object-fit: cover;">
-                  {% else %}
-                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center shadow-sm" style="width: 60px; height: 60px;">
-                      <span class="small">No Img</span>
-                    </div>
-                  {% endif %}
-                </div>
-                
-                <div>
-                  <h6 class="fw-bold mb-1">
-                    {{ job.created_by.username }} 
-                    {# 募集者の「拠点」としての場所を表示します #}
-                    <span class="text-muted small fw-normal">（拠点：{{ job.created_by.profile.location|default:"地域未設定" }}）</span>
-                  </h6>
-                  <p class="small text-secondary mb-0">
-                    {{ job.created_by.profile.description|default:"自己紹介はまだありません。"|linebreaksbr }}
-                  </p>
-                </div>
+          <div class="card bg-light border-0 mb-5 p-3">
+            <div class="d-flex align-items-center">
+              <div>
+                <h6 class="fw-bold mb-1">{{ job.created_by.username }} <span class="text-muted small fw-normal">(拠点：{{ job.created_by.profile.location }})</span></h6>
+                <p class="small text-secondary mb-0">{{ job.created_by.profile.description|truncatechars:100 }}</p>
               </div>
             </div>
           </div>
 
-          <div class="text-center mt-5">
-            
+          <div class="text-center">
             {% if user == job.created_by %}
               <div class="alert alert-secondary border-0">
                 <p class="fw-bold mb-3">📢 あなたが募集した仕事です</p>
-                <div class="d-flex justify-content-center gap-2">
-                    <a href="{% url 'job_applicants' job.id %}" class="btn btn-dark rounded-pill px-4 shadow-sm">
-                    👥 応募者リストを確認
-                    </a>
-                    
-                    <a href="{% url 'delete_job' job.id %}" class="btn btn-outline-danger rounded-pill px-4" onclick="return confirm('本当にこの募集を削除しますか？\n（復元できません）');">
-                    🗑 削除する
-                    </a>
-                </div>
+                <a href="{% url 'edit_job' job.id %}" class="btn btn-dark rounded-pill px-4 me-2">📝 編集する</a>
+                <a href="{% url 'job_applicants' job.id %}" class="btn btn-outline-dark rounded-pill px-4 me-2">👥 応募者リスト</a>
+                <a href="{% url 'delete_job' job.id %}" class="btn btn-outline-danger rounded-pill px-4" onclick="return confirm('削除しますか？');">🗑 削除</a>
               </div>
-
-            {% else %}
-              
-              {% if user.is_authenticated %}
-                {% if is_applied %}
-                    <div class="alert alert-success border-0">
-                        <p class="fw-bold mb-2">✅ すでに応募済みです</p>
-                        <a href="{% url 'cancel_application' job.id %}" class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="return confirm('応募を取り消しますか？');">
-                            応募をキャンセルする
-                        </a>
-                    </div>
-
-                {% elif not job.is_closed %}
-                    <p class="mb-3 fw-bold">この仕事に興味がありますか？</p>
-                    <form action="{% url 'apply_job' job.id %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-lg px-5 shadow rounded-pill" style="background-color: #15151a !important; color: white !important; font-weight: bold;">
-                        この仕事に応募する
-                        </button>
-                    </form>
-
-                {% else %}
-                   <button class="btn btn-secondary btn-lg px-5 rounded-pill" disabled>募集終了しました</button>
-                {% endif %}
-
-              {% else %}
-                <div class="alert alert-warning" role="alert">
-                  応募するには <a href="{% url 'login' %}" class="alert-link">ログイン</a> が必要です。
-                </div>
-              {% endif %}
-
             {% endif %}
-
           </div>
-
         </div>
       </div>
-
     </div>
   </div>
 </div>
