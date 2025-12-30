@@ -1,12 +1,11 @@
 from django import forms
 from .models import Job, Message
-# accountsアプリのProfileモデルを正しく参照
+# ここが重要です：Profileは accounts アプリから読み込みます
 from accounts.models import Profile
 
 class JobForm(forms.ModelForm):
     class Meta:
         model = Job
-        # モデルに含まれるすべてのフィールドを指定
         fields = ['title', 'description', 'price', 'unit', 'prefecture', 'city', 'headcount', 'deadline']
         
         labels = {
@@ -21,53 +20,23 @@ class JobForm(forms.ModelForm):
         }
 
         widgets = {
-            'title': forms.TextInput(attrs={
-                'class': 'form-control', 
-                'placeholder': '例：マンション塗装の手元作業'
-            }),
-            'description': forms.Textarea(attrs={
-                'class': 'form-control', 
-                'rows': 5, 
-                'placeholder': '作業内容や集合場所など、詳しく記入してください'
-            }),
-            'price': forms.NumberInput(attrs={
-                'class': 'form-control', 
-                'placeholder': '半角数字で入力'
-            }),
-            'unit': forms.Select(attrs={
-                'class': 'form-select'
-            }),
-            'prefecture': forms.TextInput(attrs={
-                'class': 'form-control', 
-                'placeholder': '例：徳島県'
-            }),
-            'city': forms.TextInput(attrs={
-                'class': 'form-control', 
-                'placeholder': '例：徳島市'
-            }),
-            'headcount': forms.NumberInput(attrs={
-                'class': 'form-control', 
-                'min': '1'
-            }),
-            'deadline': forms.DateInput(attrs={
-                'class': 'form-control', 
-                'type': 'date'
-            }),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例：マンション塗装の手元作業'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': '作業内容や集合場所など、詳しく記入してください'}),
+            'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '半角数字で入力'}),
+            'unit': forms.Select(attrs={'class': 'form-select'}),
+            'prefecture': forms.Select(attrs={'class': 'form-select'}), 
+            'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例：徳島市'}),
+            'headcount': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'deadline': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
 
 class MessageForm(forms.ModelForm):
     class Meta:
         model = Message
         fields = ['content']
-        labels = {
-            'content': '',
-        }
+        labels = {'content': ''}
         widgets = {
-            'content': forms.Textarea(attrs={
-                'class': 'form-control', 
-                'rows': 3, 
-                'placeholder': 'メッセージを入力してください...'
-            }),
+            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'メッセージを入力してください...'}),
         }
 
 class ProfileForm(forms.ModelForm):
@@ -80,16 +49,7 @@ class ProfileForm(forms.ModelForm):
             'description': '自己紹介 / 経歴',
         }
         widgets = {
-            'image': forms.FileInput(attrs={
-                'class': 'form-control'
-            }),
-            'location': forms.TextInput(attrs={
-                'class': 'form-control', 
-                'placeholder': '例：徳島県全域、鳴門市周辺'
-            }),
-            'description': forms.Textarea(attrs={
-                'class': 'form-control', 
-                'rows': 4, 
-                'placeholder': '持っている資格や得意な作業など'
-            }),
+            'image': forms.FileInput(attrs={'class': 'form-control'}),
+            'location': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例：徳島県全域、鳴門市周辺'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': '持っている資格や得意な作業など'}),
         }
