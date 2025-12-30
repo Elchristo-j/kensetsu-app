@@ -12,7 +12,7 @@ class ProfileForm(forms.ModelForm):
         
         labels = {
             'image': 'プロフィール画像（顔写真や屋号ロゴ）',
-            'location': '主な活動エリア',
+            'location': '拠点（主な活動エリア）',
             'description': '自己紹介・経歴・保有資格',
         }
 

@@ -43,7 +43,8 @@
               <tbody>
                 <tr>
                   <th class="bg-light w-25 align-middle">勤務地</th>
-                  <td>{{ job.created_by.profile.location|default:"未設定" }}</td> 
+                  {# プロフィールの場所ではなく、仕事の都道府県と市区町村を表示するように修正しました #}
+                  <td>{{ job.prefecture }}{{ job.city }}</td> 
                 </tr>
                 <tr>
                   <th class="bg-light align-middle">募集人数</th>
@@ -75,7 +76,8 @@
                 <div>
                   <h6 class="fw-bold mb-1">
                     {{ job.created_by.username }} 
-                    <span class="text-muted small fw-normal">({{ job.created_by.profile.location|default:"地域未設定" }})</span>
+                    {# 募集者の「拠点」としての場所を表示します #}
+                    <span class="text-muted small fw-normal">（拠点：{{ job.created_by.profile.location|default:"地域未設定" }}）</span>
                   </h6>
                   <p class="small text-secondary mb-0">
                     {{ job.created_by.profile.description|default:"自己紹介はまだありません。"|linebreaksbr }}
