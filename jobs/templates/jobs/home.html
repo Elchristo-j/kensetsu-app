@@ -2,54 +2,100 @@
 {% load humanize %}
 
 {% block content %}
-<div class="container mt-4">
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
-    <h4 class="fw-bold mb-3 mb-md-0">🛠️ お仕事を探す</h4>
-    
-    <div class="d-flex flex-column flex-md-row gap-2">
-      {# お気に入りフィルターボタン #}
-      {% if user.is_authenticated %}
-        <a href="?area_filter={% if area_filter == 'favorites' %}all{% else %}favorites{% endif %}" 
-           class="btn {% if area_filter == 'favorites' %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill px-4">
-          {% if area_filter == 'favorites' %}✨ 全エリアを表示{% else %}⭐ お気に入りエリアで絞り込む{% endif %}
-        </a>
-      {% endif %}
+<style>
+  /* サイト全体のテーマに合わせたカスタムボタン */
+  .btn-filter {
+    border: 1px solid #15151a;
+    transition: all 0.3s ease;
+  }
+  /* フィルターOFF（未選択）の状態 */
+  .btn-filter-off {
+    background-color: transparent;
+    color: #15151a;
+  }
+  .btn-filter-off:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+  }
+  /* フィルターON（選択中）の状態 */
+  .btn-filter-on {
+    background-color: #15151a;
+    color: white;
+    box-shadow: 0 4px 12px rgba(21, 21, 26, 0.2);
+  }
+  /* 検索バーの微調整 */
+  .search-input {
+    border: 1px solid #dee2e6;
+  }
+  .search-input:focus {
+    border-color: #15151a;
+    box-shadow: none;
+  }
+</style>
 
-      <form class="d-flex" method="get">
-        <input class="form-control me-2 rounded-pill" type="search" name="query" placeholder="地域や仕事内容で検索" value="{{ query }}">
-        <button class="btn btn-dark rounded-pill px-4" type="submit">検索</button>
-      </form>
+<div class="container mt-4">
+  <div class="row align-items-center mb-4 g-3">
+    <div class="col-12 col-lg-4 text-center text-lg-start">
+      <h4 class="fw-bold mb-0">🛠️ お仕事を探す</h4>
+    </div>
+    
+    <div class="col-12 col-lg-8">
+      <div class="d-flex flex-column flex-md-row gap-2 justify-content-lg-end">
+        
+        {# --- お気に入りフィルターボタン（デザイン修正版） --- #}
+        {% if user.is_authenticated %}
+          <a href="?area_filter={% if area_filter == 'favorites' %}all{% else %}favorites{% endif %}" 
+             class="btn btn-filter rounded-pill px-4 d-flex align-items-center justify-content-center {% if area_filter == 'favorites' %}btn-filter-on{% else %}btn-filter-off{% endif %}">
+            {% if area_filter == 'favorites' %}
+              <i class="bi bi-star-fill me-2"></i> 全エリアを表示
+            {% else %}
+              <i class="bi bi-star me-2"></i> お気に入りエリアで絞り込む
+            {% endif %}
+          </a>
+        {% endif %}
+
+        <form class="d-flex" method="get">
+          <input class="form-control me-2 rounded-pill search-input px-3" type="search" name="query" placeholder="地域や仕事内容で検索" value="{{ query }}">
+          <button class="btn btn-dark rounded-pill px-4" type="submit">
+            <i class="bi bi-search"></i>
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 
-  {# フィルター中の表示 #}
+  {# --- フィルター適用中のインジケーター --- #}
   {% if area_filter == 'favorites' %}
-    <div class="alert alert-info border-0 shadow-sm mb-4">
-      📍 お気に入りエリアに設定した場所の案件を表示中
+    <div class="alert bg-white border shadow-sm mb-4 rounded-4 d-flex align-items-center">
+      <span class="badge bg-dark rounded-pill me-2">ON</span>
+      <span class="text-secondary small fw-bold">📍 お気に入りエリア（{{ fav_areas_count|default:"登録済み" }}件）の案件を表示中</span>
+      <a href="?area_filter=all" class="ms-auto text-decoration-none text-muted small">解除する &times;</a>
     </div>
   {% endif %}
 
   <div class="row row-cols-1 row-cols-md-2 g-4">
     {% for job in jobs %}
       <div class="col">
-        <div class="card h-100 shadow border">
+        <div class="card h-100 shadow border rounded-4 overflow-hidden">
           <div class="card-body p-4">
-            <div class="d-flex justify-content-between">
-              <span class="badge bg-light text-dark mb-2">📍 {{ job.prefecture }}{{ job.city }}</span>
-              <span class="text-muted small fw-bold">¥{{ job.price|intcomma }} / {{ job.get_unit_display }}</span>
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <span class="badge bg-light text-dark py-2 px-3 border rounded-pill">📍 {{ job.prefecture }}{{ job.city }}</span>
+              <span class="text-dark fs-5 fw-bold">¥{{ job.price|intcomma }}<span class="small fw-normal text-muted"> / {{ job.get_unit_display }}</span></span>
             </div>
-            <h5 class="card-title fw-bold">{{ job.title }}</h5>
-            <p class="card-text text-secondary small">{{ job.description|truncatechars:80 }}</p>
-            <div class="d-flex justify-content-between align-items-center mt-3">
-              <span class="small text-muted">募集者: {{ job.created_by.username }}</span>
-              <a href="{% url 'job_detail' job.id %}" class="btn btn-sm btn-outline-dark rounded-pill px-3">詳細を見る</a>
+            <h5 class="card-title fw-bold mb-3">{{ job.title }}</h5>
+            <p class="card-text text-secondary small mb-4" style="height: 3em; overflow: hidden;">{{ job.description|truncatechars:80 }}</p>
+            <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+              <span class="small text-muted"><i class="bi bi-person me-1"></i>{{ job.created_by.username }}</span>
+              <a href="{% url 'job_detail' job.id %}" class="btn btn-sm btn-outline-dark rounded-pill px-4">詳細を見る</a>
             </div>
           </div>
         </div>
       </div>
     {% empty %}
       <div class="col-12 text-center py-5">
+        <div class="mb-3"><i class="bi bi-search text-muted" style="font-size: 3rem;"></i></div>
         <p class="text-muted fs-5">現在、該当するお仕事はありません。</p>
+        <a href="{% url 'home' %}" class="btn btn-link text-dark">条件をリセットする</a>
       </div>
     {% endfor %}
   </div>
