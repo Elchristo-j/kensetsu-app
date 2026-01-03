@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+{% load humanize %} {# ★追加 #}
+
 {% block content %}
 <div class="container mt-4 mb-5">
   <div class="mb-3">
@@ -7,7 +9,7 @@
 
   <div class="row justify-content-center">
     <div class="col-lg-8">
-      <div class="card shadow-sm border-0">
+      <div class="card shadow border"> {# 影と線を強調 #}
         <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
           <div class="d-flex justify-content-between align-items-center">
             <h6 class="text-muted small mb-0">お仕事詳細</h6>
@@ -20,7 +22,10 @@
         
         <div class="card-body p-4">
           <div class="mb-4">
-            <h3 class="fw-bold text-dark">¥{{ job.price }} <span class="fs-6 text-muted fw-normal">/ {{ job.get_unit_display }}</span></h3>
+            {# 金額を黒の太字(text-dark fw-bold)で強調し、コンマを入れました #}
+            <h3 class="fw-bold text-dark" style="font-size: 1.8rem;">
+              ¥{{ job.price|intcomma }} <span class="fs-6 text-muted fw-normal">/ {{ job.get_unit_display }}</span>
+            </h3>
             <span class="text-muted small">掲載日: {{ job.created_at|date:"Y/m/d" }}</span>
             {% if job.updated_at != job.created_at %}
               <span class="text-muted small ms-2">(最終更新: {{ job.updated_at|date:"Y/m/d H:i" }})</span>
@@ -73,9 +78,18 @@
               {# --- 投稿者本人の場合 --- #}
               <div class="alert alert-secondary border-0">
                 <p class="fw-bold mb-3">📢 あなたが募集した仕事です</p>
-                <a href="{% url 'edit_job' job.id %}" class="btn btn-dark rounded-pill px-4 me-2">📝 編集する</a>
-                <a href="{% url 'job_applicants' job.id %}" class="btn btn-outline-dark rounded-pill px-4 me-2">👥 応募者リスト</a>
-                <a href="{% url 'delete_job' job.id %}" class="btn btn-outline-danger rounded-pill px-4" onclick="return confirm('削除しますか？');">🗑 削除</a>
+                {# スマホで縦並び、PCで横並び、かつ幅を揃えるためのグリッド設定 #}
+                <div class="row g-2 justify-content-center">
+                  <div class="col-12 col-md-auto">
+                    <a href="{% url 'edit_job' job.id %}" class="btn btn-dark rounded-pill px-4 w-100">📝 編集する</a>
+                  </div>
+                  <div class="col-12 col-md-auto">
+                    <a href="{% url 'job_applicants' job.id %}" class="btn btn-outline-dark rounded-pill px-4 w-100">👥 応募者リスト</a>
+                  </div>
+                  <div class="col-12 col-md-auto">
+                    <a href="{% url 'delete_job' job.id %}" class="btn btn-outline-danger rounded-pill px-4 w-100" onclick="return confirm('削除しますか？');">🗑 削除</a>
+                  </div>
+                </div>
               </div>
 
             {% else %}
