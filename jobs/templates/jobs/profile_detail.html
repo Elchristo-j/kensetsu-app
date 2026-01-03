@@ -3,7 +3,7 @@
 
 {% block content %}
 <style>
-    /* 墨色テーマのカスタムクラス */
+    /* あなたが作成した墨色テーマをすべて維持しています */
     .bg-sumi { background-color: #15151a !important; }
     .text-sumi { color: #15151a !important; }
     .btn-sumi { 
@@ -17,13 +17,18 @@
     }
     .border-sumi { border-color: #15151a !important; }
     
-    /* プロフィール画面専用の調整 */
     .profile-header-gradient {
         height: 120px; 
         background: linear-gradient(135deg, #15151a 0%, #3a3a45 100%);
     }
     .avatar-wrapper {
         margin-top: -60px;
+    }
+    /* 有料バッジ用のアクセント（金色の枠） */
+    .badge-premium {
+        border: 1px solid #ffc107;
+        color: #ffc107;
+        font-weight: bold;
     }
 </style>
 
@@ -44,13 +49,22 @@
                     </div>
 
                     <h3 class="fw-bold mb-1 text-sumi">{{ target_user.username }}</h3>
+
+                    {# --- 新機能：有料会員バッジ（名前のすぐ下に配置） --- #}
+                    {% if target_user.profile.is_premium %}
+                        <div class="mb-2">
+                            <span class="badge rounded-pill bg-sumi badge-premium px-3 py-2 shadow-sm">
+                                👑 有料会員
+                            </span>
+                        </div>
+                    {% endif %}
+
                     <p class="text-muted mb-3">
                         <i class="bi bi-geo-alt"></i> {{ target_user.profile.location|default:"エリア未設定" }}
                     </p>
 
                     {% if user == target_user %}
-                        <span class="badge bg-sumi px-3 py-2 rounded-pill mb-3">My Page</span>
-                        <div class="d-flex justify-content-center gap-2">
+                        <div class="d-flex justify-content-center gap-2 mb-3">
                              <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark btn-sm rounded-pill px-4">
                                 プロフィールを編集する
                              </a>
@@ -64,6 +78,41 @@
                      <p class="mb-0 text-secondary" style="white-space: pre-wrap;">{{ target_user.profile.description|default:"自己紹介文はまだありません。" }}</p>
                 </div>
             </div>
+
+            {# --- 新機能：お気に入りエリア管理（本人の時だけ、かつスタイリッシュなカードで追加） --- #}
+            {% if user == target_user %}
+            <div class="card shadow border-0 mb-4 p-4 rounded-4">
+                <h6 class="fw-bold text-sumi mb-3"><i class="bi bi-star-fill text-warning me-2"></i>お気に入りエリア設定</h6>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% for area in fav_areas %}
+                        <div class="badge bg-light text-dark border p-2 d-flex align-items-center rounded-3">
+                            <span>📍 {{ area.prefecture }} {{ area.city }}</span>
+                            <a href="{% url 'delete_favorite_area' area.id %}" class="text-danger ms-2 text-decoration-none fw-bold" style="font-size: 1.1rem;">&times;</a>
+                        </div>
+                    {% empty %}
+                        <p class="small text-muted mb-0">よく行くエリアを登録すると、仕事探しが便利になります。</p>
+                    {% endfor %}
+                </div>
+
+                <form action="{% url 'add_favorite_area' %}" method="post" class="row g-2">
+                    {% csrf_token %}
+                    <div class="col-sm-5">
+                        <select name="prefecture" class="form-select form-select-sm rounded-3" required>
+                            <option value="">都道府県を選択</option>
+                            {% for val, name in prefectures %}
+                                <option value="{{ val }}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="text" name="city" class="form-control form-control-sm rounded-3" placeholder="市区町村名">
+                    </div>
+                    <div class="col-sm-3">
+                        <button type="submit" class="btn btn-sumi btn-sm w-100 rounded-3">追加</button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
 
             <h5 class="fw-bold mb-4 border-start border-5 border-dark ps-3">
                 {% if user == target_user %}

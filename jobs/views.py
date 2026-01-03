@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib.auth.models import User
 from .models import Job, Application, Message, Notification
-from accounts.models import Profile
+from accounts.models import Profile, FavoriteArea # ★FavoriteAreaを追加
 from .forms import JobForm, MessageForm, ProfileForm
 
 # --- 通知作成の補助関数 ---
@@ -14,9 +14,28 @@ def create_notification(recipient, message, link=None):
 # --- お仕事関連 ---
 
 def home(request):
-    """トップページ：募集中の仕事を検索・一覧表示"""
+    """トップページ：募集中の仕事を検索・一覧表示（お気に入りフィルター対応）"""
     jobs = Job.objects.filter(is_closed=False).order_by('-id')
     query = request.GET.get('query', '')
+    area_filter = request.GET.get('area_filter', '') # ★お気に入りフィルターの取得
+
+    # ★お気に入りエリアで絞り込むロジック
+    if area_filter == 'favorites' and request.user.is_authenticated:
+        fav_areas = request.user.favorite_areas.all()
+        if fav_areas.exists():
+            q_objects = Q()
+            for area in fav_areas:
+                # 市区町村があれば「県+市」、なければ「県全体」で検索
+                if area.city:
+                    q_objects |= Q(prefecture=area.prefecture, city__icontains=area.city)
+                else:
+                    q_objects |= Q(prefecture=area.prefecture)
+            jobs = jobs.filter(q_objects)
+        else:
+            # お気に入り登録がない場合は空にするか、何もしない（今回はメッセージを出すためにそのまま）
+            pass
+
+    # 検索窓のクエリ（キーワード検索）
     if query:
         jobs = jobs.filter(
             Q(title__icontains=query) | 
@@ -24,7 +43,12 @@ def home(request):
             Q(prefecture__icontains=query) |
             Q(city__icontains=query)
         ).distinct()
-    return render(request, 'jobs/home.html', {'jobs': jobs, 'query': query})
+        
+    return render(request, 'jobs/home.html', {
+        'jobs': jobs, 
+        'query': query, 
+        'area_filter': area_filter
+    })
 
 def job_detail(request, job_id):
     """詳細ページ：仕事内容を表示"""
@@ -72,6 +96,30 @@ def delete_job(request, job_id):
         job.delete()
     return redirect('home')
 
+# --- お気に入りエリア管理機能 ---
+
+@login_required
+def add_favorite_area(request):
+    """お気に入りエリアの追加"""
+    if request.method == 'POST':
+        pref = request.POST.get('prefecture')
+        city = request.POST.get('city', '').strip()
+        if pref:
+            # 重複登録を防ぎつつ作成
+            FavoriteArea.objects.get_or_create(
+                user=request.user, 
+                prefecture=pref, 
+                city=city
+            )
+    return redirect('profile_detail', user_id=request.user.id)
+
+@login_required
+def delete_favorite_area(request, area_id):
+    """お気に入りエリアの削除"""
+    area = get_object_or_404(FavoriteArea, id=area_id, user=request.user)
+    area.delete()
+    return redirect('profile_detail', user_id=request.user.id)
+
 # --- 応募・採用関連 ---
 
 @login_required
@@ -91,7 +139,7 @@ def apply_job(request, job_id):
 
 @login_required
 def cancel_application(request, job_id):
-    """応募キャンセル機能（先ほど不足していた関数です）"""
+    """応募キャンセル機能"""
     job = get_object_or_404(Job, pk=job_id)
     application = get_object_or_404(Application, job=job, applicant=request.user)
     if application.status == 'accepted':
@@ -172,10 +220,21 @@ def notifications(request):
 
 @login_required
 def profile_detail(request, user_id):
+    """プロフィール詳細ページ（お気に入りエリア一覧を表示）"""
     target_user = get_object_or_404(User, pk=user_id)
     profile, created = Profile.objects.get_or_create(user=target_user)
     jobs = Job.objects.filter(created_by=target_user).order_by('-id')
-    return render(request, 'jobs/profile_detail.html', {'target_user': target_user, 'jobs': jobs})
+    
+    # ★お気に入りエリアをテンプレートに渡す
+    fav_areas = target_user.favorite_areas.all()
+    from accounts.models import PREFECTURES # フォーム表示用
+    
+    return render(request, 'jobs/profile_detail.html', {
+        'target_user': target_user, 
+        'jobs': jobs,
+        'fav_areas': fav_areas,
+        'prefectures': PREFECTURES
+    })
 
 @login_required
 def profile_edit(request):
@@ -188,4 +247,3 @@ def profile_edit(request):
     else:
         form = ProfileForm(instance=profile)
     return render(request, 'jobs/profile_edit.html', {'form': form})
-    
