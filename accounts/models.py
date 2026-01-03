@@ -6,7 +6,6 @@ from django.dispatch import receiver
 class Profile(models.Model):
     """
     ユーザーの属性を拡張するプロフィールモデル。
-    Userモデルと1対1で紐付き、職人としての「顔」を定義します。
     """
     user = models.OneToOneField(
         User, 
@@ -15,13 +14,12 @@ class Profile(models.Model):
         verbose_name="ユーザー"
     )
     
-    # 文字列フィールドにおいて、DjangoではNULLと空文字の混在を避けるため
-    # blank=True のみを指定するのがベストプラクティスです。
+    # 以前のご要望に合わせて、verbose_name を「拠点」に変更しました
     location = models.CharField(
         max_length=100, 
         blank=True, 
         default='', 
-        verbose_name="活動エリア"
+        verbose_name="拠点"
     )
     
     description = models.TextField(
@@ -44,19 +42,27 @@ class Profile(models.Model):
     def __str__(self):
         return f"{self.user.username} のプロフィール"
 
+    # --- ここが新機能：未読通知があるかチェックする機能 ---
+    @property
+    def has_unread_notifications(self):
+        """
+        現在のユーザーに「未読(is_read=False)」の通知が
+        1つ以上ある場合は True を返します。
+        """
+        return self.user.notifications.filter(is_read=False).exists()
 
-# --- シグナル設定：ユーザー作成時にプロフィールを自動生成 ---
+
+# --- シグナル設定：ユーザー作成時にプロフィールを自動生成（これは絶対に残すべき重要コードです） ---
 
 @receiver(post_save, sender=User)
 def handle_user_profile_sync(sender, instance, created, **kwargs):
     """
     ユーザーの生成・更新に合わせてプロフィールを同期します。
-    createとsaveを一つの関数にまとめることで、保守性を高めています。
     """
     if created:
-        # ユーザー新規作成時
+        # ユーザー新規作成時にプロフィールを自動で作成します
         Profile.objects.create(user=instance)
     else:
-        # ユーザー更新時（プロフィールが存在することを確認してから保存）
+        # ユーザー更新時にプロフィールを保存します
         if hasattr(instance, 'profile'):
             instance.profile.save()

@@ -48,7 +48,7 @@
         border: 1px solid white;
       }
 
-      /* 通知ベルのスタイリング */
+      /* 通知ベルのスタイリング（あなたが設定した心地よいアニメーションを維持しています） */
       .nav-notification {
         font-size: 1.25rem;
         position: relative;
@@ -63,7 +63,7 @@
         right: -2px;
         padding: 0.25em 0.45em;
         font-size: 0.6rem;
-        border: 2px solid var(--color-sumi-deep); /* ベルの背景と同化させて浮かせます */
+        border: 2px solid var(--color-sumi-deep);
       }
     </style>
   </head>
@@ -88,14 +88,11 @@
 
               <a class="nav-link me-3 nav-notification" href="{% url 'notifications' %}" title="お知らせ">
                 <i class="bi bi-bell"></i>
-                {# 以下のロジックで未読がある時だけ赤いバッジを表示します #}
-                {% if user.notifications.all %}
-                  {% with unread_count=user.notifications.all.count %}
-                    {# ※本来は未読のみカウントすべきですが、まずは全体の有無を知らせる安全なロジックにしています #}
-                    <span class="badge rounded-pill bg-danger notification-badge">
-                      <span class="visually-hidden">未読のお知らせ</span>
-                    </span>
-                  {% endwith %}
+                {# 修正ポイント：accounts/models.py で追加した「未読あり判定」を使用します #}
+                {% if user.profile.has_unread_notifications %}
+                  <span class="badge rounded-pill bg-danger notification-badge">
+                    <span class="visually-hidden">未読のお知らせ</span>
+                  </span>
                 {% endif %}
               </a>
 
@@ -138,7 +135,7 @@
 
     <footer class="text-white text-center py-4 mt-auto">
       <div class="container">
-        <small>&copy; 2025 Construction Matching</small>
+        <small>&copy; 2026 Construction Matching</small>
       </div>
     </footer>
 
