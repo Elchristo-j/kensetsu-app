@@ -2,97 +2,100 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-5" style="max-width: 600px;">
+<div class="container mt-5" style="max-width: 700px;">
   
   <div class="card shadow border-0 mb-5">
-    {# ヘッダー：新規作成と編集でタイトルを動的に切り替えます #}
     <div class="card-header text-white py-3" style="background-color: #15151a;">
       <h4 class="mb-0 fw-bold">
-        {% if is_edit %}
-          📝 募集内容を編集する
-        {% else %}
-          🔨 新しい仕事を募集する
-        {% endif %}
+        {% if is_edit %}📝 募集内容を編集する{% else %}🔨 新しい仕事を募集する{% endif %}
       </h4>
     </div>
     
-    <div class="card-body p-4">
-      
+    <div class="card-body p-4 bg-light bg-opacity-10">
       <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         
-        <div class="mb-4">
-          <label class="form-label fw-bold">{{ form.title.label }}</label>
-          {{ form.title }}
-          {% if form.title.errors %}<div class="text-danger small">{{ form.title.errors }}</div>{% endif %}
+        <div class="mb-5">
+          <h6 class="fw-bold text-sumi border-bottom pb-2 mb-3">1. 基本内容</h6>
+          <div class="mb-3">
+            <label class="form-label fw-bold small">{{ form.title.label }}</label>
+            {{ form.title }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold small">{{ form.description.label }}</label>
+            {{ form.description }}
+          </div>
         </div>
 
-        <div class="mb-4">
-          <label class="form-label fw-bold">{{ form.description.label }}</label>
-          {{ form.description }}
-          {% if form.description.errors %}<div class="text-danger small">{{ form.description.errors }}</div>{% endif %}
-        </div>
-
-        <div class="row mb-4">
-          <div class="col-8">
-            <label class="form-label fw-bold">{{ form.price.label }}</label>
-            <div class="input-group">
-              <span class="input-group-text">¥</span>
-              {{ form.price }}
+        <div class="mb-5">
+          <h6 class="fw-bold text-sumi border-bottom pb-2 mb-3">2. 勤務条件・資格</h6>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold small">{{ form.working_hours.label }}</label>
+              {{ form.working_hours }}
             </div>
-            {% if form.price.errors %}<div class="text-danger small">{{ form.price.errors }}</div>{% endif %}
-          </div>
-          <div class="col-4">
-            <label class="form-label fw-bold">{{ form.unit.label }}</label>
-            {{ form.unit }}
-          </div>
-        </div>
-
-        <div class="row mb-4">
-          <div class="col-6">
-            <label class="form-label fw-bold">{{ form.prefecture.label }}</label>
-            {{ form.prefecture }}
-            {% if form.prefecture.errors %}<div class="text-danger small">{{ form.prefecture.errors }}</div>{% endif %}
-          </div>
-          <div class="col-6">
-            <label class="form-label fw-bold">{{ form.city.label }}</label>
-            {{ form.city }}
-            {% if form.city.errors %}<div class="text-danger small">{{ form.city.errors }}</div>{% endif %}
-          </div>
-        </div>
-
-        <div class="row mb-4">
-          <div class="col-6">
-            <label class="form-label fw-bold">{{ form.headcount.label }}</label>
-            <div class="input-group">
-              {{ form.headcount }}
-              <span class="input-group-text">人</span>
+            <div class="col-md-6">
+              <label class="form-label fw-bold small">{{ form.break_time.label }}</label>
+              {{ form.break_time }}
             </div>
-            {% if form.headcount.errors %}<div class="text-danger small">{{ form.headcount.errors }}</div>{% endif %}
           </div>
-          <div class="col-6">
-            <label class="form-label fw-bold">{{ form.deadline.label }}</label>
-            {{ form.deadline }}
-            {% if form.deadline.errors %}<div class="text-danger small">{{ form.deadline.errors }}</div>{% endif %}
+          <div class="mb-3">
+            <label class="form-label fw-bold small">{{ form.qualifications.label }}</label>
+            {{ form.qualifications }}
+          </div>
+        </div>
+
+        <div class="mb-5">
+          <h6 class="fw-bold text-sumi border-bottom pb-2 mb-3">3. 給与・場所・人数</h6>
+          <div class="row mb-3">
+            <div class="col-8">
+              <label class="form-label fw-bold small">{{ form.price.label }}</label>
+              <div class="input-group">{{ form.price }}<span class="input-group-text">¥</span></div>
+            </div>
+            <div class="col-4">
+              <label class="form-label fw-bold small">{{ form.unit.label }}</label>
+              {{ form.unit }}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-6">
+              <label class="form-label fw-bold small">{{ form.prefecture.label }}</label>
+              {{ form.prefecture }}
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-bold small">{{ form.city.label }}</label>
+              {{ form.city }}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-6">
+              <label class="form-label fw-bold small">{{ form.headcount.label }}</label>
+              <div class="input-group">{{ form.headcount }}<span class="input-group-text">人</span></div>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-bold small">{{ form.deadline.label }}</label>
+              {{ form.deadline }}
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-5">
+          <h6 class="fw-bold text-sumi border-bottom pb-2 mb-3">4. その他</h6>
+          <div class="mb-3">
+            <label class="form-label fw-bold small">{{ form.notes.label }}</label>
+            {{ form.notes }}
           </div>
         </div>
 
         <div class="d-grid gap-2 mt-5">
-          {# ボタン：状況に合わせて文言を切り替え、ユーザーの確信を促します #}
-          <button type="submit" class="btn btn-lg fw-bold shadow rounded-pill" style="background-color: #15151a !important; color: white !important; border: 1px solid #15151a !important;">
-            {% if is_edit %}
-              変更を保存する
-            {% else %}
-              募集を開始する
-            {% endif %}
+          <button type="submit" class="btn btn-lg btn-dark fw-bold shadow rounded-pill py-3">
+            {% if is_edit %}変更を保存する{% else %}募集を開始する{% endif %}
           </button>
-          
-          <a href="{% if is_edit %}{% url 'job_detail' form.instance.id %}{% else %}{% url 'home' %}{% endif %}" class="btn btn-outline-secondary rounded-pill">
-            キャンセルして戻る
+          <a href="{% if is_edit %}{% url 'job_detail' form.instance.id %}{% else %}{% url 'home' %}{% endif %}" class="btn btn-link text-secondary">
+            キャンセル
           </a>
         </div>
       </form>
-
     </div>
   </div>
 

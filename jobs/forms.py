@@ -5,41 +5,50 @@ from accounts.models import Profile
 class JobForm(forms.ModelForm):
     class Meta:
         model = Job
-        fields = ['title', 'description', 'price', 'unit', 'prefecture', 'city', 'headcount', 'deadline']
+        # 新しい項目を追加
+        fields = [
+            'title', 'description', 'working_hours', 'break_time', 
+            'qualifications', 'price', 'unit', 'prefecture', 'city', 
+            'headcount', 'deadline', 'notes'
+        ]
         labels = {
             'title': '仕事のタイトル',
-            'description': '仕事内容の詳細',
+            'description': '作業内容の詳細',
+            'working_hours': '勤務時間帯',
+            'break_time': '休憩時間',
+            'qualifications': '応募資格・必要な道具',
             'price': '金額',
             'unit': '単位',
             'prefecture': '都道府県',
-            'city': '市区町村（例：世田谷区など）',
+            'city': '市区町村',
             'headcount': '募集人数',
             'deadline': '募集期限',
+            'notes': '備考・特記事項',
         }
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例：木造住宅の荷揚げ作業'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': '具体的な作業手順や現場の状況を記入してください'}),
+            'working_hours': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例：8:00〜17:00（現場により変動あり）'}),
+            'break_time': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例：合計120分（昼60分、午前・午後各30分）'}),
+            'qualifications': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': '例：要普通免許、腰道具持参、未経験者歓迎'}),
             'price': forms.NumberInput(attrs={'class': 'form-control'}),
             'unit': forms.Select(attrs={'class': 'form-select'}),
-            # ここがプルダウンの設定です
             'prefecture': forms.Select(attrs={'class': 'form-select'}), 
-            'city': forms.TextInput(attrs={'class': 'form-control'}),
+            'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例：徳島市'}),
             'headcount': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
             'deadline': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': '男女・年齢不問、車通勤OK、雨天中止の連絡方法など'}),
         }
 
+# --- ProfileForm と MessageForm は変更なしで継続 ---
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ['image', 'location', 'description']
-        labels = {
-            'image': 'プロフィール画像',
-            'location': '拠点（主な活動エリア）', # 「拠点」に修正
-            'description': '自己紹介・実績',
-        }
+        labels = {'image': 'プロフィール画像', 'location': '拠点', 'description': '自己紹介・実績'}
         widgets = {
             'image': forms.FileInput(attrs={'class': 'form-control'}),
-            'location': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例：徳島県全域'}),
+            'location': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
         }
 
