@@ -1,6 +1,6 @@
 """
 Django settings for config project.
-Updated by Ms.Perfect for Render & Local Development.
+Updated for SSL Email Support & Render Stability.
 """
 
 from pathlib import Path
@@ -120,22 +120,20 @@ LOGOUT_REDIRECT_URL = 'home'
 
 
 # ==========================================
-# メール送信設定（Gmail用）
+# メール送信設定（SSL/465ポート版）
 # ==========================================
 
-# 現在のメール設定を以下のように書き換えてみてください
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 465               # 587 から 465 に変更
-EMAIL_USE_TLS = False          # True から False に変更
-EMAIL_USE_SSL = True           # 新しく True を追加
+EMAIL_PORT = 465               # SSL接続用のポート
+EMAIL_USE_TLS = False          # 465番の場合はFalse
+EMAIL_USE_SSL = True           # 465番の場合はTrue
 EMAIL_HOST_USER = 'hiroshi.77dk@gmail.com'
 EMAIL_HOST_PASSWORD = 'fjzafkfjetgueblb'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-EMAIL_TIMEOUT = 10             # 少し余裕を持って10秒に
 
-# ★接続待ち時間を5秒に制限（Renderのタイムアウト対策）
-EMAIL_TIMEOUT = 5
+# 接続待ち時間を10秒に設定
+EMAIL_TIMEOUT = 10
 
 
 # ==========================================
