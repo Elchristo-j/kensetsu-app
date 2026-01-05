@@ -2,11 +2,11 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib.auth.models import User
+from django.core.mail import send_mail 
+from django.conf import settings
 from .models import Job, Application, Message, Notification
 from accounts.models import Profile, FavoriteArea
 from .forms import JobForm, MessageForm, ProfileForm
-from django.core.mail import send_mail 
-from django.conf import settings        
 
 # --- 通知作成の補助関数 ---
 def create_notification(recipient, message, link=None):
@@ -40,13 +40,10 @@ def home(request):
             Q(city__icontains=query)
         ).distinct()
         
-    return render(request, 'jobs/home.html', {
-        'jobs': jobs, 
-        'query': query, 
-        'area_filter': area_filter
-    })
+    return render(request, 'jobs/home.html', {'jobs': jobs, 'query': query, 'area_filter': area_filter})
 
 def job_detail(request, job_id):
+    """詳細ページ"""
     job = get_object_or_404(Job, pk=job_id)
     is_applied = False
     if request.user.is_authenticated:
@@ -55,6 +52,7 @@ def job_detail(request, job_id):
 
 @login_required
 def create_job(request):
+    """仕事作成"""
     if request.method == 'POST':
         form = JobForm(request.POST)
         if form.is_valid():
@@ -68,6 +66,7 @@ def create_job(request):
 
 @login_required
 def edit_job(request, job_id):
+    """仕事編集"""
     job = get_object_or_404(Job, pk=job_id)
     if job.created_by != request.user:
         return redirect('job_detail', job_id=job.id)
@@ -82,12 +81,13 @@ def edit_job(request, job_id):
 
 @login_required
 def delete_job(request, job_id):
+    """仕事削除"""
     job = get_object_or_404(Job, pk=job_id)
     if job.created_by == request.user:
         job.delete()
     return redirect('home')
 
-# --- お気に入りエリア管理 ---
+# --- お気に入りエリア ---
 
 @login_required
 def add_favorite_area(request):
@@ -104,7 +104,7 @@ def delete_favorite_area(request, area_id):
     area.delete()
     return redirect('profile_detail', user_id=request.user.id)
 
-# --- 応募・採用関連 ---
+# --- 応募・採用 ---
 
 @login_required
 def apply_job(request, job_id):
@@ -112,7 +112,7 @@ def apply_job(request, job_id):
     if job.created_by != request.user:
         application, created = Application.objects.get_or_create(job=job, applicant=request.user)
         if created:
-            create_notification(job.created_by, f"「{job.title}」に応募がありました。", f"/job/{job.id}/applicants/")
+            create_notification(job.created_by, f"「{job.title}」に新しい応募がありました。", f"/job/{job.id}/applicants/")
         return redirect('chat_room', application_id=application.id)
     return redirect('job_detail', job_id=job.id)
 
@@ -147,7 +147,6 @@ def adopt_applicant(request, application_id):
             job.headcount -= 1
             if job.headcount <= 0:
                 job.is_closed = True
-                job.applications.filter(status='applied').update(status='rejected')
             job.save()
     return redirect('job_applicants', job_id=job.id)
 
@@ -172,7 +171,7 @@ def chat_room(request, application_id):
         form = MessageForm()
     return render(request, 'jobs/chat_room.html', {'application': application, 'form': form})
 
-# --- 通知・プロフィール ---
+# --- プロフィール・通知 ---
 
 @login_required
 def notifications(request):
@@ -183,23 +182,31 @@ def notifications(request):
 @login_required
 def profile_detail(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
-    profile, created = Profile.objects.get_or_create(user=target_user)
+    Profile.objects.get_or_create(user=target_user)
     jobs = Job.objects.filter(created_by=target_user).order_by('-id')
     fav_areas = target_user.favorite_areas.all()
-    from accounts.models import PREFECTURES 
-    return render(request, 'jobs/profile_detail.html', {
-        'target_user': target_user, 
-        'jobs': jobs,
-        'fav_areas': fav_areas,
-        'prefectures': PREFECTURES
-    })
+    from accounts.models import PREFECTURES
+    return render(request, 'jobs/profile_detail.html', {'target_user': target_user, 'jobs': jobs, 'fav_areas': fav_areas, 'prefectures': PREFECTURES})
 
 @login_required
 def profile_edit(request):
-    """
-    プロフィール編集：本人確認書類がアップロードされた際に
-    運営（吉川さん）に通知メールを送信します。
-    """
     profile, created = Profile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
-        form = ProfileForm(request.POST, request.FILES,)
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            if 'id_card_image' in request.FILES:
+                try:
+                    send_mail(
+                        subject="【重要】本人確認の申請が届きました",
+                        message=f"{request.user.username} さんから身分証画像が届きました。\n管理画面URL: {request.build_absolute_uri('/admin/accounts/profile/')}",
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[settings.EMAIL_HOST_USER],
+                        fail_silently=False,
+                    )
+                except Exception as e:
+                    print(f"Mail failed: {e}")
+            form.save()
+            return redirect('profile_detail', user_id=request.user.id)
+    else:
+        form = ProfileForm(instance=profile)
+    return render(request, 'jobs/profile_edit.html', {'form': form})
