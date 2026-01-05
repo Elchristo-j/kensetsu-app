@@ -10,7 +10,6 @@ from .forms import JobForm, MessageForm, ProfileForm
 
 # --- 通知作成の補助関数 ---
 def create_notification(recipient, message, link=None):
-    """通知を生成する共通ロジック"""
     Notification.objects.create(recipient=recipient, message=message, link=link)
 
 # --- お仕事関連 ---
@@ -21,8 +20,9 @@ def home(request):
     query = request.GET.get('query', '')
     area_filter = request.GET.get('area_filter', '')
 
+    # お気に入りエリア検索のロジック
     if area_filter == 'favorites' and request.user.is_authenticated:
-        fav_areas = request.user.favorite_areas.all()
+        fav_areas = FavoriteArea.objects.filter(user=request.user)
         if fav_areas.exists():
             q_objects = Q()
             for area in fav_areas:
@@ -31,7 +31,11 @@ def home(request):
                 else:
                     q_objects |= Q(prefecture=area.prefecture)
             jobs = jobs.filter(q_objects)
+        else:
+            # お気に入り登録がない場合は0件にする
+            jobs = jobs.none()
 
+    # キーワード検索のロジック
     if query:
         jobs = jobs.filter(
             Q(title__icontains=query) | 
@@ -40,10 +44,13 @@ def home(request):
             Q(city__icontains=query)
         ).distinct()
         
-    return render(request, 'jobs/home.html', {'jobs': jobs, 'query': query, 'area_filter': area_filter})
+    return render(request, 'jobs/home.html', {
+        'jobs': jobs, 
+        'query': query, 
+        'area_filter': area_filter
+    })
 
 def job_detail(request, job_id):
-    """詳細ページ"""
     job = get_object_or_404(Job, pk=job_id)
     is_applied = False
     if request.user.is_authenticated:
@@ -52,7 +59,6 @@ def job_detail(request, job_id):
 
 @login_required
 def create_job(request):
-    """仕事作成"""
     if request.method == 'POST':
         form = JobForm(request.POST)
         if form.is_valid():
@@ -66,7 +72,6 @@ def create_job(request):
 
 @login_required
 def edit_job(request, job_id):
-    """仕事編集"""
     job = get_object_or_404(Job, pk=job_id)
     if job.created_by != request.user:
         return redirect('job_detail', job_id=job.id)
@@ -81,13 +86,10 @@ def edit_job(request, job_id):
 
 @login_required
 def delete_job(request, job_id):
-    """仕事削除"""
     job = get_object_or_404(Job, pk=job_id)
     if job.created_by == request.user:
         job.delete()
     return redirect('home')
-
-# --- お気に入りエリア ---
 
 @login_required
 def add_favorite_area(request):
@@ -103,8 +105,6 @@ def delete_favorite_area(request, area_id):
     area = get_object_or_404(FavoriteArea, id=area_id, user=request.user)
     area.delete()
     return redirect('profile_detail', user_id=request.user.id)
-
-# --- 応募・採用 ---
 
 @login_required
 def apply_job(request, job_id):
@@ -150,8 +150,6 @@ def adopt_applicant(request, application_id):
             job.save()
     return redirect('job_applicants', job_id=job.id)
 
-# --- チャット ---
-
 @login_required
 def chat_room(request, application_id):
     application = get_object_or_404(Application, pk=application_id)
@@ -171,8 +169,6 @@ def chat_room(request, application_id):
         form = MessageForm()
     return render(request, 'jobs/chat_room.html', {'application': application, 'form': form})
 
-# --- プロフィール・通知 ---
-
 @login_required
 def notifications(request):
     user_notifications = request.user.notifications.all().order_by('-created_at')
@@ -190,36 +186,23 @@ def profile_detail(request, user_id):
 
 @login_required
 def profile_edit(request):
-    """
-    プロフィール編集画面。
-    本人確認書類がアップロードされた場合、運営に通知メールを送信します。
-    """
     profile, created = Profile.objects.get_or_create(user=request.user)
-    
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
-            # 1. 先にプロフィールの保存を完了させる
             form.save()
-
-            # 2. 画像がある場合のみメール送信を試みる（失敗しても画面は止めない）
             if 'id_card_image' in request.FILES:
                 try:
                     send_mail(
                         subject="【重要】本人確認の申請が届きました",
-                        message=f"{request.user.username} さんから身分証画像が届きました。\n"
-                                f"管理画面URL: {request.build_absolute_uri('/admin/accounts/profile/')}",
+                        message=f"{request.user.username} さんから身分証画像が届きました。",
                         from_email=settings.DEFAULT_FROM_EMAIL,
                         recipient_list=[settings.EMAIL_HOST_USER],
-                        fail_silently=False, # ← 送信エラーや遅延が起きても無視して次に進む
+                        fail_silently=True,
                     )
-                except Exception as e:
-                    # ログにだけ記録
-                    print(f"SMTP Notification failed: {e}")
-            
-            # 3. 確実に詳細画面へリダイレクトする
+                except:
+                    pass
             return redirect('profile_detail', user_id=request.user.id)
     else:
         form = ProfileForm(instance=profile)
-    
     return render(request, 'jobs/profile_edit.html', {'form': form})

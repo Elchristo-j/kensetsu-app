@@ -3,18 +3,36 @@
 
 {% block content %}
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-        <h2 class="fw-bold">🔨 お仕事を探す</h2>
-        <form method="get" action="{% url 'home' %}" class="d-flex gap-2">
-            <input type="text" name="q" class="form-control rounded-pill" placeholder="検索" value="{{ request.GET.q }}">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <h2 class="fw-bold mb-0">🔨 お仕事を探す</h2>
+        <form method="get" action="{% url 'home' %}" class="d-flex gap-2 flex-grow-1" style="max-width: 400px;">
+            <input type="text" name="query" class="form-control rounded-pill" placeholder="キーワードで検索" value="{{ query }}">
             <button type="submit" class="btn btn-dark rounded-pill px-3"><i class="bi bi-search"></i></button>
+            {% if query or area_filter %}
+                <a href="{% url 'home' %}" class="btn btn-outline-secondary rounded-pill"><i class="bi bi-x-lg"></i></a>
+            {% endif %}
         </form>
     </div>
+
+    {% if user.is_authenticated %}
+    <div class="mb-4">
+        <div class="p-3 rounded-4 d-flex align-items-center flex-wrap gap-2" style="background-color: #f1f3f5; border: 1px solid #e9ecef;">
+            <span class="small fw-bold text-muted me-2"><i class="bi bi-stars"></i> クイック検索:</span>
+            <a href="{% url 'home' %}?area_filter=favorites" 
+               class="btn btn-sm rounded-pill shadow-sm {% if area_filter == 'favorites' %}btn-warning{% else %}btn-white bg-white border{% endif %} fw-bold px-3">
+                ⭐ お気に入りエリアから探す
+            </a>
+            {% if area_filter == 'favorites' %}
+                <span class="badge rounded-pill bg-dark px-3">適用中</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 
     <div class="row g-4">
         {% for job in jobs %}
         <div class="col-md-6 col-lg-6">
-            <div class="card h-100 shadow-sm border-0 rounded-4 p-2">
+            <div class="card h-100 shadow-sm border-0 rounded-4 p-2 transition-card">
                 <div class="card-body d-flex flex-column p-4">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <span class="badge bg-light text-dark border rounded-pill px-3">📍 {{ job.prefecture }}</span>
@@ -31,7 +49,7 @@
                         <div class="small text-muted">
                             <i class="bi bi-person me-1"></i>{{ job.created_by.username }}
                             {% if job.created_by.profile.is_verified %}
-                                <i class="bi bi-patch-check-fill text-primary ms-1"></i>
+                                <i class="bi bi-patch-check-fill text-primary ms-1" title="本人確認済み"></i>
                             {% endif %}
                         </div>
                         <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-dark rounded-pill btn-sm px-4">詳細を見る</a>
@@ -39,7 +57,17 @@
                 </div>
             </div>
         </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <p class="text-muted">該当するお仕事が見つかりませんでした。</p>
+            <a href="{% url 'home' %}" class="btn btn-dark rounded-pill px-4">全件表示に戻す</a>
+        </div>
         {% endfor %}
     </div>
 </div>
+
+<style>
+    .transition-card { transition: transform 0.2s; }
+    .transition-card:hover { transform: translateY(-5px); }
+</style>
 {% endblock %}
