@@ -48,7 +48,15 @@
                         {% endif %}
                     </div>
 
-                    <h3 class="fw-bold mb-1 text-sumi">{{ target_user.username }}</h3>
+                    {# --- 名前と認証バッジの表示部分 --- #}
+　　　　　　　　　　　　<h3 class="fw-bold mb-1 text-sumi">
+　　　　　　　　　　　　  {{ target_user.username }}
+　　　　　　　　　　　　  {% if target_user.profile.is_verified %}
+  　　　　　　　　　　　　　  <span class="text-primary ms-1" title="本人確認済み" style="font-size: 1.2rem;">
+　　　　　　　　　　　　　      <i class="bi bi-patch-check-fill"></i>
+  　　　　　　　　　　　　　  </span>
+ 　　　　　　　　　　　　　 {% endif %}
+　　　　　　　　　　　　</h3>
 
                     {# --- 新機能：有料会員バッジ（名前のすぐ下に配置） --- #}
                     {% if target_user.profile.is_premium %}

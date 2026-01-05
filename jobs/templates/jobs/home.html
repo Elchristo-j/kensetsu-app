@@ -85,7 +85,13 @@
             <h5 class="card-title fw-bold mb-3">{{ job.title }}</h5>
             <p class="card-text text-secondary small mb-4" style="height: 3em; overflow: hidden;">{{ job.description|truncatechars:80 }}</p>
             <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
-              <span class="small text-muted"><i class="bi bi-person me-1"></i>{{ job.created_by.username }}</span>
+              {# --- 募集者名と認証アイコン --- #}
+　　　　　　　　<span class="small text-muted">
+ 　　　　　　　　 <i class="bi bi-person me-1"></i>{{ job.created_by.username }}
+ 　　　　　　　　 {% if job.created_by.profile.is_verified %}
+ 　　　　　　　　   <i class="bi bi-patch-check-fill text-primary small" title="本人確認済み"></i>
+ 　　　　　　　　 {% endif %}
+　　　　　　　　</span>
               <a href="{% url 'job_detail' job.id %}" class="btn btn-sm btn-outline-dark rounded-pill px-4">詳細を見る</a>
             </div>
           </div>

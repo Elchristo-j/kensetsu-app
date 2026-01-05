@@ -38,12 +38,10 @@
                   <th class="bg-light w-25 small fw-bold"><i class="bi bi-geo-alt me-1"></i>勤務地</th>
                   <td>{{ job.prefecture }}{{ job.city }}</td> 
                 </tr>
-                {# --- 追加：勤務日 --- #}
                 <tr>
                   <th class="bg-light small fw-bold text-primary"><i class="bi bi-calendar-check me-1"></i>勤務日</th>
                   <td class="fw-bold">{{ job.work_date|default:"応相談" }}</td> 
                 </tr>
-                {# ------------------ #}
                 {% if job.working_hours %}
                 <tr>
                   <th class="bg-light small fw-bold"><i class="bi bi-clock me-1"></i>勤務時間</th>
@@ -99,6 +97,10 @@
                 <h6 class="fw-bold mb-1">
                   <a href="{% url 'profile_detail' job.created_by.id %}" class="text-decoration-none text-dark">
                     {{ job.created_by.username }}
+                    {# --- プランC：本人確認バッジ --- #}
+                    {% if job.created_by.profile.is_verified %}
+                      <i class="bi bi-patch-check-fill text-primary ms-1" title="本人確認済み"></i>
+                    {% endif %}
                   </a>
                   <span class="text-muted small fw-normal">(拠点：{{ job.created_by.profile.location|default:"未設定" }})</span>
                 </h6>
@@ -138,16 +140,4 @@
                     </button>
                   </form>
                 {% else %}
-                  <button class="btn btn-secondary btn-lg px-5 rounded-pill w-100 w-md-auto" disabled>募集終了しました</button>
-                {% endif %}
-              {% else %}
-                <div class="alert alert-warning">応募には <a href="{% url 'login' %}">ログイン</a> が必要です。</div>
-              {% endif %}
-            {% endif %}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-{% endblock %}
+                  <button class="btn btn-secondary btn-lg px-5 rounded-pill w-100 w-md-auto" disabled>募集終了しました</button
