@@ -211,7 +211,7 @@ def profile_edit(request):
                                 f"管理画面URL: {request.build_absolute_uri('/admin/accounts/profile/')}",
                         from_email=settings.DEFAULT_FROM_EMAIL,
                         recipient_list=[settings.EMAIL_HOST_USER],
-                        fail_silently=True, # ← 送信エラーや遅延が起きても無視して次に進む
+                        fail_silently=False, # ← 送信エラーや遅延が起きても無視して次に進む
                     )
                 except Exception as e:
                     # ログにだけ記録
