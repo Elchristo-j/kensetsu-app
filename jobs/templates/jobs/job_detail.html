@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load humanize %} {# ★追加 #}
+{% load humanize %}
 
 {% block content %}
 <div class="container mt-4 mb-5">
@@ -9,7 +9,7 @@
 
   <div class="row justify-content-center">
     <div class="col-lg-8">
-      <div class="card shadow border"> {# 影と線を強調 #}
+      <div class="card shadow border">
         <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
           <div class="d-flex justify-content-between align-items-center">
             <h6 class="text-muted small mb-0">お仕事詳細</h6>
@@ -22,7 +22,6 @@
         
         <div class="card-body p-4">
           <div class="mb-4">
-            {# 金額を黒の太字(text-dark fw-bold)で強調し、コンマを入れました #}
             <h3 class="fw-bold text-dark" style="font-size: 1.8rem;">
               ¥{{ job.price|intcomma }} <span class="fs-6 text-muted fw-normal">/ {{ job.get_unit_display }}</span>
             </h3>
@@ -33,24 +32,54 @@
           </div>
 
           <div class="table-responsive mb-4">
-            <table class="table table-bordered">
+            <table class="table table-bordered align-middle">
               <tbody>
                 <tr>
-                  <th class="bg-light w-25">勤務地</th>
+                  <th class="bg-light w-25 small fw-bold"><i class="bi bi-geo-alt me-1"></i>勤務地</th>
                   <td>{{ job.prefecture }}{{ job.city }}</td> 
                 </tr>
+                {% if job.working_hours %}
                 <tr>
-                  <th class="bg-light">募集人数</th>
+                  <th class="bg-light small fw-bold"><i class="bi bi-clock me-1"></i>勤務時間</th>
+                  <td>{{ job.working_hours }}</td>
+                </tr>
+                {% endif %}
+                {% if job.break_time %}
+                <tr>
+                  <th class="bg-light small fw-bold"><i class="bi bi-cup-hot me-1"></i>休憩時間</th>
+                  <td>{{ job.break_time }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                  <th class="bg-light small fw-bold"><i class="bi bi-people me-1"></i>募集人数</th>
                   <td>残り {{ job.headcount }} 名</td> 
                 </tr>
+                {% if job.deadline %}
+                <tr>
+                  <th class="bg-light small fw-bold"><i class="bi bi-calendar-event me-1"></i>募集期限</th>
+                  <td class="text-danger fw-bold">{{ job.deadline|date:"Y/m/d" }}</td>
+                </tr>
+                {% endif %}
               </tbody>
             </table>
           </div>
 
-          <h5 class="fw-bold border-bottom pb-2 mb-3">仕事内容</h5>
-          <p class="text-secondary mb-5" style="white-space: pre-wrap;">{{ job.description }}</p>
+          <div class="mb-5">
+            <h5 class="fw-bold border-bottom pb-2 mb-3 text-sumi">作業内容</h5>
+            <p class="text-secondary mb-4" style="white-space: pre-wrap;">{{ job.description }}</p>
 
-          <h5 class="fw-bold border-bottom pb-2 mb-3">募集者情報</h5>
+            {% if job.qualifications %}
+            <h5 class="fw-bold border-bottom pb-2 mb-3 text-sumi">応募資格・必要な道具</h5>
+            <p class="text-secondary mb-4" style="white-space: pre-wrap;">{{ job.qualifications }}</p>
+            {% endif %}
+
+            {% if job.notes %}
+            <h5 class="fw-bold border-bottom pb-2 mb-3 text-sumi">備考・その他の条件</h5>
+            <div class="alert alert-light border shadow-sm text-secondary small" style="white-space: pre-wrap;">{{ job.notes }}</div>
+            {% endif %}
+          </div>
+
+          <h5 class="fw-bold border-bottom pb-2 mb-3 text-sumi">募集者情報</h5>
           <div class="card bg-light border-0 mb-5 p-3">
             <div class="d-flex align-items-start">
               <div class="me-3">
@@ -62,7 +91,6 @@
               </div>
               <div>
                 <h6 class="fw-bold mb-1">
-                  {# ユーザー名をクリックするとプロフィール詳細へ飛べるようにリンクを追加しました #}
                   <a href="{% url 'profile_detail' job.created_by.id %}" class="text-decoration-none text-dark">
                     {{ job.created_by.username }}
                   </a>
@@ -75,10 +103,8 @@
 
           <div class="text-center">
             {% if user == job.created_by %}
-              {# --- 投稿者本人の場合 --- #}
               <div class="alert alert-secondary border-0">
                 <p class="fw-bold mb-3">📢 あなたが募集した仕事です</p>
-                {# スマホで縦並び、PCで横並び、かつ幅を揃えるためのグリッド設定 #}
                 <div class="row g-2 justify-content-center">
                   <div class="col-12 col-md-auto">
                     <a href="{% url 'edit_job' job.id %}" class="btn btn-dark rounded-pill px-4 w-100">📝 編集する</a>
@@ -91,9 +117,7 @@
                   </div>
                 </div>
               </div>
-
             {% else %}
-              {# --- 他のユーザー（応募者）の場合 --- #}
               {% if user.is_authenticated %}
                 {% if is_applied %}
                   <div class="alert alert-success border-0">
@@ -103,12 +127,12 @@
                 {% elif not job.is_closed %}
                   <form action="{% url 'apply_job' job.id %}" method="post">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-lg px-5 shadow rounded-pill" style="background-color: #15151a !important; color: white !important;">
+                    <button type="submit" class="btn btn-lg px-5 shadow rounded-pill w-100 w-md-auto" style="background-color: #15151a !important; color: white !important;">
                       この仕事に応募する
                     </button>
                   </form>
                 {% else %}
-                  <button class="btn btn-secondary btn-lg px-5 rounded-pill" disabled>募集終了しました</button>
+                  <button class="btn btn-secondary btn-lg px-5 rounded-pill w-100 w-md-auto" disabled>募集終了しました</button>
                 {% endif %}
               {% else %}
                 <div class="alert alert-warning">応募には <a href="{% url 'login' %}">ログイン</a> が必要です。</div>
