@@ -58,12 +58,6 @@
                   <th class="bg-light small fw-bold"><i class="bi bi-people me-1"></i>募集人数</th>
                   <td>残り {{ job.headcount }} 名</td> 
                 </tr>
-                {% if job.deadline %}
-                <tr>
-                  <th class="bg-light small fw-bold"><i class="bi bi-calendar-event me-1"></i>募集期限</th>
-                  <td class="text-danger fw-bold">{{ job.deadline|date:"Y/m/d" }}</td>
-                </tr>
-                {% endif %}
               </tbody>
             </table>
           </div>
@@ -97,9 +91,8 @@
                 <h6 class="fw-bold mb-1">
                   <a href="{% url 'profile_detail' job.created_by.id %}" class="text-decoration-none text-dark">
                     {{ job.created_by.username }}
-                    {# --- プランC：本人確認バッジ --- #}
                     {% if job.created_by.profile.is_verified %}
-                      <i class="bi bi-patch-check-fill text-primary ms-1" title="本人確認済み"></i>
+                      <i class="bi bi-patch-check-fill text-primary ms-1"></i>
                     {% endif %}
                   </a>
                   <span class="text-muted small fw-normal">(拠点：{{ job.created_by.profile.location|default:"未設定" }})</span>
@@ -109,20 +102,14 @@
             </div>
           </div>
 
-          <div class="text-center">
+          <div class="text-center mt-4">
             {% if user == job.created_by %}
-              <div class="alert alert-secondary border-0">
+              <div class="alert alert-secondary border-0 p-4">
                 <p class="fw-bold mb-3">📢 あなたが募集した仕事です</p>
-                <div class="row g-2 justify-content-center">
-                  <div class="col-12 col-md-auto">
-                    <a href="{% url 'edit_job' job.id %}" class="btn btn-dark rounded-pill px-4 w-100">📝 編集する</a>
-                  </div>
-                  <div class="col-12 col-md-auto">
-                    <a href="{% url 'job_applicants' job.id %}" class="btn btn-outline-dark rounded-pill px-4 w-100">👥 応募者リスト</a>
-                  </div>
-                  <div class="col-12 col-md-auto">
-                    <a href="{% url 'delete_job' job.id %}" class="btn btn-outline-danger rounded-pill px-4 w-100" onclick="return confirm('削除しますか？');">🗑 削除</a>
-                  </div>
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    <a href="{% url 'edit_job' job.id %}" class="btn btn-dark rounded-pill px-4">📝 編集する</a>
+                    <a href="{% url 'job_applicants' job.id %}" class="btn btn-outline-dark rounded-pill px-4">👥 応募者リスト</a>
+                    <a href="{% url 'delete_job' job.id %}" class="btn btn-outline-danger rounded-pill px-4" onclick="return confirm('削除しますか？');">🗑 削除</a>
                 </div>
               </div>
             {% else %}
@@ -130,14 +117,26 @@
                 {% if is_applied %}
                   <div class="alert alert-success border-0">
                     <p class="fw-bold mb-2">✅ すでに応募済みです</p>
-                    <a href="{% url 'cancel_application' job.id %}" class="btn btn-outline-danger btn-sm rounded-pill" onclick="return confirm('取り消しますか？');">キャンセルする</a>
+                    <a href="{% url 'cancel_application' job.id %}" class="btn btn-outline-danger btn-sm rounded-pill">キャンセルする</a>
                   </div>
                 {% elif not job.is_closed %}
                   <form action="{% url 'apply_job' job.id %}" method="post">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-lg px-5 shadow rounded-pill w-100 w-md-auto" style="background-color: #15151a !important; color: white !important;">
+                    <button type="submit" class="btn btn-lg px-5 shadow rounded-pill text-white" style="background-color: #15151a;">
                       この仕事に応募する
                     </button>
                   </form>
                 {% else %}
-                  <button class="btn btn-secondary btn-lg px-5 rounded-pill w-100 w-md-auto" disabled>募集終了しました</button
+                  <button class="btn btn-secondary btn-lg px-5 rounded-pill" disabled>募集終了しました</button>
+                {% endif %}
+              {% else %}
+                <div class="alert alert-warning">応募には <a href="{% url 'login' %}">ログイン</a> が必要です。</div>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
