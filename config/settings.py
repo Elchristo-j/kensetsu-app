@@ -31,7 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.humanize',  # ★この行を追加しました
+    'django.contrib.humanize',
     'jobs',
     'accounts',
 ]
@@ -80,26 +80,6 @@ DATABASES = {
 
 
 # ==========================================
-# パスワードバリデーション
-# ==========================================
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
-
-# ==========================================
 # 言語・時間設定
 # ==========================================
 
@@ -116,12 +96,10 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# ★ここに移動しました：手動で作った static フォルダをDjangoに認識させる設定
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
-# WhiteNoise設定
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
@@ -142,10 +120,25 @@ LOGOUT_REDIRECT_URL = 'home'
 
 
 # ==========================================
-# その他（メール・CSRF・iPhone対策）
+# メール送信設定（Gmail用）
 # ==========================================
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'hiroshi.77dk@gmail.com'
+EMAIL_HOST_PASSWORD = 'fjzafkfjetgueblb'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# ★接続待ち時間を5秒に制限（Renderのタイムアウト対策）
+EMAIL_TIMEOUT = 5
+
+
+# ==========================================
+# 本番環境セキュリティ（Render）
+# ==========================================
+
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 CSRF_TRUSTED_ORIGINS = [
@@ -160,13 +153,3 @@ if 'RENDER' in os.environ:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SAMESITE = 'None'
     SESSION_COOKIE_SAMESITE = 'None'
-   # config/settings.py の末尾に追加
-
-# メール送信設定（Gmailを使用する場合）
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'hiroshi.77dk@gmail.com'  # 吉川さんのメールアドレス
-EMAIL_HOST_PASSWORD = 'fjzafkfjetgueblb' # ※後述します
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER 

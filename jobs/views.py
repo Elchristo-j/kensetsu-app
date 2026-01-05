@@ -190,23 +190,36 @@ def profile_detail(request, user_id):
 
 @login_required
 def profile_edit(request):
+    """
+    プロフィール編集画面。
+    本人確認書類がアップロードされた場合、運営に通知メールを送信します。
+    """
     profile, created = Profile.objects.get_or_create(user=request.user)
+    
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
+            # 1. 先にプロフィールの保存を完了させる
+            form.save()
+
+            # 2. 画像がある場合のみメール送信を試みる（失敗しても画面は止めない）
             if 'id_card_image' in request.FILES:
                 try:
                     send_mail(
                         subject="【重要】本人確認の申請が届きました",
-                        message=f"{request.user.username} さんから身分証画像が届きました。\n管理画面URL: {request.build_absolute_uri('/admin/accounts/profile/')}",
+                        message=f"{request.user.username} さんから身分証画像が届きました。\n"
+                                f"管理画面URL: {request.build_absolute_uri('/admin/accounts/profile/')}",
                         from_email=settings.DEFAULT_FROM_EMAIL,
                         recipient_list=[settings.EMAIL_HOST_USER],
-                        fail_silently=False,
+                        fail_silently=True, # ← 送信エラーや遅延が起きても無視して次に進む
                     )
                 except Exception as e:
-                    print(f"Mail failed: {e}")
-            form.save()
+                    # ログにだけ記録
+                    print(f"SMTP Notification failed: {e}")
+            
+            # 3. 確実に詳細画面へリダイレクトする
             return redirect('profile_detail', user_id=request.user.id)
     else:
         form = ProfileForm(instance=profile)
+    
     return render(request, 'jobs/profile_edit.html', {'form': form})
