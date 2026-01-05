@@ -38,6 +38,12 @@
                   <th class="bg-light w-25 small fw-bold"><i class="bi bi-geo-alt me-1"></i>勤務地</th>
                   <td>{{ job.prefecture }}{{ job.city }}</td> 
                 </tr>
+                {# --- 追加：勤務日 --- #}
+                <tr>
+                  <th class="bg-light small fw-bold text-primary"><i class="bi bi-calendar-check me-1"></i>勤務日</th>
+                  <td class="fw-bold">{{ job.work_date|default:"応相談" }}</td> 
+                </tr>
+                {# ------------------ #}
                 {% if job.working_hours %}
                 <tr>
                   <th class="bg-light small fw-bold"><i class="bi bi-clock me-1"></i>勤務時間</th>
