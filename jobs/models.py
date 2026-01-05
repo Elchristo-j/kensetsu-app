@@ -1,24 +1,23 @@
 from django.db import models
 from django.contrib.auth.models import User
-from accounts.models import PREFECTURES # accountsから読み込む設定を維持
+from accounts.models import PREFECTURES
 
 class Job(models.Model):
     title = models.CharField(max_length=100, verbose_name="仕事のタイトル")
     
-    # --- 詳細項目の細分化 ---
+    # 追加した項目：勤務日・期間
+    work_date = models.CharField(max_length=100, blank=True, verbose_name="勤務日・期間")
+
     description = models.TextField(verbose_name="作業内容の詳細")
     working_hours = models.CharField(max_length=100, blank=True, verbose_name="勤務時間帯")
     break_time = models.CharField(max_length=100, blank=True, verbose_name="休憩時間")
     qualifications = models.TextField(blank=True, verbose_name="応募資格・必要な道具など")
     notes = models.TextField(blank=True, verbose_name="備考（男女・年齢不問、特記事項など）")
-    # -----------------------
 
     price = models.IntegerField(verbose_name="金額")
-    
     UNIT_CHOICES = [('日', '日給'), ('時', '時給'), ('件', '1件あたり')]
     unit = models.CharField(max_length=10, choices=UNIT_CHOICES, default='日', verbose_name="単位")
     
-    # デフォルトを徳島県に変更（吉川さんの拠点に合わせました。必要なら東京都に戻せます）
     prefecture = models.CharField(max_length=10, choices=PREFECTURES, default='徳島県', verbose_name="都道府県")
     city = models.CharField(max_length=50, blank=True, default='', verbose_name="市区町村")
 
