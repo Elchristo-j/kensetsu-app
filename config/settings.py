@@ -160,3 +160,13 @@ if 'RENDER' in os.environ:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SAMESITE = 'None'
     SESSION_COOKIE_SAMESITE = 'None'
+   # config/settings.py の末尾に追加
+
+# メール送信設定（Gmailを使用する場合）
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'hiroshi.77dk@gmail.com'  # 吉川さんのメールアドレス
+EMAIL_HOST_PASSWORD = 'fjza fkfj etgu eblb' # ※後述します
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER 
