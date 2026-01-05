@@ -5,7 +5,6 @@ from accounts.models import Profile
 class JobForm(forms.ModelForm):
     class Meta:
         model = Job
-        # work_date を追加しました
         fields = [
             'title', 'work_date', 'description', 'working_hours', 'break_time', 
             'qualifications', 'price', 'unit', 'prefecture', 'city', 
@@ -29,29 +28,37 @@ class JobForm(forms.ModelForm):
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例：木造住宅の荷揚げ作業'}),
             'work_date': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例：1月15日(水)〜17日(金)の3日間'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': '具体的な作業手順を記入してください'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'working_hours': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例：8:00〜17:00'}),
             'break_time': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例：合計120分'}),
-            'qualifications': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': '例：要普通免許、腰道具持参'}),
+            'qualifications': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'price': forms.NumberInput(attrs={'class': 'form-control'}),
             'unit': forms.Select(attrs={'class': 'form-select'}),
             'prefecture': forms.Select(attrs={'class': 'form-select'}), 
-            'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例：徳島市'}),
+            'city': forms.TextInput(attrs={'class': 'form-control'}),
             'headcount': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
             'deadline': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'その他、伝えたいことがあれば記入してください'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
 
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['image', 'location', 'description']
-        labels = {'image': 'プロフィール画像', 'location': '拠点', 'description': '自己紹介・実績'}
+        # --- id_card_image を追加しました ---
+        fields = ['image', 'location', 'description', 'id_card_image']
+        labels = {
+            'image': 'プロフィール画像（顔写真など）',
+            'location': '拠点',
+            'description': '自己紹介・実績',
+            'id_card_image': '本人確認書類（免許証など）',
+        }
         widgets = {
             'image': forms.FileInput(attrs={'class': 'form-control'}),
             'location': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'id_card_image': forms.FileInput(attrs={'class': 'form-control'}),
         }
+        # ----------------------------------
 
 class MessageForm(forms.ModelForm):
     class Meta:

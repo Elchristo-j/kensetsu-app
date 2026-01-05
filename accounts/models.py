@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-# 都道府県リストをこちらに移動し、アプリ全体で使いやすくします
+# 都道府県リスト（すべてのモデルで使い回せるよう維持）
 PREFECTURES = [
     ('北海道', '北海道'), ('青森県', '青森県'), ('岩手県', '岩手県'), ('宮城県', '宮城県'), ('秋田県', '秋田県'), ('山形県', '山形県'), ('福島県', '福島県'),
     ('茨城県', '茨城県'), ('栃木県', '栃木県'), ('群馬県', '群馬県'), ('埼玉県', '埼玉県'), ('千葉県', '千葉県'), ('東京都', '東京都'), ('神奈川県', '神奈川県'),
@@ -20,8 +20,13 @@ class Profile(models.Model):
     description = models.TextField(blank=True, default='', verbose_name="自己紹介・実績")
     image = models.ImageField(upload_to='profile_images/', blank=True, null=True, verbose_name="アイコン画像")
     
-    # ★追加：有料会員（サブスク）フラグ
+    # 有料会員（サブスク）フラグ（以前追加したもの）
     is_premium = models.BooleanField(default=False, verbose_name="有料会員")
+
+    # --- プランC：本人確認用項目（今回追加） ---
+    is_verified = models.BooleanField(default=False, verbose_name="本人確認済み")
+    id_card_image = models.ImageField(upload_to='id_cards/', blank=True, null=True, verbose_name="身分証画像")
+    # ---------------------------------------
 
     class Meta:
         verbose_name = "プロフィール"
@@ -32,9 +37,10 @@ class Profile(models.Model):
 
     @property
     def has_unread_notifications(self):
+        """未読通知の有無判定ロジック"""
         return self.user.notifications.filter(is_read=False).exists()
 
-# ★追加：お気に入りエリアを保存するモデル
+# お気に入りエリアを保存するモデル（以前追加したもの）
 class FavoriteArea(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_areas')
     prefecture = models.CharField(max_length=20, choices=PREFECTURES, verbose_name="都道府県")
@@ -47,6 +53,7 @@ class FavoriteArea(models.Model):
     def __str__(self):
         return f"{self.prefecture} {self.city}"
 
+# シグナル：ユーザー作成時にプロフィールを自動生成（絶対に消してはいけない重要コード）
 @receiver(post_save, sender=User)
 def handle_user_profile_sync(sender, instance, created, **kwargs):
     if created:
