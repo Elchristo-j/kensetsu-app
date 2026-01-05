@@ -168,5 +168,5 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'hiroshi.77dk@gmail.com'  # 吉川さんのメールアドレス
-EMAIL_HOST_PASSWORD = 'fjza fkfj etgu eblb' # ※後述します
+EMAIL_HOST_PASSWORD = 'fjzafkfjetgueblb' # ※後述します
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER 
