@@ -1,92 +1,117 @@
 {% extends 'base.html' %}
+{% load humanize %}
 
 {% block content %}
 <div class="container mt-4 mb-5">
-  
   <div class="mb-3">
-    <a href="{% url 'home' %}" class="text-decoration-none text-secondary">
-      &lt; 一覧に戻る
-    </a>
+    <a href="{% url 'home' %}" class="text-decoration-none text-secondary">&lt; 一覧に戻る</a>
   </div>
 
   <div class="row justify-content-center">
     <div class="col-lg-8">
-      
-      <div class="card shadow-sm">
+      <div class="card shadow border">
+        <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="text-muted small mb-0">お仕事詳細</h6>
+            <span class="badge {% if job.is_closed %}bg-secondary{% else %}bg-danger{% endif %}">
+              {% if job.is_closed %}募集終了{% else %}募集中：あと {{ job.headcount }} 人{% endif %}
+            </span>
+          </div>
+          <h2 class="fw-bold mt-2">{{ job.title }}</h2>
+        </div>
+        
         <div class="card-body p-4">
-          
-          <h2 class="fw-bold mb-3">{{ job.title }}</h2>
-          
-          <div class="d-flex align-items-center mb-4">
-            <span class="badge bg-primary me-2">募集中</span>
-            <span class="text-muted small">投稿日: 2023/10/25</span> 
+          <div class="mb-4">
+            <h3 class="fw-bold text-dark" style="font-size: 1.8rem;">
+              ¥{{ job.price|intcomma }} <span class="fs-6 text-muted fw-normal">/ {{ job.get_unit_display }}</span>
+            </h3>
+            <span class="text-muted small">掲載日: {{ job.created_at|date:"Y/m/d" }}</span>
           </div>
 
           <div class="table-responsive mb-4">
-            <table class="table table-bordered">
+            <table class="table table-bordered align-middle">
               <tbody>
                 <tr>
-                  <th class="bg-light w-25 align-middle">金額</th>
-                  <td class="fs-5 fw-bold text-primary">¥{{ job.price }} <span class="fs-6 text-muted fw-normal">/ 日</span></td>
+                  <th class="bg-light w-25 small fw-bold">📍 勤務地</th>
+                  <td>{{ job.prefecture }}{{ job.city }}</td> 
                 </tr>
                 <tr>
-                  <th class="bg-light align-middle">勤務地</th>
-                  <td>{{ job.created_by.profile.location|default:"未設定" }}</td> 
+                  <th class="bg-light small fw-bold text-primary">🗓 勤務日</th>
+                  <td class="fw-bold">{{ job.work_date|default:"応相談" }}</td> 
                 </tr>
+                {% if job.working_hours %}
                 <tr>
-                  <th class="bg-light align-middle">工期</th>
-                  <td>3ヶ月（即日〜）</td> 
+                  <th class="bg-light small fw-bold text-muted">⏰ 勤務時間</th>
+                  <td>{{ job.working_hours }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                  <th class="bg-light small fw-bold text-muted">👥 募集人数</th>
+                  <td>残り {{ job.headcount }} 名</td> 
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <h5 class="fw-bold border-bottom pb-2 mb-3">仕事内容</h5>
           <div class="mb-5">
-            <p class="text-secondary" style="white-space: pre-wrap;">{{ job.description|linebreaks }}</p>
+            <h5 class="fw-bold border-bottom pb-2 mb-3">作業内容</h5>
+            <p class="text-secondary mb-4" style="white-space: pre-wrap;">{{ job.description }}</p>
           </div>
 
           <h5 class="fw-bold border-bottom pb-2 mb-3">募集者情報</h5>
-          <div class="card bg-light border-0 mb-5">
-            <div class="card-body">
-              <div class="d-flex align-items-start">
-                <div class="me-3">
-                  {% if job.created_by.profile.image %}
-                    <img src="{{ job.created_by.profile.image.url }}" class="rounded-circle border border-white shadow-sm" width="60" height="60" style="object-fit: cover;">
-                  {% else %}
-                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center shadow-sm" style="width: 60px; height: 60px;">
-                      <span class="small">No Img</span>
-                    </div>
-                  {% endif %}
-                </div>
-                
-                <div>
-                  <h6 class="fw-bold mb-1">
-                    {{ job.created_by.username }} 
-                    <span class="text-muted small fw-normal">({{ job.created_by.profile.location|default:"地域未設定" }})</span>
-                  </h6>
-                  <p class="small text-secondary mb-0">
-                    {{ job.created_by.profile.description|default:"自己紹介はまだありません。"|linebreaksbr }}
-                  </p>
-                </div>
+          <div class="card bg-light border-0 mb-5 p-3">
+            <div class="d-flex align-items-start">
+              <div class="me-3">
+                {% if job.created_by.profile.image %}
+                  <img src="{{ job.created_by.profile.image.url }}" class="rounded-circle" width="60" height="60" style="object-fit: cover;">
+                {% else %}
+                  <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">👤</div>
+                {% endif %}
+              </div>
+              <div>
+                <h6 class="fw-bold mb-1">
+                  <a href="{% url 'profile_detail' job.created_by.id %}" class="text-decoration-none text-dark">
+                    {{ job.created_by.username }}
+                    {% if job.created_by.profile.is_verified %}
+                      <i class="bi bi-patch-check-fill text-primary ms-1"></i>
+                    {% endif %}
+                  </a>
+                </h6>
+                <p class="small text-secondary mb-0">{{ job.created_by.profile.location|default:"拠点未設定" }}</p>
               </div>
             </div>
           </div>
-          <div class="d-grid gap-2">
-            {% if user.is_authenticated %}
-              <a href="#" class="btn btn-primary btn-lg fw-bold py-3 shadow">
-                この案件に応募する
-              </a>
+
+          <div class="text-center mt-4">
+            {% if user == job.created_by %}
+              <div class="alert alert-secondary border-0 p-4">
+                <p class="fw-bold mb-3">📢 あなたが募集した仕事です</p>
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    <a href="{% url 'edit_job' job.id %}" class="btn btn-dark rounded-pill px-4">📝 編集</a>
+                    <a href="{% url 'job_applicants' job.id %}" class="btn btn-outline-dark rounded-pill px-4">👥 応募者リスト</a>
+                </div>
+              </div>
             {% else %}
-              <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg fw-bold">
-                ログインして応募する
-              </a>
+              {% if user.is_authenticated %}
+                {% if is_applied %}
+                  <div class="alert alert-success border-0">
+                    <p class="fw-bold mb-2">✅ すでに応募済みです</p>
+                  </div>
+                {% elif not job.is_closed %}
+                  <form action="{% url 'apply_job' job.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-lg px-5 shadow rounded-pill text-white" style="background-color: #15151a;">この仕事に応募する</button>
+                  </form>
+                {% else %}
+                  <button class="btn btn-secondary btn-lg px-5 rounded-pill" disabled>募集終了しました</button>
+                {% endif %}
+              {% else %}
+                <div class="alert alert-warning">応募には <a href="{% url 'login' %}">ログイン</a> が必要です。</div>
+              {% endif %}
             {% endif %}
           </div>
-
         </div>
       </div>
-
     </div>
   </div>
 </div>
