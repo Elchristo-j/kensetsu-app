@@ -91,9 +91,9 @@
 
             {% if user.is_authenticated %}
               
-              {# --- 運営者だけに表示されるリンク --- #}
+              {# --- 運営者だけに表示されるリンク（色を強制指定版） --- #} 
               {% if user.is_staff %}
-                <a class="nav-link me-4 text-warning fw-bold" href="{% url 'admin_dashboard' %}">
+                <a class="nav-link me-4 fw-bold" href="{% url 'admin_dashboard' %}" style="color: #ffc107 !important;">
                   <i class="bi bi-shield-lock-fill me-1"></i> 運営画面
                 </a>
               {% endif %}
