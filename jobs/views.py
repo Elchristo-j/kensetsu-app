@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test  # ここにまとめました
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.mail import send_mail 
@@ -12,6 +12,10 @@ from .forms import JobForm, MessageForm, ProfileForm
 def create_notification(recipient, message, link=None):
     Notification.objects.create(recipient=recipient, message=message, link=link)
 
+# --- 運営者判定の補助関数（関数の外に出しました） ---
+def is_staff_user(user):
+    return user.is_authenticated and user.is_staff
+
 # --- お仕事関連 ---
 
 def home(request):
@@ -20,7 +24,6 @@ def home(request):
     query = request.GET.get('query', '')
     area_filter = request.GET.get('area_filter', '')
 
-    # お気に入りエリア検索のロジック
     if area_filter == 'favorites' and request.user.is_authenticated:
         fav_areas = FavoriteArea.objects.filter(user=request.user)
         if fav_areas.exists():
@@ -32,10 +35,8 @@ def home(request):
                     q_objects |= Q(prefecture=area.prefecture)
             jobs = jobs.filter(q_objects)
         else:
-            # お気に入り登録がない場合は0件にする
             jobs = jobs.none()
 
-    # キーワード検索のロジック
     if query:
         jobs = jobs.filter(
             Q(title__icontains=query) | 
@@ -206,3 +207,50 @@ def profile_edit(request):
     else:
         form = ProfileForm(instance=profile)
     return render(request, 'jobs/profile_edit.html', {'form': form})
+
+# --- 運営専用ダッシュボード機能 ---
+
+@user_passes_test(is_staff_user)
+def admin_dashboard(request):
+    """運営専用：本人確認の申請一覧"""
+    pending_profiles = Profile.objects.filter(
+        id_card_image__isnull=False, 
+        is_verified=False
+    ).exclude(id_card_image='') 
+    
+    return render(request, 'jobs/admin_dashboard.html', {
+        'pending_profiles': pending_profiles
+    })
+
+@user_passes_test(is_staff_user)
+def approve_profile(request, user_id):
+    """運営専用：本人確認を承認する"""
+    target_user = get_object_or_404(User, pk=user_id)
+    profile = target_user.profile
+    profile.is_verified = True
+    profile.save()
+
+    create_notification(
+        recipient=target_user,
+        message="🎉 本人確認が承認されました！プロフィールに認証バッジが付与されました。",
+        link=f"/profile/{target_user.id}/"
+    )
+    return redirect('admin_dashboard')
+
+@user_passes_test(is_staff_user)
+def reject_profile(request, user_id):
+    """運営専用：本人確認を否認（却下）する"""
+    target_user = get_object_or_404(User, pk=user_id)
+    profile = target_user.profile
+    
+    # 画像を物理削除
+    if profile.id_card_image:
+        profile.id_card_image.delete()
+    profile.save()
+
+    create_notification(
+        recipient=target_user,
+        message="⚠️ 本人確認書類に不備がありました。お手数ですが、もう一度正しい画像をアップロードしてください。",
+        link="/accounts/profile/edit/"
+    )
+    return redirect('admin_dashboard')
