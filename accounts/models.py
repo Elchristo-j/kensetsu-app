@@ -39,7 +39,15 @@ class Profile(models.Model):
     def has_unread_notifications(self):
         """未読通知の有無判定ロジック"""
         return self.user.notifications.filter(is_read=False).exists()
+    # accounts/models.py 内の Profile クラス
 
+    # --- ここから追加 ---
+    @property
+    def unread_notifications_count(self):
+        """未読通知の件数を取得（新規追加）"""
+        return self.user.notifications.filter(is_read=False).count()
+        
+    # --- ここまで追加 ---
 # お気に入りエリアを保存するモデル（以前追加したもの）
 class FavoriteArea(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_areas')

@@ -60,14 +60,20 @@
         font-size: 1.25rem;
         position: relative;
       }
+     /* base.html の <style> 内にある .notification-badge を上書き */
       .notification-badge {
-        position: absolute;
-        top: 2px;
-        right: -2px;
-        padding: 0.35em;
-        background-color: var(--color-accent-red);
-        border: 2px solid var(--color-sumi-deep);
-        border-radius: 50%;
+          position: absolute;
+          top: 0px;           /* 少し上に調整 */
+          right: -5px;        /* 少し右に調整 */
+          padding: 0.2rem 0.4rem; /* 数字に合わせてパディングを調整 */
+          font-size: 0.7rem;  /* 文字を少し読みやすく */
+          border: 2px solid var(--color-sumi-deep);
+          background-color: var(--color-accent-red);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 18px;    /* 1桁でも綺麗な丸になるように固定幅を設定 */
+          height: 18px;
       }
     </style>
   </head>
@@ -103,11 +109,14 @@
               </a>
 
               <a class="nav-link me-3 nav-notification" href="{% url 'notifications' %}" title="お知らせ">
-                <i class="bi bi-bell"></i>
-                {# --- 未読通知がある場合に赤い丸を表示 --- #}
-                {% if user.profile.has_unread_notifications %}
-                  <span class="notification-badge"></span>
-                {% endif %}
+                  <i class="bi bi-bell"></i>
+    
+              {# --- 未読数が0より大きい場合だけ数字を表示 --- #}
+              {% if user.profile.unread_notifications_count > 0 %}
+                 <span class="badge rounded-pill bg-danger notification-badge">
+                     {{ user.profile.unread_notifications_count }}
+                 </span>
+              {% endif %}
               </a>
 
               <div class="nav-item dropdown">
