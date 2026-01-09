@@ -179,11 +179,11 @@ def chat_room(request, application_id):
 
 @login_required
 def notifications(request):
-    # --- ここを修正：チャット以外の通知だけを既読にする ---
-    # リンク先に "chat" という文字が含まれていない通知だけを既読にします
-    request.user.notifications.filter(is_read=False).exclude(url__contains='chat').update(is_read=True)
+    # --- 修正：url を link に変えました ---
+    request.user.notifications.filter(is_read=False).exclude(link__contains='chat').update(is_read=True)
+    # ------------------------------------
     
-    notifications = request.user.notifications.all()
+    notifications = request.user.notifications.order_by('-created_at') # 新しい順に並べる
     return render(request, 'jobs/notifications.html', {'notifications': notifications})
     user_notifications = request.user.notifications.all().order_by('-created_at')
     user_notifications.filter(is_read=False).update(is_read=True)
