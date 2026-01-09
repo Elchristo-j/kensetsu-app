@@ -162,6 +162,8 @@ def chat_room(request, application_id):
         application=application, 
         is_read=False
     ).exclude(sender=request.user).update(is_read=True)
+    # ② 【ここを追加！】 このチャットに関する「通知」もまとめて既読にする
+    request.user.notifications.filter(link__contains=f'/application/{application.id}/', is_read=False).update(is_read=True)
     # -----------------------------------------------     
     if request.method == 'POST':
         form = MessageForm(request.POST)
