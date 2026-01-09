@@ -269,3 +269,7 @@ def reject_profile(request, user_id):
         link="/accounts/profile/edit/"
     )
     return redirect('admin_dashboard')
+    def terms_view(request): return render(request, 'jobs/terms.html')
+    def privacy_view(request): return render(request, 'jobs/privacy.html')
+    def law_view(request): return render(request, 'jobs/law.html')
+    def about_view(request): return render(request, 'jobs/about.html')

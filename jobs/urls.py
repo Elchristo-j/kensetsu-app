@@ -19,4 +19,8 @@ urlpatterns = [
     # ★追加：お気に入りエリアの追加と削除の道（URL）
     path('favorite-area/add/', views.add_favorite_area, name='add_favorite_area'),
     path('favorite-area/<int:area_id>/delete/', views.delete_favorite_area, name='delete_favorite_area'),
+    path('terms/', views.terms_view, name='terms'),
+    path('privacy/', views.privacy_view, name='privacy'),
+    path('law/', views.law_view, name='law'),
+    path('about/', views.about_view, name='about'),
 ]
