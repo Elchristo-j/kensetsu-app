@@ -1,103 +1,66 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-  
-  <div class="card shadow-sm border-0">
-    <div class="card-header text-white py-3 d-flex justify-content-between align-items-center" style="background-color: #15151a;">
-      <h5 class="mb-0 fw-bold">
-        👥 「{{ job.title }}」への応募者一覧
-        {% if job.is_closed %}
-            <span class="badge bg-secondary ms-2">募集終了</span>
-        {% else %}
-            <span class="badge bg-success ms-2">募集中（残り{{ job.headcount }}人）</span>
-        {% endif %}
-      </h5>
-      <a href="{% url 'job_detail' job.id %}" class="btn btn-sm btn-outline-light">案件に戻る</a>
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>「{{ job.title }}」への応募者一覧</h2>
+        <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-secondary btn-sm">案件詳細へ戻る</a>
     </div>
 
-    <div class="card-body p-0">
-      {% if applications %}
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-              <tr>
-                <th class="ps-4">応募者名</th>
-                <th>応募日時</th>
-                <th>ステータス</th>
-                <th>アクション</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for app in applications %}
-                <tr class="{% if app.status == 'accepted' %}table-success{% elif app.status == 'rejected' %}table-secondary{% endif %}">
-                  <td class="ps-4">
-                    <div class="d-flex align-items-center">
-                      {% if app.applicant.profile.image %}
-                        <img src="{{ app.applicant.profile.image.url }}" class="rounded-circle border me-2" width="40" height="40" style="object-fit: cover;">
-                      {% else %}
-                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
-                          <span class="small" style="font-size: 0.6rem;">No Img</span>
+    <div class="row">
+        {% for app in applications %}
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm {% if app.status == 'accepted' %}border-success{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="card-title mb-1">
+                                <a href="{% url 'profile_detail' app.applicant.id %}" class="text-decoration-none">
+                                    {{ app.applicant.username }} さん
+                                </a>
+                                {% if app.applicant.profile.is_verified %}
+                                <span class="badge bg-primary ml-1" style="font-size: 0.7rem;">本人確認済</span>
+                                {% endif %}
+                            </h5>
+                            <p class="text-muted small">応募日: {{ app.created_at|date:"Y/m/d H:i" }}</p>
                         </div>
-                      {% endif %}
-                      <div class="fw-bold">{{ app.applicant.username }}</div>
+                        <a href="{% url 'chat_room' app.id %}" class="btn btn-sm btn-outline-primary">
+                            チャット
+                        </a>
                     </div>
-                  </td>
-                  <td>{{ app.applied_at|date:"Y/m/d H:i" }}</td>
-                  <td>
-                    {% if app.status == 'accepted' %}
-                        <span class="badge bg-success">採用！</span>
-               
-                    {% if application.status == 'accepted' %}
-                        <span class="badge bg-success mb-2">採用済み</span>
-                        <form action="{% url 'reject_applicant' application.id %}" method="POST" onsubmit="return confirm('本当に採用を取り消しますか？（相手に通知されます）')">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-danger">採用をキャンセルする</button>
-                        </form>
-                    {% else %}
-                        <form action="{% url 'adopt_applicant' application.id %}" method="POST" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-primary">採用する</button>
-                        </form>
-                        <form action="{% url 'reject_applicant' application.id %}" method="POST" class="d-inline" onsubmit="return confirm('今回はお断りしますか？（相手に通知されます）')">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-secondary">お断りする</button>
-                        </form>
-                    {% endif %}        
-                    {% elif app.status == 'rejected' %}
-                        <span class="badge bg-secondary">不採用</span>
-                    {% else %}
-                        <span class="badge bg-warning text-dark">選考中</span>
-                    {% endif %}
-                  </td>
-                  <td>
-                    <a href="{% url 'chat_room' app.id %}" class="btn btn-sm btn-monotone text-white shadow-sm me-1" style="background-color: #15151a !important; border: 1px solid #15151a;">
-                      💬 チャット
-                    </a>
 
-                    {% if not job.is_closed and app.status == 'applied' %}
-                      <a href="{% url 'adopt_applicant' app.id %}" class="btn btn-success btn-sm" onclick="return confirm('この人を採用しますか？\n（定員に達すると自動的に募集終了となります）');">
-                          ✅ 採用する
-                      </a>
-                    {% endif %}
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      {% else %}
-        <div class="text-center py-5 text-muted">
-          <p class="fs-5 mb-0">まだ応募者はいません。</p>
-        </div>
-      {% endif %}
-    </div>
-    
-    <div class="card-footer text-center bg-white py-3 border-top-0">
-        <a href="{% url 'job_detail' job.id %}" class="text-decoration-none">← 案件詳細に戻る</a>
-    </div>
-  </div>
+                    <hr>
 
+                    <div class="d-flex align-items-center">
+                        {% if app.status == 'accepted' %}
+                            <div class="w-100">
+                                <span class="badge bg-success mb-2 d-block">採用済み</span>
+                                <form action="{% url 'reject_applicant' app.id %}" method="POST" onsubmit="return confirm('本当に採用を取り消しますか？（相手に通知されます）')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger w-100">採用をキャンセル（募集主都合）</button>
+                                </form>
+                            </div>
+                        {% else %}
+                            <div class="w-100 d-flex gap-2">
+                                <form action="{% url 'adopt_applicant' app.id %}" method="POST" class="flex-grow-1">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-primary w-100">採用する</button>
+                                </form>
+                                <form action="{% url 'reject_applicant' app.id %}" method="POST" class="flex-grow-1" onsubmit="return confirm('今回はお断りしますか？（相手に通知されます）')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary w-100">お断りする</button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <p class="text-muted">現在、応募者はいません。</p>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}
