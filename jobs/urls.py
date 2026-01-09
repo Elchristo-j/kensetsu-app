@@ -33,4 +33,17 @@ urlpatterns = [
     path('terms/', views.terms_view, name='terms'),
     path('privacy/', views.privacy_view, name='privacy'),
     path('law/', views.law_view, name='law'),
+    # jobs/views.py の一番下に追加
+
+    def about_view(request):
+        return render(request, 'jobs/about.html')
+
+    def terms_view(request):
+        return render(request, 'jobs/terms.html')
+
+    def privacy_view(request):
+        return render(request, 'jobs/privacy.html')
+
+    def law_view(request):
+        return render(request, 'jobs/law.html')
 ]
