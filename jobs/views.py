@@ -15,7 +15,7 @@ def create_notification(recipient, message, link=None):
 def is_staff_user(user):
     return user.is_authenticated and user.is_staff
 
-# --- ページ表示機能 ---
+# --- お仕事関連 ---
 def home(request):
     jobs = Job.objects.filter(is_closed=False).order_by('-id')
     query = request.GET.get('query', '')
@@ -88,6 +88,32 @@ def apply_job(request, job_id):
     return redirect('job_detail', job_id=job.id)
 
 @login_required
+def cancel_application(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    application = get_object_or_404(Application, job=job, applicant=request.user)
+    application.delete()
+    return redirect('job_detail', job_id=job.id)
+
+@login_required
+def job_applicants(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    if job.created_by != request.user:
+        return redirect('home')
+    applications = job.applications.all()
+    return render(request, 'jobs/job_applicants.html', {'job': job, 'applications': applications})
+
+@login_required
+def adopt_applicant(request, application_id):
+    application = get_object_or_404(Application, pk=application_id)
+    job = application.job
+    if request.user == job.created_by and application.status != 'accepted':
+        application.status = 'accepted'
+        application.save()
+        create_notification(application.applicant, f"「{job.title}」に採用されました！", f"/application/{application.id}/chat/")
+    return redirect('job_applicants', job_id=job.id)
+
+# --- チャット・通知 ---
+@login_required
 def chat_room(request, application_id):
     application = get_object_or_404(Application, pk=application_id)
     if request.user != application.applicant and request.user != application.job.created_by:
@@ -114,6 +140,7 @@ def notifications(request):
     notifications = request.user.notifications.order_by('-created_at')
     return render(request, 'jobs/notifications.html', {'notifications': notifications})
 
+# --- プロフィール ---
 @login_required
 def profile_detail(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
@@ -135,7 +162,23 @@ def profile_edit(request):
         form = ProfileForm(instance=profile)
     return render(request, 'jobs/profile_edit.html', {'form': form})
 
-# --- 運営専用機能 ---
+# --- お気に入り地域 ---
+@login_required
+def add_favorite_area(request):
+    if request.method == 'POST':
+        pref = request.POST.get('prefecture')
+        city = request.POST.get('city', '').strip()
+        if pref:
+            FavoriteArea.objects.get_or_create(user=request.user, prefecture=pref, city=city)
+    return redirect('profile_detail', user_id=request.user.id)
+
+@login_required
+def delete_favorite_area(request, area_id):
+    area = get_object_or_404(FavoriteArea, id=area_id, user=request.user)
+    area.delete()
+    return redirect('profile_detail', user_id=request.user.id)
+
+# --- 運営専用 ---
 @user_passes_test(is_staff_user)
 def admin_dashboard(request):
     pending_profiles = Profile.objects.filter(id_card_image__isnull=False, is_verified=False).exclude(id_card_image='') 
@@ -158,7 +201,7 @@ def reject_profile(request, user_id):
     profile.save()
     return redirect('admin_dashboard')
 
-# --- 規約関連 ---
+# --- 規約 ---
 def about_view(request): return render(request, 'jobs/about.html')
 def terms_view(request): return render(request, 'jobs/terms.html')
 def privacy_view(request): return render(request, 'jobs/privacy.html')
