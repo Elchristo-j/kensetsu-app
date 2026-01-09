@@ -8,14 +8,12 @@ from .models import Job, Application, Message, Notification
 from accounts.models import Profile, FavoriteArea
 from .forms import JobForm, MessageForm, ProfileForm
 
-# --- 補助関数 ---
 def create_notification(recipient, message, link=None):
     Notification.objects.create(recipient=recipient, message=message, link=link)
 
 def is_staff_user(user):
     return user.is_authenticated and user.is_staff
 
-# --- お仕事関連 ---
 def home(request):
     jobs = Job.objects.filter(is_closed=False).order_by('-id')
     query = request.GET.get('query', '')
@@ -112,7 +110,6 @@ def adopt_applicant(request, application_id):
         create_notification(application.applicant, f"「{job.title}」に採用されました！", f"/application/{application.id}/chat/")
     return redirect('job_applicants', job_id=job.id)
 
-# --- チャット・通知 ---
 @login_required
 def chat_room(request, application_id):
     application = get_object_or_404(Application, pk=application_id)
@@ -140,7 +137,6 @@ def notifications(request):
     notifications = request.user.notifications.order_by('-created_at')
     return render(request, 'jobs/notifications.html', {'notifications': notifications})
 
-# --- プロフィール ---
 @login_required
 def profile_detail(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
@@ -162,7 +158,6 @@ def profile_edit(request):
         form = ProfileForm(instance=profile)
     return render(request, 'jobs/profile_edit.html', {'form': form})
 
-# --- お気に入り地域 ---
 @login_required
 def add_favorite_area(request):
     if request.method == 'POST':
@@ -178,7 +173,6 @@ def delete_favorite_area(request, area_id):
     area.delete()
     return redirect('profile_detail', user_id=request.user.id)
 
-# --- 運営専用 ---
 @user_passes_test(is_staff_user)
 def admin_dashboard(request):
     pending_profiles = Profile.objects.filter(id_card_image__isnull=False, is_verified=False).exclude(id_card_image='') 
@@ -201,7 +195,6 @@ def reject_profile(request, user_id):
     profile.save()
     return redirect('admin_dashboard')
 
-# --- 規約 ---
 def about_view(request): return render(request, 'jobs/about.html')
 def terms_view(request): return render(request, 'jobs/terms.html')
 def privacy_view(request): return render(request, 'jobs/privacy.html')

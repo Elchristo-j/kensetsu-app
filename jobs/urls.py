@@ -1,208 +1,27 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Q
-from django.contrib.auth.models import User
-from django.core.mail import send_mail 
-from django.conf import settings
-from .models import Job, Application, Message, Notification
-from accounts.models import Profile, FavoriteArea
-from .forms import JobForm, MessageForm, ProfileForm
+from django.urls import path
+from . import views
 
-# --- 補助関数 ---
-def create_notification(recipient, message, link=None):
-    Notification.objects.create(recipient=recipient, message=message, link=link)
-
-def is_staff_user(user):
-    return user.is_authenticated and user.is_staff
-
-# --- お仕事関連 ---
-def home(request):
-    jobs = Job.objects.filter(is_closed=False).order_by('-id')
-    query = request.GET.get('query', '')
-    area_filter = request.GET.get('area_filter', '')
-    if area_filter == 'favorites' and request.user.is_authenticated:
-        fav_areas = FavoriteArea.objects.filter(user=request.user)
-        if fav_areas.exists():
-            q_objects = Q()
-            for area in fav_areas:
-                if area.city:
-                    q_objects |= Q(prefecture=area.prefecture, city__icontains=area.city)
-                else:
-                    q_objects |= Q(prefecture=area.prefecture)
-            jobs = jobs.filter(q_objects)
-        else:
-            jobs = jobs.none()
-    if query:
-        jobs = jobs.filter(Q(title__icontains=query) | Q(description__icontains=query) | Q(prefecture__icontains=query) | Q(city__icontains=query)).distinct()
-    return render(request, 'jobs/home.html', {'jobs': jobs, 'query': query, 'area_filter': area_filter})
-
-def job_detail(request, job_id):
-    job = get_object_or_404(Job, pk=job_id)
-    is_applied = False
-    if request.user.is_authenticated:
-        is_applied = Application.objects.filter(job=job, applicant=request.user).exists()
-    return render(request, 'jobs/job_detail.html', {'job': job, 'is_applied': is_applied})
-
-@login_required
-def create_job(request):
-    if request.method == 'POST':
-        form = JobForm(request.POST)
-        if form.is_valid():
-            job = form.save(commit=False)
-            job.created_by = request.user
-            job.save()
-            return redirect('home')
-    else:
-        form = JobForm()
-    return render(request, 'jobs/create_job.html', {'form': form, 'is_edit': False})
-
-@login_required
-def edit_job(request, job_id):
-    job = get_object_or_404(Job, pk=job_id)
-    if job.created_by != request.user:
-        return redirect('job_detail', job_id=job.id)
-    if request.method == 'POST':
-        form = JobForm(request.POST, instance=job)
-        if form.is_valid():
-            form.save()
-            return redirect('job_detail', job_id=job.id)
-    else:
-        form = JobForm(instance=job)
-    return render(request, 'jobs/create_job.html', {'form': form, 'is_edit': True})
-
-@login_required
-def delete_job(request, job_id):
-    job = get_object_or_404(Job, pk=job_id)
-    if job.created_by == request.user:
-        job.delete()
-    return redirect('home')
-
-@login_required
-def apply_job(request, job_id):
-    job = get_object_or_404(Job, pk=job_id)
-    if job.created_by != request.user:
-        application, created = Application.objects.get_or_create(job=job, applicant=request.user)
-        if created:
-            create_notification(job.created_by, f"「{job.title}」に新しい応募がありました。", f"/job/{job.id}/applicants/")
-        return redirect('chat_room', application_id=application.id)
-    return redirect('job_detail', job_id=job.id)
-
-@login_required
-def cancel_application(request, job_id):
-    job = get_object_or_404(Job, pk=job_id)
-    application = get_object_or_404(Application, job=job, applicant=request.user)
-    application.delete()
-    return redirect('job_detail', job_id=job.id)
-
-@login_required
-def job_applicants(request, job_id):
-    job = get_object_or_404(Job, pk=job_id)
-    if job.created_by != request.user:
-        return redirect('home')
-    applications = job.applications.all()
-    return render(request, 'jobs/job_applicants.html', {'job': job, 'applications': applications})
-
-@login_required
-def adopt_applicant(request, application_id):
-    application = get_object_or_404(Application, pk=application_id)
-    job = application.job
-    if request.user == job.created_by and application.status != 'accepted':
-        application.status = 'accepted'
-        application.save()
-        create_notification(application.applicant, f"「{job.title}」に採用されました！", f"/application/{application.id}/chat/")
-    return redirect('job_applicants', job_id=job.id)
-
-# --- チャット・通知 ---
-@login_required
-def chat_room(request, application_id):
-    application = get_object_or_404(Application, pk=application_id)
-    if request.user != application.applicant and request.user != application.job.created_by:
-        return redirect('home')
-    Message.objects.filter(application=application, is_read=False).exclude(sender=request.user).update(is_read=True)
-    request.user.notifications.filter(link__contains=f'/application/{application.id}/', is_read=False).update(is_read=True)
-    if request.method == 'POST':
-        form = MessageForm(request.POST)
-        if form.is_valid():
-            message = form.save(commit=False)
-            message.application = application
-            message.sender = request.user
-            message.save()
-            recipient = application.job.created_by if request.user == application.applicant else application.applicant
-            create_notification(recipient, f"{request.user.username}さんからメッセージがあります。", f"/application/{application.id}/chat/")
-            return redirect('chat_room', application_id=application_id)
-    else:
-        form = MessageForm()
-    return render(request, 'jobs/chat_room.html', {'application': application, 'form': form})
-
-@login_required
-def notifications(request):
-    request.user.notifications.filter(is_read=False).exclude(link__contains='chat').update(is_read=True)
-    notifications = request.user.notifications.order_by('-created_at')
-    return render(request, 'jobs/notifications.html', {'notifications': notifications})
-
-# --- プロフィール ---
-@login_required
-def profile_detail(request, user_id):
-    target_user = get_object_or_404(User, pk=user_id)
-    Profile.objects.get_or_create(user=target_user)
-    jobs = Job.objects.filter(created_by=target_user).order_by('-id')
-    fav_areas = target_user.favorite_areas.all()
-    from accounts.models import PREFECTURES
-    return render(request, 'jobs/profile_detail.html', {'target_user': target_user, 'jobs': jobs, 'fav_areas': fav_areas, 'prefectures': PREFECTURES})
-
-@login_required
-def profile_edit(request):
-    profile, created = Profile.objects.get_or_create(user=request.user)
-    if request.method == 'POST':
-        form = ProfileForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid():
-            form.save()
-            return redirect('profile_detail', user_id=request.user.id)
-    else:
-        form = ProfileForm(instance=profile)
-    return render(request, 'jobs/profile_edit.html', {'form': form})
-
-# --- お気に入り地域 ---
-@login_required
-def add_favorite_area(request):
-    if request.method == 'POST':
-        pref = request.POST.get('prefecture')
-        city = request.POST.get('city', '').strip()
-        if pref:
-            FavoriteArea.objects.get_or_create(user=request.user, prefecture=pref, city=city)
-    return redirect('profile_detail', user_id=request.user.id)
-
-@login_required
-def delete_favorite_area(request, area_id):
-    area = get_object_or_404(FavoriteArea, id=area_id, user=request.user)
-    area.delete()
-    return redirect('profile_detail', user_id=request.user.id)
-
-# --- 運営専用 ---
-@user_passes_test(is_staff_user)
-def admin_dashboard(request):
-    pending_profiles = Profile.objects.filter(id_card_image__isnull=False, is_verified=False).exclude(id_card_image='') 
-    return render(request, 'jobs/admin_dashboard.html', {'pending_profiles': pending_profiles})
-
-@user_passes_test(is_staff_user)
-def approve_profile(request, user_id):
-    target_user = get_object_or_404(User, pk=user_id)
-    profile = target_user.profile
-    profile.is_verified = True
-    profile.save()
-    return redirect('admin_dashboard')
-
-@user_passes_test(is_staff_user)
-def reject_profile(request, user_id):
-    target_user = get_object_or_404(User, pk=user_id)
-    profile = target_user.profile
-    if profile.id_card_image:
-        profile.id_card_image.delete()
-    profile.save()
-    return redirect('admin_dashboard')
-
-# --- 規約 ---
-def about_view(request): return render(request, 'jobs/about.html')
-def terms_view(request): return render(request, 'jobs/terms.html')
-def privacy_view(request): return render(request, 'jobs/privacy.html')
-def law_view(request): return render(request, 'jobs/law.html')
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('job/<int:job_id>/', views.job_detail, name='job_detail'),
+    path('job/create/', views.create_job, name='create_job'),
+    path('job/<int:job_id>/edit/', views.edit_job, name='edit_job'),
+    path('job/<int:job_id>/delete/', views.delete_job, name='delete_job'),
+    path('job/<int:job_id>/apply/', views.apply_job, name='apply_job'),
+    path('job/<int:job_id>/cancel/', views.cancel_application, name='cancel_application'),
+    path('job/<int:job_id>/applicants/', views.job_applicants, name='job_applicants'),
+    path('adopt/<int:application_id>/', views.adopt_applicant, name='adopt_applicant'),
+    path('application/<int:application_id>/chat/', views.chat_room, name='chat_room'),
+    path('notifications/', views.notifications, name='notifications'),
+    path('profile/<int:user_id>/', views.profile_detail, name='profile_detail'),
+    path('profile/edit/', views.profile_edit, name='profile_edit'),
+    path('favorite/add/', views.add_favorite_area, name='add_favorite_area'),
+    path('favorite/delete/<int:area_id>/', views.delete_favorite_area, name='delete_favorite_area'),
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('approve/<int:user_id>/', views.approve_profile, name='approve_profile'),
+    path('reject/<int:user_id>/', views.reject_profile, name='reject_profile'),
+    path('about/', views.about_view, name='about'),
+    path('terms/', views.terms_view, name='terms'),
+    path('privacy/', views.privacy_view, name='privacy'),
+    path('law/', views.law_view, name='law'),
+]
