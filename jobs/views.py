@@ -156,6 +156,13 @@ def chat_room(request, application_id):
     application = get_object_or_404(Application, pk=application_id)
     if request.user != application.applicant and request.user != application.job.created_by:
         return redirect('home')
+    # --- ここを追加：自分宛てのメッセージを既読にする ---
+    from .models import Message  # 関数内でインポートしておけば確実です
+    Message.objects.filter(
+        application=application, 
+        is_read=False
+    ).exclude(sender=request.user).update(is_read=True)
+    # -----------------------------------------------     
     if request.method == 'POST':
         form = MessageForm(request.POST)
         if form.is_valid():

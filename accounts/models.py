@@ -48,6 +48,25 @@ class Profile(models.Model):
         return self.user.notifications.filter(is_read=False).count()
         
     # --- ここまで追加 ---
+
+    @property
+    def total_unread_count(self):
+        from jobs.models import Notification, Message
+        from django.db.models import Q
+
+        # 1. 未読通知の数
+        notif_count = self.user.notifications.filter(is_read=False).count()
+
+        # 2. 未読メッセージの数
+        # 「自分が受信者」かつ「未読」のものをカウント
+        msg_count = Message.objects.filter(
+            is_read=False
+        ).exclude(sender=self.user).filter(
+            Q(application__applicant=self.user) | 
+            Q(application__job__created_by=self.user)
+        ).distinct().count()
+
+        return notif_count + msg_count
 # お気に入りエリアを保存するモデル（以前追加したもの）
 class FavoriteArea(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_areas')
