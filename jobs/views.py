@@ -89,6 +89,14 @@ def apply_job(request, job_id):
 def cancel_application(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     application = get_object_or_404(Application, job=job, applicant=request.user)
+
+    # --- ここを追加：募集主に「応募が取り消された」ことを知らせる ---
+    create_notification(
+        recipient=job.created_by,
+        message=f"「{job.title}」への {request.user.username} さんの応募が取り消されました。",
+        link=f"/job/{job.id}/"
+    )
+    # -------------------------------------------------------
     application.delete()
     return redirect('job_detail', job_id=job.id)
 
