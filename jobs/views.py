@@ -1,9 +1,116 @@
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models import Q
+from django.contrib.auth.models import User
+from django.core.mail import send_mail 
+from django.conf import settings
+from .models import Job, Application, Message, Notification
+from accounts.models import Profile, FavoriteArea
+from .forms import JobForm, MessageForm, ProfileForm
+
+# --- 補助関数 ---
+def create_notification(recipient, message, link=None):
+    Notification.objects.create(recipient=recipient, message=message, link=link)
+
+def is_staff_user(user):
+    return user.is_authenticated and user.is_staff
+
+# --- ページ表示機能 ---
+def home(request):
+    jobs = Job.objects.filter(is_closed=False).order_by('-id')
+    query = request.GET.get('query', '')
+    area_filter = request.GET.get('area_filter', '')
+    if area_filter == 'favorites' and request.user.is_authenticated:
+        fav_areas = FavoriteArea.objects.filter(user=request.user)
+        if fav_areas.exists():
+            q_objects = Q()
+            for area in fav_areas:
+                if area.city:
+                    q_objects |= Q(prefecture=area.prefecture, city__icontains=area.city)
+                else:
+                    q_objects |= Q(prefecture=area.prefecture)
+            jobs = jobs.filter(q_objects)
+        else:
+            jobs = jobs.none()
+    if query:
+        jobs = jobs.filter(Q(title__icontains=query) | Q(description__icontains=query) | Q(prefecture__icontains=query) | Q(city__icontains=query)).distinct()
+    return render(request, 'jobs/home.html', {'jobs': jobs, 'query': query, 'area_filter': area_filter})
+
+def job_detail(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    is_applied = False
+    if request.user.is_authenticated:
+        is_applied = Application.objects.filter(job=job, applicant=request.user).exists()
+    return render(request, 'jobs/job_detail.html', {'job': job, 'is_applied': is_applied})
+
+@login_required
+def create_job(request):
+    if request.method == 'POST':
+        form = JobForm(request.POST)
+        if form.is_valid():
+            job = form.save(commit=False)
+            job.created_by = request.user
+            job.save()
+            return redirect('home')
+    else:
+        form = JobForm()
+    return render(request, 'jobs/create_job.html', {'form': form, 'is_edit': False})
+
+@login_required
+def edit_job(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    if job.created_by != request.user:
+        return redirect('job_detail', job_id=job.id)
+    if request.method == 'POST':
+        form = JobForm(request.POST, instance=job)
+        if form.is_valid():
+            form.save()
+            return redirect('job_detail', job_id=job.id)
+    else:
+        form = JobForm(instance=job)
+    return render(request, 'jobs/create_job.html', {'form': form, 'is_edit': True})
+
+@login_required
+def delete_job(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    if job.created_by == request.user:
+        job.delete()
+    return redirect('home')
+
+@login_required
+def apply_job(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    if job.created_by != request.user:
+        application, created = Application.objects.get_or_create(job=job, applicant=request.user)
+        if created:
+            create_notification(job.created_by, f"「{job.title}」に新しい応募がありました。", f"/job/{job.id}/applicants/")
+        return redirect('chat_room', application_id=application.id)
+    return redirect('job_detail', job_id=job.id)
+
+@login_required
+def chat_room(request, application_id):
+    application = get_object_or_404(Application, pk=application_id)
+    if request.user != application.applicant and request.user != application.job.created_by:
+        return redirect('home')
+    Message.objects.filter(application=application, is_read=False).exclude(sender=request.user).update(is_read=True)
+    request.user.notifications.filter(link__contains=f'/application/{application.id}/', is_read=False).update(is_read=True)
+    if request.method == 'POST':
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.application = application
+            message.sender = request.user
+            message.save()
+            recipient = application.job.created_by if request.user == application.applicant else application.applicant
+            create_notification(recipient, f"{request.user.username}さんからメッセージがあります。", f"/application/{application.id}/chat/")
+            return redirect('chat_room', application_id=application_id)
+    else:
+        form = MessageForm()
+    return render(request, 'jobs/chat_room.html', {'application': application, 'form': form})
+
 @login_required
 def notifications(request):
-    # チャット以外の通知だけを既読にする
     request.user.notifications.filter(is_read=False).exclude(link__contains='chat').update(is_read=True)
-    
-    # 全通知を取得して表示
     notifications = request.user.notifications.order_by('-created_at')
     return render(request, 'jobs/notifications.html', {'notifications': notifications})
 
@@ -23,30 +130,14 @@ def profile_edit(request):
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
-            if 'id_card_image' in request.FILES:
-                try:
-                    send_mail(
-                        subject="【重要】本人確認の申請が届きました",
-                        message=f"{request.user.username} さんから身分証画像が届きました。",
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=[settings.EMAIL_HOST_USER],
-                        fail_silently=True,
-                    )
-                except:
-                    pass
             return redirect('profile_detail', user_id=request.user.id)
     else:
         form = ProfileForm(instance=profile)
     return render(request, 'jobs/profile_edit.html', {'form': form})
 
-# --- 運営専用ダッシュボード機能 ---
-
 @user_passes_test(is_staff_user)
 def admin_dashboard(request):
-    pending_profiles = Profile.objects.filter(
-        id_card_image__isnull=False, 
-        is_verified=False
-    ).exclude(id_card_image='') 
+    pending_profiles = Profile.objects.filter(id_card_image__isnull=False, is_verified=False).exclude(id_card_image='') 
     return render(request, 'jobs/admin_dashboard.html', {'pending_profiles': pending_profiles})
 
 @user_passes_test(is_staff_user)
@@ -55,29 +146,10 @@ def approve_profile(request, user_id):
     profile = target_user.profile
     profile.is_verified = True
     profile.save()
-    create_notification(target_user, "🎉 本人確認が承認されました！", f"/profile/{target_user.id}/")
     return redirect('admin_dashboard')
 
-@user_passes_test(is_staff_user)
-def reject_profile(request, user_id):
-    target_user = get_object_or_404(User, pk=user_id)
-    profile = target_user.profile
-    if profile.id_card_image:
-        profile.id_card_image.delete()
-    profile.save()
-    create_notification(target_user, "⚠️ 本人確認書類に不備がありました。再アップロードをお願いします。", "/accounts/profile/edit/")
-    return redirect('admin_dashboard')
-
-# --- 規約・情報ページ（ここが左端に揃っていることが重要です） ---
-
-def about_view(request):
-    return render(request, 'jobs/about.html')
-
-def terms_view(request):
-    return render(request, 'jobs/terms.html')
-
-def privacy_view(request):
-    return render(request, 'jobs/privacy.html')
-
-def law_view(request):
-    return render(request, 'jobs/law.html')
+# --- 規約関連 ---
+def about_view(request): return render(request, 'jobs/about.html')
+def terms_view(request): return render(request, 'jobs/terms.html')
+def privacy_view(request): return render(request, 'jobs/privacy.html')
+def law_view(request): return render(request, 'jobs/law.html')
