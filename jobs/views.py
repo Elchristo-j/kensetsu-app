@@ -97,6 +97,18 @@ def cancel_application(request, job_id):
         link=f"/job/{job.id}/"
     )
     # -------------------------------------------------------
+
+    if application.status == 'accepted':
+        message = f"「{job.title}」について、募集先の都合により誠に勝手ながら採用が取り消されました。恐れ入りますが、他の案件をご検討ください。"
+        job.headcount += 1
+        job.is_closed = False
+        job.save()
+    else:
+        message = f"「{job.title}」について、募集主の都合により今回は見送りとなりました。"
+
+    create_notification(recipient=application.applicant, message=message, link=f"/job/{job.id}/")
+    application.delete()
+    return redirect('job_applicants', job_id=job.id)
     application.delete()
     return redirect('job_detail', job_id=job.id)
 
@@ -120,9 +132,16 @@ def adopt_applicant(request, application_id):
 
 @login_required
 def chat_room(request, application_id):
-    application = get_object_or_404(Application, pk=application_id)
+    # get_object_or_404 ではなく、データがない場合に通知一覧へ戻す処理
+    application = Application.objects.filter(pk=application_id).first()
+    if not application:
+        # メッセージとともに通知一覧へ戻す
+        return redirect('notifications')
+    
     if request.user != application.applicant and request.user != application.job.created_by:
         return redirect('home')
+    
+    # ...以下の処理はそのまま...
     Message.objects.filter(application=application, is_read=False).exclude(sender=request.user).update(is_read=True)
     request.user.notifications.filter(link__contains=f'/application/{application.id}/', is_read=False).update(is_read=True)
     if request.method == 'POST':
@@ -141,10 +160,11 @@ def chat_room(request, application_id):
 
 @login_required
 def notifications(request):
-    request.user.notifications.filter(is_read=False).exclude(link__contains='chat').update(is_read=True)
+    # お知らせ一覧ページを開いたら、そのユーザーの未読通知をすべて既読にする
+    request.user.notifications.filter(is_read=False).update(is_read=True)
+    
     notifications = request.user.notifications.order_by('-created_at')
     return render(request, 'jobs/notifications.html', {'notifications': notifications})
-
 @login_required
 def profile_detail(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
@@ -213,6 +233,13 @@ def reject_applicant(request, application_id):
     # 募集主本人かチェック
     if request.user != job.created_by:
         return redirect('home')
+
+    # --- ここを追加：リンク切れになる古い通知を「既読」にして掃除する ---
+    Notification.objects.filter(
+        recipient=application.applicant,
+        link__contains=f"/application/{application.id}/"
+    ).update(is_read=True)
+    # -------------------------------------------------------------  
 
     # メッセージの出し分け（採用後か採用前か）
     if application.status == 'accepted':
