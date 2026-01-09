@@ -135,6 +135,7 @@ def profile_edit(request):
         form = ProfileForm(instance=profile)
     return render(request, 'jobs/profile_edit.html', {'form': form})
 
+# --- 運営専用機能 ---
 @user_passes_test(is_staff_user)
 def admin_dashboard(request):
     pending_profiles = Profile.objects.filter(id_card_image__isnull=False, is_verified=False).exclude(id_card_image='') 
@@ -145,6 +146,15 @@ def approve_profile(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
     profile = target_user.profile
     profile.is_verified = True
+    profile.save()
+    return redirect('admin_dashboard')
+
+@user_passes_test(is_staff_user)
+def reject_profile(request, user_id):
+    target_user = get_object_or_404(User, pk=user_id)
+    profile = target_user.profile
+    if profile.id_card_image:
+        profile.id_card_image.delete()
     profile.save()
     return redirect('admin_dashboard')
 
