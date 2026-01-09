@@ -23,4 +23,14 @@ urlpatterns = [
     path('privacy/', views.privacy_view, name='privacy'),
     path('law/', views.law_view, name='law'),
     path('about/', views.about_view, name='about'),
+    path('about/', views.about_view, name='about'),
+    path('terms/', views.terms_view, name='terms'),
+    path('privacy/', views.privacy_view, name='privacy'),
+    path('law/', views.law_view, name='law'),
+
+    # ... 既存のパス ...
+    path('about/', views.about_view, name='about'),
+    path('terms/', views.terms_view, name='terms'),
+    path('privacy/', views.privacy_view, name='privacy'),
+    path('law/', views.law_view, name='law'),
 ]

@@ -273,3 +273,4 @@ def reject_profile(request, user_id):
     def privacy_view(request): return render(request, 'jobs/privacy.html')
     def law_view(request): return render(request, 'jobs/law.html')
     def about_view(request): return render(request, 'jobs/about.html')
+    # jobs/views.py の一番下に追加
