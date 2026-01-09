@@ -24,4 +24,6 @@ urlpatterns = [
     path('terms/', views.terms_view, name='terms'),
     path('privacy/', views.privacy_view, name='privacy'),
     path('law/', views.law_view, name='law'),
+    # jobs/urls.py の urlpatterns の中に追加
+    path('reject-applicant/<int:application_id>/', views.reject_applicant, name='reject_applicant'),
 ]

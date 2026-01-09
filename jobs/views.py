@@ -203,6 +203,39 @@ def reject_profile(request, user_id):
     profile.save()
     return redirect('admin_dashboard')
 
+    # jobs/views.py
+
+@login_required
+def reject_applicant(request, application_id):
+    application = get_object_or_404(Application, pk=application_id)
+    job = application.job
+    
+    # 募集主本人かチェック
+    if request.user != job.created_by:
+        return redirect('home')
+
+    # メッセージの出し分け（採用後か採用前か）
+    if application.status == 'accepted':
+        message = f"「{job.title}」について、募集先の都合により誠に勝手ながら採用が取り消されました。恐れ入りますが、他の案件をご検討ください。"
+        # 採用枠を1つ戻す
+        job.headcount += 1
+        job.is_closed = False
+        job.save()
+    else:
+        message = f"「{job.title}」について、募集主の都合により今回は見送りとなりました。またの機会にご応募をお待ちしております。"
+
+    # 相手にマイルドな通知を送る
+    create_notification(
+        recipient=application.applicant,
+        message=message,
+        link=f"/job/{job.id}/"
+    )
+
+    # 応募データを削除して整理する
+    application.delete()
+    
+    return redirect('job_applicants', job_id=job.id)
+
 def about_view(request): return render(request, 'jobs/about.html')
 def terms_view(request): return render(request, 'jobs/terms.html')
 def privacy_view(request): return render(request, 'jobs/privacy.html')

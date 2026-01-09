@@ -48,6 +48,23 @@
                   <td>
                     {% if app.status == 'accepted' %}
                         <span class="badge bg-success">採用！</span>
+               
+                    {% if application.status == 'accepted' %}
+                        <span class="badge bg-success mb-2">採用済み</span>
+                        <form action="{% url 'reject_applicant' application.id %}" method="POST" onsubmit="return confirm('本当に採用を取り消しますか？（相手に通知されます）')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">採用をキャンセルする</button>
+                        </form>
+                    {% else %}
+                        <form action="{% url 'adopt_applicant' application.id %}" method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-primary">採用する</button>
+                        </form>
+                        <form action="{% url 'reject_applicant' application.id %}" method="POST" class="d-inline" onsubmit="return confirm('今回はお断りしますか？（相手に通知されます）')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">お断りする</button>
+                        </form>
+                    {% endif %}        
                     {% elif app.status == 'rejected' %}
                         <span class="badge bg-secondary">不採用</span>
                     {% else %}

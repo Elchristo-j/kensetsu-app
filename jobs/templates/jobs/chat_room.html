@@ -8,7 +8,11 @@
             <h5 class="mb-0 fw-bold">💬 チャット: {{ application.job.title }}</h5>
             <a href="{% url 'home' %}" class="btn btn-sm btn-outline-light">トップへ戻る</a>
         </div>
-
+<div class="alert alert-info py-2" style="font-size: 0.85rem;">
+    <i class="bi bi-info-circle"></i> 
+    現場住所や連絡先の交換は、お互いの信頼を確認した上で行ってください。
+    ※アプリ外での直接取引による手数料逃れは利用規約で禁止されています。
+</div>
         <div class="card-body bg-light" id="chat-box" style="height: 400px; overflow-y: scroll;">
             {% for message in application.messages.all %}
                 <div class="d-flex mb-3 {% if message.sender == user %}justify-content-end{% else %}justify-content-start{% endif %}">
