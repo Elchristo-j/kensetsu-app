@@ -49,7 +49,7 @@ class Profile(models.Model):
         
     # --- ここまで追加 ---
 
-   @property
+    @property
     def total_unread_count(self):
         # メッセージそのものは数えず、通知（Notification）の未読数だけを返す
         # これで「1メッセージ＝数字が1増える」という自然な動きになります
