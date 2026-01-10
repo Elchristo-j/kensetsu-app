@@ -8,7 +8,7 @@ class ProfileForm(forms.ModelForm):
     """
     class Meta:
         model = Profile
-        fields = ['image', 'location', 'description']
+        fields = ['image', 'location', 'description', 'id_card_image']
         
         labels = {
             'image': 'プロフィール画像（顔写真や屋号ロゴ）',

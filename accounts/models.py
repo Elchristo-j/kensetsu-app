@@ -70,9 +70,10 @@ class Profile(models.Model):
     @property # この一行を追加します
     def monthly_limit(self): # 名前を少し短く「monthly_limit」にしましょう
         """現在のランクの月間制限数を返す"""
-        if self.rank == 'iron':
+        rank = self.display_rank
+        if rank == 'iron':
             return 3
-        elif self.rank == 'bronze':
+        elif rank == 'bronze':
             return 10
         return "無制限"
 
@@ -93,11 +94,11 @@ class Profile(models.Model):
     def can_apply(self):
         """応募可能かどうかを判定する（鉄の掟）"""
         count = self.get_monthly_application_count()
-        if self.rank == 'iron':
+        rank = self.display_rank 
+        if rank == 'iron':
             return count < 3
-        elif self.rank == 'bronze':
+        elif rank == 'bronze':
             return count < 10
-        # シルバー以上は無制限
         return True
 
 # お気に入りエリア

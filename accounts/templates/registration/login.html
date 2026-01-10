@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-5" style="max-width: 500px;">
+    <div class="card shadow border-0 overflow-hidden rounded-4">
+        <div class="card-header bg-sumi text-white py-3 text-center">
+            <h4 class="mb-0">🏗️ ログイン</h4>
+        </div>
+        <div class="card-body p-4">
+            <form method="post">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-secondary">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="text-danger small mt-1">{{ field.errors }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-sumi w-100 mt-3 py-2 fw-bold shadow-sm rounded-pill">
+                    ログインする
+                </button>
+            </form>
+        </div>
+        <div class="card-footer text-center bg-light border-0 py-3">
+            <span class="text-muted small">アカウントをお持ちでない方は</span><br>
+            <a href="{% url 'signup' %}" class="text-sumi fw-bold text-decoration-none">新規会員登録はこちら</a>
+        </div>
+    </div>
+    <div class="text-center mt-4">
+        <a href="{% url 'home' %}" class="text-decoration-none text-secondary small">
+            <i class="bi bi-arrow-left"></i> トップページに戻る
+        </a>
+    </div>
+</div>
+
+<style>
+    /* フォームの入力欄にBootstrapの装飾を強制適用 */
+    input[type="text"], input[type="password"] {
+        display: block;
+        width: 100%;
+        padding: 0.6rem 1rem;
+        font-size: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        background-color: #f8f9fa;
+    }
+    input:focus {
+        background-color: #fff;
+        border-color: #15151a;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(21, 21, 26, 0.1);
+    }
+</style>
+{% endblock %}
