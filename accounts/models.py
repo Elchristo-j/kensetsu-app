@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-# 都道府県リスト（すべてのモデルで使い回せるよう維持）
+# 都道府県リスト
 PREFECTURES = [
     ('北海道', '北海道'), ('青森県', '青森県'), ('岩手県', '岩手県'), ('宮城県', '宮城県'), ('秋田県', '秋田県'), ('山形県', '山形県'), ('福島県', '福島県'),
     ('茨城県', '茨城県'), ('栃木県', '栃木県'), ('群馬県', '群馬県'), ('埼玉県', '埼玉県'), ('千葉県', '千葉県'), ('東京都', '東京都'), ('神奈川県', '神奈川県'),
@@ -15,18 +15,34 @@ PREFECTURES = [
 ]
 
 class Profile(models.Model):
+    # --- 1. ランクの選択肢を定義（ここを追加） ---
+    RANK_CHOICES = [
+        ('iron', 'アイアン（鉄）'),
+        ('bronze', 'ブロンズ（銅）'),
+        ('silver', 'シルバー（銀）'),
+        ('gold', 'ゴールド（金）'),
+        ('platinum', 'プラチナ'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', verbose_name="ユーザー")
     location = models.CharField(max_length=100, blank=True, default='', verbose_name="拠点")
     description = models.TextField(blank=True, default='', verbose_name="自己紹介・実績")
     image = models.ImageField(upload_to='profile_images/', blank=True, null=True, verbose_name="アイコン画像")
     
-    # 有料会員（サブスク）フラグ（以前追加したもの）
+    # 以前の is_premium も残しておいてOKです。今後は rank で管理します。
     is_premium = models.BooleanField(default=False, verbose_name="有料会員")
 
-    # --- プランC：本人確認用項目（今回追加） ---
+    # 本人確認用項目
     is_verified = models.BooleanField(default=False, verbose_name="本人確認済み")
     id_card_image = models.ImageField(upload_to='id_cards/', blank=True, null=True, verbose_name="身分証画像")
-    # ---------------------------------------
+    
+    # --- 2. ランク項目を追加（ここを追加） ---
+    rank = models.CharField(
+        max_length=20, 
+        choices=RANK_CHOICES, 
+        default='iron', 
+        verbose_name="会員ランク"
+    )
 
     class Meta:
         verbose_name = "プロフィール"
@@ -35,42 +51,18 @@ class Profile(models.Model):
     def __str__(self):
         return f"{self.user.username} のプロフィール"
 
-    @property
-    def has_unread_notifications(self):
-        """未読通知の有無判定ロジック"""
-        return self.user.notifications.filter(is_read=False).exists()
-    # accounts/models.py 内の Profile クラス
-
-    # --- ここから追加 ---
+    # --- 3. プロパティ類を整理 ---
     @property
     def unread_notifications_count(self):
-        """未読通知の件数を取得（新規追加）"""
+        """未読通知の件数を取得"""
         return self.user.notifications.filter(is_read=False).count()
-        
-    # --- ここまで追加 ---
 
     @property
     def total_unread_count(self):
-        # メッセージそのものは数えず、通知（Notification）の未読数だけを返す
-        # これで「1メッセージ＝数字が1増える」という自然な動きになります
-        return self.user.notifications.filter(is_read=False).count()
-        from jobs.models import Notification, Message
-        from django.db.models import Q
+        """通知の未読数を返す（数字のバッジ用）"""
+        return self.unread_notifications_count
 
-        # 1. 未読通知の数
-        notif_count = self.user.notifications.filter(is_read=False).count()
-
-        # 2. 未読メッセージの数
-        # 「自分が受信者」かつ「未読」のものをカウント
-        msg_count = Message.objects.filter(
-            is_read=False
-        ).exclude(sender=self.user).filter(
-            Q(application__applicant=self.user) | 
-            Q(application__job__created_by=self.user)
-        ).distinct().count()
-
-        return notif_count + msg_count
-# お気に入りエリアを保存するモデル（以前追加したもの）
+# お気に入りエリア
 class FavoriteArea(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_areas')
     prefecture = models.CharField(max_length=20, choices=PREFECTURES, verbose_name="都道府県")
@@ -83,7 +75,7 @@ class FavoriteArea(models.Model):
     def __str__(self):
         return f"{self.prefecture} {self.city}"
 
-# シグナル：ユーザー作成時にプロフィールを自動生成（絶対に消してはいけない重要コード）
+# シグナル：ユーザー作成時にプロフィールを自動生成
 @receiver(post_save, sender=User)
 def handle_user_profile_sync(sender, instance, created, **kwargs):
     if created:
