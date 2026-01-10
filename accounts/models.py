@@ -38,6 +38,14 @@ class Profile(models.Model):
     is_verified = models.BooleanField(default=False, verbose_name="本人確認済み")
     id_card_image = models.ImageField(upload_to='id_cards/', blank=True, null=True, verbose_name="身分証画像")
     
+    @property
+    def display_rank(self):
+        """表示用のランクを決定する（本人確認済みなら最低でもブロンズ）"""
+    # もし本人確認済みで、かつランクがアイアンのままなら「ブロンズ」とみなす
+        if self.is_verified and self.rank == 'iron':
+            return 'bronze'
+        return self.rank
+
     # --- 2. ランク項目を追加（ここを追加） ---
     rank = models.CharField(
         max_length=20, 
@@ -67,7 +75,7 @@ class Profile(models.Model):
         elif self.rank == 'bronze':
             return 10
         return "無制限"
-        
+
     @property
     def total_unread_count(self):
         """通知の未読数を返す（数字のバッジ用）"""

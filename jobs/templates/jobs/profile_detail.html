@@ -46,15 +46,15 @@
                     </h3>
 
                     <div class="mb-3">
-                        {% if target_user.profile.rank == 'iron' %}
+                        {% if target_user.profile.display_rank == 'iron' %}
                             <span class="badge rounded-pill bg-secondary px-3 py-2 shadow-sm">⚙️ アイアン（鉄）</span>
-                        {% elif target_user.profile.rank == 'bronze' %}
+                        {% elif target_user.profile.display_rank == 'bronze' %}
                             <span class="badge rounded-pill px-3 py-2 shadow-sm" style="background-color: #cd7f32; color: white;">🥉 ブロンズ（銅）</span>
-                        {% elif target_user.profile.rank == 'silver' %}
+                        {% elif target_user.profile.display_rank == 'silver' %}
                             <span class="badge rounded-pill bg-light text-dark border px-3 py-2 shadow-sm">🥈 シルバー（銀）</span>
-                        {% elif target_user.profile.rank == 'gold' %}
+                        {% elif target_user.profile.display_rank == 'gold' %}
                             <span class="badge rounded-pill bg-warning text-dark px-3 py-2 shadow-sm">🥇 ゴールド（金）</span>
-                        {% elif target_user.profile.rank == 'platinum' %}
+                        {% elif target_user.profile.display_rank == 'platinum' %}
                             <span class="badge rounded-pill bg-info text-dark px-3 py-2 shadow-sm">💎 プラチナ</span>
                         {% endif %}
                     </div>

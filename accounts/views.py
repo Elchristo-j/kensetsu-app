@@ -5,7 +5,8 @@ from django.contrib.auth.decorators import login_required
 from .models import Profile
 from .forms import ProfileForm
 # ★他のアプリ(jobs)からデータを持ってくるためのインポート
-from jobs.models import Job, Application 
+from jobs.models import Job, Application
+import os
 
 # 会員登録
 def signup(request):
@@ -23,15 +24,23 @@ def signup(request):
 @login_required
 def profile_edit(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
-
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
-            form.save()
-            return redirect('mypage') # ★編集後はマイページに戻るように変更
+            try:
+                form.save()
+                return redirect('profile_detail', user_id=request.user.id)
+            except FileNotFoundError:
+                # ファイルがサーバーから消えていた場合、一旦画像を空にして保存
+                profile.image = None
+                profile.save()
+                # その後、改めてフォームを保存
+                form = ProfileForm(request.POST, request.FILES, instance=profile)
+                if form.is_valid():
+                    form.save()
+                return redirect('profile_detail', user_id=request.user.id)
     else:
         form = ProfileForm(instance=profile)
-    
     return render(request, 'accounts/profile_edit.html', {'form': form})
 
 # ★追加：マイページ（ダッシュボード）
