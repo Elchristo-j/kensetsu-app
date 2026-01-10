@@ -19,7 +19,7 @@
                                     {{ app.applicant.username }} さん
                                 </a>
                                 {% if app.applicant.profile.is_verified %}
-                                <span class="badge bg-primary ml-1" style="font-size: 0.7rem;">本人確認済</span>
+                                <span class="badge bg-sumi ml-1" style="font-size: 0.7rem;">本人確認済</span>
                                 {% endif %}
                             </h5>
                             <p class="text-muted small">応募日: {{ app.created_at|date:"Y/m/d H:i" }}</p>
@@ -44,7 +44,7 @@
                             <div class="w-100 d-flex gap-2">
                                 <form action="{% url 'adopt_applicant' app.id %}" method="POST" class="flex-grow-1">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-primary w-100">採用する</button>
+                                    <button type="submit" class="btn btn-sm btn-sumi w-100">採用する</button>
                                 </form>
                                 <form action="{% url 'reject_applicant' app.id %}" method="POST" class="flex-grow-1" onsubmit="return confirm('今回はお断りしますか？（相手に通知されます）')">
                                     {% csrf_token %}

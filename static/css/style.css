@@ -27,8 +27,8 @@
     --header-text:   var(--color-white);
 
     /* ボタン・UI用設定 */
-    --btn-primary-bg: var(--color-sumi-deep);
-    --btn-primary-text: var(--color-white);
+    --btn-sumi-bg: var(--color-sumi-deep);
+    --btn-sumi-text: var(--color-white);
 }
 
 /* --- 全体の設定 --- */
@@ -63,9 +63,9 @@ body {
 
 /* --- ボタンのスタイル --- */
 .btn-monotone {
-    background-color: var(--btn-primary-bg); /* 変数名を変更 */
-    color: var(--btn-primary-text);
-    border: 1px solid var(--btn-primary-bg);
+    background-color: var(--btn-sumi-bg); /* 変数名を変更 */
+    color: var(--btn-sumi-text);
+    border: 1px solid var(--btn-sumi-bg);
     border-radius: 4px; 
     padding: 10px 24px; /* 横幅を少し広げ、より押しやすく */
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* 「カチッ」とした心地よい動作感 */
@@ -73,8 +73,8 @@ body {
 
 .btn-monotone:hover {
     background-color: var(--color-white);
-    color: var(--btn-primary-bg);
-    border-color: var(--btn-primary-bg);
+    color: var(--btn-sumi-bg);
+    border-color: var(--btn-sumi-bg);
 }
 
 /* --- カードのデザイン --- */
