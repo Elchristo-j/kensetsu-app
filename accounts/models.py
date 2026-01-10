@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
+from datetime import datetime
 
 # 都道府県リスト
 PREFECTURES = [
@@ -61,6 +63,25 @@ class Profile(models.Model):
     def total_unread_count(self):
         """通知の未読数を返す（数字のバッジ用）"""
         return self.unread_notifications_count
+
+    def get_monthly_application_count(self):
+        """今月の応募数をカウントする"""
+        from jobs.models import Application
+        now = timezone.now()
+        # 今月の1日 0時0分を取得
+        start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        # 自分の応募のうち、今月作成されたものを数える
+        return Application.objects.filter(applicant=self.user, created_at__gte=start_of_month).count()
+
+    def can_apply(self):
+        """応募可能かどうかを判定する（鉄の掟）"""
+        count = self.get_monthly_application_count()
+        if self.rank == 'iron':
+            return count < 3
+        elif self.rank == 'bronze':
+            return count < 10
+        # シルバー以上は無制限
+        return True
 
 # お気に入りエリア
 class FavoriteArea(models.Model):
