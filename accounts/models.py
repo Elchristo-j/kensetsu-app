@@ -59,6 +59,15 @@ class Profile(models.Model):
         """未読通知の件数を取得"""
         return self.user.notifications.filter(is_read=False).count()
 
+    @property # この一行を追加します
+    def monthly_limit(self): # 名前を少し短く「monthly_limit」にしましょう
+        """現在のランクの月間制限数を返す"""
+        if self.rank == 'iron':
+            return 3
+        elif self.rank == 'bronze':
+            return 10
+        return "無制限"
+        
     @property
     def total_unread_count(self):
         """通知の未読数を返す（数字のバッジ用）"""
