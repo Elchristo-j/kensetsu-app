@@ -8,9 +8,18 @@
     .text-sumi { color: #15151a !important; }
     .btn-sumi { background-color: #15151a !important; color: white !important; border: none; }
     .btn-sumi:hover { opacity: 0.8; color: white !important; }
-    .profile-header-gradient { height: 120px; background: linear-gradient(135deg, #15151a 0%, #3a3a45 100%); }
+    
+    /* グラデーションから青みを排除（純粋な黒〜グレーへ） */
+    .profile-header-gradient { 
+        height: 120px; 
+        background: linear-gradient(135deg, #15151a 0%, #444444 100%); 
+    }
+    
     .avatar-wrapper { margin-top: -60px; }
     .badge-premium { border: 1px solid #ffc107; color: #ffc107; font-weight: bold; }
+    
+    /* 本人確認マークの色を墨色に変更 */
+    .verified-check { color: #15151a; } 
 </style>
 
 <div class="container mt-4 mb-5">
