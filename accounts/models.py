@@ -71,8 +71,8 @@ class Profile(models.Model):
         # 今月の1日 0時0分を取得
         start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         # 自分の応募のうち、今月作成されたものを数える
-        return Application.objects.filter(applicant=self.user, created_at__gte=start_of_month).count()
-
+        return Application.objects.filter(applicant=self.user, applied_at__gte=start_of_month).count()
+        # ---------------------------------------------
     def can_apply(self):
         """応募可能かどうかを判定する（鉄の掟）"""
         count = self.get_monthly_application_count()
