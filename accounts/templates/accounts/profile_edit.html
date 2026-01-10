@@ -35,6 +35,19 @@
           {{ form.description }}
         </div>
 
+        <div class="mb-4">
+            <label class="form-label fw-bold">本人確認書類（免許証など）</label>
+            <div class="card bg-light border-0 p-3">
+                {{ form.id_card_image }}
+                <div class="form-text small mt-2 text-muted">
+                    ※ 運営が確認後、承認されるとブロンズランクに昇格します。<br>
+                    ※ 画像は確認後に安全に削除されます。
+                </div>
+            </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+
         <div class="d-grid gap-2 mt-5">
           <button type="submit" class="btn btn-lg fw-bold shadow-sm rounded-pill text-white" style="background-color: #15151a !important; border: none;">
             変更を保存する
