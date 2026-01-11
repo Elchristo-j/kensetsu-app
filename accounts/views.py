@@ -9,7 +9,8 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import Profile
+# モデルのインポート
+from .models import Profile, FavoriteArea, PREFECTURES
 from .forms import ProfileForm
 from jobs.models import Job, Application
 
@@ -67,35 +68,54 @@ def mypage(request):
     }
     return render(request, 'accounts/mypage.html', context)
 
-# --- プロフィール詳細 ---
+# --- プロフィール詳細（データ復旧版） ---
 @login_required
 def profile_detail(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
     
-    # 1. このユーザーが投稿した募集履歴を取得
+    # 募集履歴
     jobs = Job.objects.filter(created_by=target_user).order_by('-created_at')
     
-    # 2. このユーザーのお気に入りエリアを取得（もしモデルがある場合）
-    # ※FavoriteAreaモデルのインポートが必要かもしれません
-    # fav_areas = FavoriteArea.objects.filter(user=target_user)
+    # お気に入りエリア
+    fav_areas = FavoriteArea.objects.filter(user=target_user)
 
     context = {
         'target_user': target_user,
-        'jobs': jobs,              # これで「募集履歴」が届くようになります
-        # 'fav_areas': fav_areas,   # これで「お気に入りエリア」が届くようになります
+        'jobs': jobs,
+        'fav_areas': fav_areas,
+        'prefectures': PREFECTURES, # models.pyから読み込んだリスト
     }
-    
     return render(request, 'accounts/profile_detail.html', context)
+
+# --- お気に入りエリアの追加（追加） ---
+@login_required
+def add_favorite_area(request):
+    if request.method == 'POST':
+        prefecture = request.POST.get('prefecture')
+        city = request.POST.get('city')
+        if prefecture:
+            FavoriteArea.objects.create(
+                user=request.user,
+                prefecture=prefecture,
+                city=city
+            )
+    return redirect('profile_detail', user_id=request.user.id)
+
+# --- お気に入りエリアの削除（追加） ---
+@login_required
+def delete_favorite_area(request, area_id):
+    area = get_object_or_404(FavoriteArea, id=area_id, user=request.user)
+    area.delete()
+    return redirect('profile_detail', user_id=request.user.id)
+
 # --- 有料プラン選択画面の表示 ---
 @login_required
 def upgrade_plan_page(request):
-    """プラン選択画面（upgrade.html）を表示する"""
     return render(request, 'accounts/upgrade.html')
 
 # --- Stripe決済セッションの作成 ---
 @login_required
 def create_checkout_session(request, plan_type):
-    """決済画面へリダイレクトする"""
     price_id = settings.STRIPE_PRICE_IDS.get(plan_type)
     
     if not price_id:
@@ -113,10 +133,9 @@ def create_checkout_session(request, plan_type):
     
     return redirect(checkout_session.url, code=303)
 
-# --- Stripe Webhook（決済成功時の自動ランクアップ） ---
+# --- Stripe Webhook ---
 @csrf_exempt
 def stripe_webhook(request):
-    """Stripeからの通知を受け取り、自動でユーザーランクを更新する"""
     payload = request.body
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
     endpoint_secret = getattr(settings, 'STRIPE_WEBHOOK_SECRET', None)
@@ -126,7 +145,6 @@ def stripe_webhook(request):
     except Exception:
         return HttpResponse(status=400)
 
-    # 支払い完了イベントを検知
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
         user_id = session['metadata'].get('user_id')
