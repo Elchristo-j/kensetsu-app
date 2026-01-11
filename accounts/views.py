@@ -116,6 +116,6 @@ def create_checkout_session(request, plan_type):
     return redirect(checkout_session.url, code=303)
     
     # 118行目: 左端から開始
-    def upgrade_plan_page(request):
+def upgrade_plan_page(request):
     # 119行目: 先頭に「半角スペースを4つ」入れる（ここがズレていました）
     return render(request, 'accounts/upgrade.html')
