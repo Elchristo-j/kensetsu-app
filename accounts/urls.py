@@ -3,13 +3,19 @@ from django.contrib.auth import views as auth_views
 from . import views
 
 urlpatterns = [
+    # --- 認証・プロフィール基本 ---
     path('signup/', views.signup, name='signup'),
-    path('profile/edit/', views.profile_edit, name='profile_edit'),
     path('login/', auth_views.LoginView.as_view(template_name='accounts/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    
-    # ★追加：マイページ
+    path('profile/edit/', views.profile_edit, name='profile_edit'),
+    path('profile/<int:user_id>/', views.profile_detail, name='profile_detail'),
+
+    # --- マイページ・プランアップグレード ---
     path('mypage/', views.mypage, name='mypage'),
-    path('upgrade/', views.upgrade_plan_page, name='upgrade_plan_page'), # これを追加
+    path('upgrade/', views.upgrade_plan_page, name='upgrade_plan_page'),
     path('upgrade/<str:plan_type>/', views.create_checkout_session, name='create_checkout_session'),
+
+    # --- Stripe Webhook (決済完了時の自動ランク更新窓口) ---
+    # Stripe側からこのURLに対して、支払い成功の通知が送られてきます
+    path('stripe/webhook/', views.stripe_webhook, name='stripe_webhook'),
 ]
