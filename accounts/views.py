@@ -71,8 +71,21 @@ def mypage(request):
 @login_required
 def profile_detail(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
-    return render(request, 'accounts/profile_detail.html', {'target_user': target_user})
+    
+    # 1. このユーザーが投稿した募集履歴を取得
+    jobs = Job.objects.filter(created_by=target_user).order_by('-created_at')
+    
+    # 2. このユーザーのお気に入りエリアを取得（もしモデルがある場合）
+    # ※FavoriteAreaモデルのインポートが必要かもしれません
+    # fav_areas = FavoriteArea.objects.filter(user=target_user)
 
+    context = {
+        'target_user': target_user,
+        'jobs': jobs,              # これで「募集履歴」が届くようになります
+        # 'fav_areas': fav_areas,   # これで「お気に入りエリア」が届くようになります
+    }
+    
+    return render(request, 'accounts/profile_detail.html', context)
 # --- 有料プラン選択画面の表示 ---
 @login_required
 def upgrade_plan_page(request):
