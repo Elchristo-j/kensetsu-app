@@ -115,3 +115,5 @@ def create_checkout_session(request, plan_type):
     # Stripeの決済ページへリダイレクト
     return redirect(checkout_session.url, code=303)
     
+    def upgrade_plan_page(request):
+    return render(request, 'accounts/upgrade.html') # 先ほど作ったHTMLを表示するだけ

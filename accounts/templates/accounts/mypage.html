@@ -1,79 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-4">
-  
-  <div class="card shadow-sm mb-4">
-    <div class="card-body d-flex align-items-center">
-        <div class="me-3">
-            {% if user.profile.image %}
-                <img src="{{ user.profile.image.url }}" class="rounded-circle border" width="80" height="80" style="object-fit: cover;">
-            {% else %}
-                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">No Img</div>
-            {% endif %}
-        </div>
-        <div>
-            <h3 class="fw-bold mb-0">{{ user.username }} さんのマイページ</h3>
-            <p class="text-muted mb-1">{{ user.profile.location|default:"エリア未設定" }}</p>
-            <a href="{% url 'profile_edit' %}" class="btn btn-sm btn-outline-dark">🛠️ プロフィールを編集</a>
-        </div>
-    </div>
+
+    <div class="card shadow-sm mb-4" style="background-color: #15151a; color: #fff; border: 1px solid #333;">
+  <div class="card-body d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center">
+          <div class="me-3">
+              {% if user.profile.image %}
+                  <img src="{{ user.profile.image.url }}" class="rounded-circle border border-secondary" width="80" height="80" style="object-fit: cover;">
+              {% else %}
+                  <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">No Img</div>
+              {% endif %}
+          </div>
+          <div>
+              <h3 class="fw-bold mb-1">{{ user.username }} さんのマイページ</h3>
+              <div class="mb-2">
+                  <span class="badge rounded-pill bg-dark border border-secondary text-light">
+                      ランク：{{ user.profile.get_rank_display }}
+                  </span>
+                  <small class="text-secondary ms-2">{{ user.profile.location|default:"エリア未設定" }}</small>
+              </div>
+              <a href="{% url 'profile_edit' %}" class="btn btn-sm btn-outline-light">🛠️ プロフィールを編集</a>
+          </div>
+      </div>
+
+      {% if user.profile.rank != 'platinum' %}
+      <div class="text-end">
+          <a href="{% url 'upgrade_plan_page' %}" class="btn btn-outline-warning fw-bold px-4 py-2">
+              🚀 ランクアップ
+          </a>
+          <div class="small text-secondary mt-1 text-center">上位プランで応募数UP</div>
+      </div>
+      {% endif %}
   </div>
-
-  <div class="row">
-    <div class="col-md-6 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-header bg-white fw-bold border-bottom-0">
-                📤 あなたが応募した仕事（チャット）
-            </div>
-            <ul class="list-group list-group-flush">
-                {% for app in my_applications %}
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <span class="badge bg-secondary mb-1">募集中</span><br>
-                                <strong>{{ app.job.title }}</strong>
-                            </div>
-                            <a href="{% url 'chat_room' app.id %}" class="btn btn-outline-primary btn-sm">
-                               💬 チャットへ
-                            </a>
-                        </div>
-                    </li>
-                {% empty %}
-                    <li class="list-group-item text-muted text-center py-4">まだ応募履歴はありません</li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-
-    <div class="col-md-6 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-header bg-white fw-bold border-bottom-0 d-flex justify-content-between align-items-center">
-                <span>🔨 あなたが募集中のお仕事</span>
-                <a href="{% url 'create_job' %}" class="btn btn-sm btn-success">+ 新規募集</a>
-            </div>
-            <ul class="list-group list-group-flush">
-                {% for job in my_posted_jobs %}
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>{{ job.title }}</strong>
-                                <br>
-                                <small class="text-muted">{{ job.created_at|date:"Y/m/d" }}</small>
-                            </div>
-                            <div class="d-flex gap-2">
-                                <a href="{% url 'job_applicants' job.id %}" class="btn btn-sm btn-outline-secondary">
-                                    応募確認
-                                </a>
-                            </div>
-                        </div>
-                    </li>
-                {% empty %}
-                    <li class="list-group-item text-muted text-center py-4">まだ募集していません</li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-  </div>
-
 </div>
-{% endblock %}
