@@ -10,4 +10,5 @@ urlpatterns = [
     
     # ★追加：マイページ
     path('mypage/', views.mypage, name='mypage'),
+    path('upgrade/<str:plan_type>/', views.create_checkout_session, name='create_checkout_session'),
 ]

@@ -83,3 +83,35 @@ def profile_detail(request, user_id):
         'target_user': target_user,
     }
     return render(request, 'accounts/profile_detail.html', context)
+
+  import stripe
+from django.conf import settings
+from django.shortcuts import redirect
+from django.contrib.auth.decorators import login_required
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+@login_required
+def create_checkout_session(request, plan_type):
+    # settings.py で定義した辞書から Price ID を取得
+    price_id = settings.STRIPE_PRICE_IDS.get(plan_type)
+    
+    if not price_id:
+        return redirect('mypage') # IDがない場合はマイページへ戻す
+
+    # Stripeの決済画面（セッション）を作成
+    checkout_session = stripe.checkout.Session.create(
+        customer_email=request.user.email,
+        payment_method_types=['card'],
+        line_items=[{'price': price_id, 'quantity': 1}],
+        mode='subscription',
+        # 成功時とキャンセル時の戻り先（URL名は適宜変更してください）
+        success_url=request.build_absolute_uri('/accounts/mypage/') + '?success=true',
+        cancel_url=request.build_absolute_uri('/accounts/mypage/') + '?canceled=true',
+        # Webhookで誰の購入か判定するために user_id を持たせる
+        metadata={'user_id': request.user.id},
+    )
+    
+    # Stripeの決済ページへリダイレクト
+    return redirect(checkout_session.url, code=303)
+    

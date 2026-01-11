@@ -157,3 +157,15 @@ if 'RENDER' in os.environ:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SAMESITE = 'None'
     SESSION_COOKIE_SAMESITE = 'None'
+
+# Stripe設定
+# Stripeダッシュボード（サンドボックス）から取得したキーを貼り付けます
+STRIPE_PUBLISHABLE_KEY = 'pk_test_...pk_test_51R4us3DADu8qJkAGldBZjQUaJGvQuxfXRlGpDcVjrTrbrpyfDIibFKymQmHYccC9XBIBd7zdZfw0ekDPV92R3hZX009p1pDn4g' # ここに公開可能キー
+STRIPE_SECRET_KEY = 'sk_test_...sk_test_51R4us3DADu8qJkAGUGryys0UPY8HNJCwtIl40CMS3H80S2I5MciV8RmUUzYnxgBZvWeK9a7bkWGFhUzISJUeVZrk000PyPj0UO'      # ここにシークレットキー
+
+# 先ほどStripeで作成した商品の「Price ID」をここに紐付けます
+STRIPE_PRICE_IDS = {
+    'silver': 'price_1Q...price_1SoEIGDADu8qJkAGq7P5azgd',   # シルバープランのPrice ID
+    'gold': 'price_1Q...price_1SoEJMDADu8qJkAG1kNZbtM9',     # ゴールドプランのPrice ID
+    'platinum': 'price_1Q...price_1SoEJyDADu8qJkAGapSq3ize', # プラチナプランのPrice ID
+}
