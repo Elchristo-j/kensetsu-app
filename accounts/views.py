@@ -8,6 +8,10 @@ from .models import Profile
 from .forms import ProfileForm
 # 他のアプリ(jobs)からデータを持ってくるためのインポート
 from jobs.models import Job, Application
+import stripe
+from django.conf import settings
+from django.shortcuts import redirect
+from django.contrib.auth.decorators import login_required
 
 # 会員登録
 def signup(request):
@@ -84,10 +88,6 @@ def profile_detail(request, user_id):
     }
     return render(request, 'accounts/profile_detail.html', context)
 
-  import stripe
-from django.conf import settings
-from django.shortcuts import redirect
-from django.contrib.auth.decorators import login_required
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
