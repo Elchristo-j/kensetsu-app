@@ -12,7 +12,46 @@
     <div class="card-body p-4">
       <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        
+
+        {{ form.as_p }}
+        <div id="id-card-preview-area" class="mt-3 p-3 border rounded-3 bg-light" style="display: none;">
+          <p class="small text-muted mb-2">💡 アップロードする本人確認書類の確認：</p>
+          <img id="id-card-preview-img" src="" alt="本人確認書類プレビュー" style="max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #dee2e6;">
+        </div>
+
+        <div class="mt-4 d-grid gap-2 d-md-flex justify-content-md-end">
+          <button type="submit" class="btn btn-dark rounded-pill px-4">変更を保存する</button>
+          <a href="{% url 'profile_detail' user.id %}" class="btn btn-outline-secondary rounded-pill px-4">キャンセル</a>
+        </div>
+      </form> </div> ```
+
+---
+
+### 2. JavaScriptの追記：画像を選択したら即表示させる
+
+次に、HTMLの最後（`{% endblock %}` の直前など）に、以下のスクリプトを追加してください。これで、iPhoneで写真を選んだ瞬間に上の枠に画像が表示されるようになります。
+
+```javascript
+<script>
+  // Djangoが自動生成する本人確認書類フィールドのID（id_フィールド名）
+  const idInput = document.getElementById('id_id_card_image');
+  const previewArea = document.getElementById('id-card-preview-area');
+  const previewImg = document.getElementById('id-card-preview-img');
+
+  if (idInput) {
+    idInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          previewImg.src = e.target.result;
+          previewArea.style.display = 'block'; // 枠を表示
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+</script>
         <div class="mb-4 text-center">
           <label class="form-label d-block fw-bold text-start">{{ form.image.label }}</label>
           <div class="mb-3">
