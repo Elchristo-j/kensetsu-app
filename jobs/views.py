@@ -105,31 +105,33 @@ def apply_job(request, job_id):
     
     return redirect('chat_room', application_id=application.id)
 
+# --- jobs/views.py の該当箇所を修正 ---
+
 @login_required
 def cancel_application(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     application = get_object_or_404(Application, job=job, applicant=request.user)
 
-    # --- ここを追加：募集主に「応募が取り消された」ことを知らせる ---
+    # 1. 募集主（投稿者）へ「辞退された」ことを知らせる
     create_notification(
         recipient=job.created_by,
         message=f"「{job.title}」への {request.user.username} さんの応募が取り消されました。",
         link=f"/job/{job.id}/"
     )
-    # -------------------------------------------------------
 
+    # 2. もし「採用済み」だった場合は、募集人数（枠）を1つ戻す
     if application.status == 'accepted':
-        message = f"「{job.title}」について、募集先の都合により誠に勝手ながら採用が取り消されました。恐れ入りますが、他の案件をご検討ください。"
         job.headcount += 1
         job.is_closed = False
         job.save()
-    else:
-        message = f"「{job.title}」について、募集主の都合により今回は見送りとなりました。"
 
-    create_notification(recipient=application.applicant, message=message, link=f"/job/{job.id}/")
+    # 3. 応募データを削除
     application.delete()
-    return redirect('job_applicants', job_id=job.id)
-    application.delete()
+
+    # 4. 【修正のポイント】自分へのベルマーク通知は不要なので削除
+    # 自分で操作して消したものに「見送りになりました」と通知する必要はありません
+
+    # 完了後に仕事詳細ページへ戻る
     return redirect('job_detail', job_id=job.id)
 
 @login_required
