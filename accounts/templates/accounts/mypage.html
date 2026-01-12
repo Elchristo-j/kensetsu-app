@@ -20,6 +20,19 @@
                   </span>
                   <small class="text-secondary ms-2">{{ user.profile.location|default:"エリア未設定" }}</small>
               </div>
+              <div class="card shadow-sm border-0 mb-4 p-4 rounded-4 bg-light">
+                  <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                          <h5 class="fw-bold mb-1">現在の会員ランク</h5>
+                          <span class="badge rounded-pill bg-dark px-3 py-2">
+                              {{ user.profile.get_rank_display }}
+                          </span>
+                     </div>
+                     <a href="{% url 'upgrade_plan_page' %}" class="btn btn-primary rounded-pill px-4 fw-bold">
+                         <i class="bi bi-arrow-up-circle me-1"></i>ランクアップする
+                     </a>
+                 </div>
+             </div>
               <a href="{% url 'profile_edit' %}" class="btn btn-sm btn-outline-light">🛠️ プロフィールを編集</a>
           </div>
       </div>

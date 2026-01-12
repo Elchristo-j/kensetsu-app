@@ -13,9 +13,11 @@ urlpatterns = [
     # --- マイページ・プランアップグレード ---
     path('mypage/', views.mypage, name='mypage'),
     path('upgrade/', views.upgrade_plan_page, name='upgrade_plan_page'),
-    path('upgrade/<str:plan_type>/', views.create_checkout_session, name='create_checkout_session'),
+    
+    # 決済セッション作成（1つに整理しました）
+    path('create-checkout-session/<str:plan_type>/', views.create_checkout_session, name='create_checkout_session'),
 
-    # --- Stripe Webhook (決済完了時の自動ランク更新窓口) ---
-    # Stripe側からこのURLに対して、支払い成功の通知が送られてきます
-    path('stripe/webhook/', views.stripe_webhook, name='stripe_webhook'),
+    # --- Stripe Webhook ---
+    # 重要：Stripeダッシュボードに登録したURLが「.../accounts/stripe-webhook/」なら以下にします
+    path('stripe-webhook/', views.stripe_webhook, name='stripe_webhook'),
 ]
