@@ -158,14 +158,18 @@ if 'RENDER' in os.environ:
     CSRF_COOKIE_SAMESITE = 'None'
     SESSION_COOKIE_SAMESITE = 'None'
 
-# Stripe設定
-# Stripeダッシュボード（サンドボックス）から取得したキーを貼り付けます
-STRIPE_PUBLISHABLE_KEY = 'pk_test_...pk_test_51R4us3DADu8qJkAGldBZjQUaJGvQuxfXRlGpDcVjrTrbrpyfDIibFKymQmHYccC9XBIBd7zdZfw0ekDPV92R3hZX009p1pDn4g' # ここに公開可能キー
-STRIPE_SECRET_KEY = 'sk_test_...sk_test_51R4us3DADu8qJkAGUGryys0UPY8HNJCwtIl40CMS3H80S2I5MciV8RmUUzYnxgBZvWeK9a7bkWGFhUzISJUeVZrk000PyPj0UO'      # ここにシークレットキー
+# 修正後：安全で正しい書き方
 
-# 先ほどStripeで作成した商品の「Price ID」をここに紐付けます
+# 公開可能キー：説明用のテキストを削除し、環境変数から読み込む
+STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', 'pk_test_51R4us3DADu8qJkAGldBZjQUaJGvQuxfXRlGpDcVjrTrbrpyfDIibFKymQmHYccC9XBIBd7zdZfw0ekDPV92R3hZX009p1pDn4g')
+
+# シークレットキー：環境変数から読み込む
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_51R4us3DADu8qJkAGUGryys0UPY8HNJCwtIl40CMS3H80S2I5MciV8RmUUzYnxgBZvWeK9a7bkWGFhUzISJUeVZrk000PyPj0UO')
+
+# Price ID：説明用の 'price_1Q...' などを削除し、純粋なIDのみにする
 STRIPE_PRICE_IDS = {
-    'silver': 'price_1Q...price_1SoEIGDADu8qJkAGq7P5azgd',   # シルバープランのPrice ID
-    'gold': 'price_1Q...price_1SoEJMDADu8qJkAG1kNZbtM9',     # ゴールドプランのPrice ID
-    'platinum': 'price_1Q...price_1SoEJyDADu8qJkAGapSq3ize', # プラチナプランのPrice ID
+    'silver': 'price_1SoEIGDADu8qJkAGq7P5azgd',
+    'gold': 'price_1SoEJMDADu8qJkAG1kNZbtM9',
+    'platinum': 'price_1SoEJyDADu8qJkAGapSq3ize',
+}
 }
