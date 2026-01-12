@@ -63,8 +63,14 @@
 
                     {% if user == target_user %}
                         <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark btn-sm rounded-pill px-4 mb-3">プロフィールを編集する</a>
-                    {% endif %}
-                </div>
+                        
+                        <div class="mt-2">
+                            <a href="{% url 'upgrade_plan_page' %}" class="btn btn-primary btn-sm rounded-pill px-4 mb-3 shadow-sm">
+                                <i class="bi bi-arrow-up-circle"></i> ランクアップする
+                            </a>
+                        </div>
+
+                    {% endif %} </div>
                 <div class="card-footer bg-white text-center py-4 border-top-0">
                      <p class="mb-0 text-secondary small" style="white-space: pre-wrap;">{{ target_user.profile.description|default:"自己紹介文はまだありません。" }}</p>
                 </div>
