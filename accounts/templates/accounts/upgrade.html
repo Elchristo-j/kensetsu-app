@@ -1,34 +1,55 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5 py-5">
+<div class="container mt-5 mb-5">
     <div class="text-center mb-5">
-        <h2 class="text-light fw-bold">プランのアップグレード</h2>
-        <p class="text-secondary">あなたのビジネスを次のステージへ。プロ仕様の機能を開放しましょう。</p>
+        <h2 class="fw-bold">プランをアップグレード</h2>
+        <p class="text-muted">Stripe決済テスト：実際のプランを選択してください。</p>
     </div>
 
-    <div class="row g-4 justify-content-center">
-        <div class="col-md-5 col-lg-4">
-            <div class="card h-100 shadow-sm border-secondary" style="background-color: #15151a; color: #fff;">
-                <div class="card-body p-4 d-flex flex-column">
-                    <h5 class="card-title text-secondary border-bottom border-secondary pb-2">シルバープラン</h5>
-                    <div class="my-4">
-                        <span class="display-5 fw-bold">¥5,500</span>
-                        <span class="text-secondary">/ 月（税込）</span>
-                    </div>
-                    <ul class="list-unstyled mb-5 flex-grow-1 text-light">
-                        <li class="mb-2"><i class="bi bi-check-circle-fill text-info me-2"></i>応募制限：無制限</li>
-                        <li class="mb-2"><i class="bi bi-check-circle-fill text-info me-2"></i>案件の優先表示（シルバー枠）</li>
-                        <li class="mb-2"><i class="bi bi-check-circle-fill text-info me-2"></i>プロフィールの信頼度アップ</li>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+                    <h5 class="fw-bold mb-3">🥈 シルバー</h5>
+                    <h2 class="mb-4">¥550<span class="fs-6 text-muted"> /月</span></h2>
+                    <ul class="list-unstyled mb-4 text-start">
+                        <li><i class="bi bi-check2 text-success me-2"></i>応募制限：10件</li>
+                        <li><i class="bi bi-check2 text-success me-2"></i>シルバーバッジ</li>
                     </ul>
-                    
-                    <a href="{% url 'create_checkout_session' 'silver' %}" class="btn btn-outline-light btn-lg w-100 py-3 fw-bold">
-                        シルバーへ昇格する
-                    </a>
+                    <a href="{% url 'create_checkout_session' 'silver' %}" class="btn btn-outline-dark w-100 rounded-pill">シルバーを選択</a>
                 </div>
             </div>
         </div>
 
+        <div class="col">
+            <div class="card h-100 shadow border-0" style="border: 2px solid #ffc107 !important;">
+                <div class="card-body text-center p-4">
+                    <span class="badge bg-warning text-dark mb-2">推奨</span>
+                    <h5 class="fw-bold mb-3">🥇 ゴールド</h5>
+                    <h2 class="mb-4">¥2,200<span class="fs-6 text-muted"> /月</span></h2>
+                    <ul class="list-unstyled mb-4 text-start">
+                        <li><i class="bi bi-check2 text-success me-2"></i>応募制限：無制限</li>
+                        <li><i class="bi bi-check2 text-success me-2"></i>ゴールドバッジ</li>
+                    </ul>
+                    <a href="{% url 'create_checkout_session' 'gold' %}" class="btn btn-warning w-100 rounded-pill fw-bold">ゴールドを選択</a>
+                </div>
+            </div>
         </div>
+
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0" style="background-color: #15151a; color: white;">
+                <div class="card-body text-center p-4">
+                    <h5 class="fw-bold mb-3">💎 プラチナ</h5>
+                    <h2 class="mb-4">¥5,500<span class="fs-6 text-muted"> /月</span></h2>
+                    <ul class="list-unstyled mb-4 text-start">
+                        <li><i class="bi bi-check2 text-info me-2"></i>すべての機能を解放</li>
+                        <li><i class="bi bi-check2 text-info me-2"></i>最優先表示</li>
+                    </ul>
+                    <a href="{% url 'create_checkout_session' 'platinum' %}" class="btn btn-light w-100 rounded-pill fw-bold">プラチナを選択</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
