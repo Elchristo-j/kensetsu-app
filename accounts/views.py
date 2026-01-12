@@ -1,4 +1,6 @@
 import os
+# ファイルの上のほうに追加
+from .forms import CustomUserCreationForm
 import stripe
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
@@ -14,19 +16,23 @@ from .models import Profile, FavoriteArea, PREFECTURES
 from .forms import ProfileForm
 from jobs.models import Job, Application
 
+
 # Stripe APIキーの設定
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
 
 # --- 会員登録 ---
 def signup(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+       # ここを CustomUserCreationForm に変更
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
             return redirect('home')
     else:
-        form = UserCreationForm()
+        # ここも CustomUserCreationForm に変更
+        form = CustomUserCreationForm()
     return render(request, 'accounts/signup.html', {'form': form})
 
 # --- プロフィールの編集（Render画像消失対策込み） ---
