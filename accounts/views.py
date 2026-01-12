@@ -114,6 +114,8 @@ def upgrade_plan_page(request):
     return render(request, 'accounts/upgrade.html')
 
 # --- Stripe決済セッションの作成 ---
+# accounts/views.py の該当箇所を探して修正してください
+
 @login_required
 def create_checkout_session(request, plan_type):
     price_id = settings.STRIPE_PRICE_IDS.get(plan_type)
@@ -121,8 +123,11 @@ def create_checkout_session(request, plan_type):
     if not price_id:
         return redirect('mypage')
 
+    # メアドが空の場合は None を渡すようにガードをかける
+    user_email = request.user.email if request.user.email else None
+
     checkout_session = stripe.checkout.Session.create(
-        customer_email=request.user.email,
+        customer_email=user_email,  # 修正：空文字を避ける
         payment_method_types=['card'],
         line_items=[{'price': price_id, 'quantity': 1}],
         mode='subscription',
