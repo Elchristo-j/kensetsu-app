@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q
 from django.contrib.auth.models import User
@@ -75,15 +76,34 @@ def delete_job(request, job_id):
         job.delete()
     return redirect('home')
 
+# --- jobs/views.py の該当箇所を上書き ---
+
 @login_required
 def apply_job(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
-    if job.created_by != request.user:
-        application, created = Application.objects.get_or_create(job=job, applicant=request.user)
-        if created:
-            create_notification(job.created_by, f"「{job.title}」に新しい応募がありました。", f"/job/{job.id}/applicants/")
+    
+    # 自分の投稿には応募できない
+    if job.created_by == request.user:
+        return redirect('job_detail', job_id=job.id)
+
+    # 1. すでに応募済みかチェック（応募済みの場合はチャットへ）
+    application = Application.objects.filter(job=job, applicant=request.user).first()
+    if application:
         return redirect('chat_room', application_id=application.id)
-    return redirect('job_detail', job_id=job.id)
+
+    # 2. 【新規応募の場合のみ】ランクごとの応募制限（鉄の掟）をチェック
+    profile = request.user.profile
+    if not profile.can_apply():
+        # 制限に達している場合は、エラーメッセージを出してアップグレード画面へ
+        from django.contrib import messages
+        messages.error(request, f"今月の応募上限（{profile.monthly_limit}件）に達しました。さらに応募するにはランクアップが必要です。")
+        return redirect('upgrade_plan_page')
+
+    # 3. 制限をクリアしていれば応募を作成
+    application = Application.objects.create(job=job, applicant=request.user)
+    create_notification(job.created_by, f"「{job.title}」に新しい応募がありました。", f"/job/{job.id}/applicants/")
+    
+    return redirect('chat_room', application_id=application.id)
 
 @login_required
 def cancel_application(request, job_id):
