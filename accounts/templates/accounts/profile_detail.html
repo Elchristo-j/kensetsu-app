@@ -17,7 +17,7 @@
     .avatar-wrapper { margin-top: -60px; }
     .verified-check { color: #15151a; } 
 
-    /* --- 新規追加：ランクバッジの差別化スタイル --- */
+    /* ランクバッジの差別化スタイル */
     .rank-badge {
         font-weight: bold;
         padding: 5px 15px;
@@ -27,7 +27,7 @@
         font-size: 0.85rem;
     }
 
-    /* 課金：大文字（uppercase）+ グラデーション */
+    /* 課金：大文字 + グラデーション */
     .badge-PLATINA { 
         background: linear-gradient(135deg, #ffffff, #e0e0e0); color: #444; 
         border: 1px solid #ccc; text-transform: uppercase; 
@@ -41,7 +41,7 @@
         text-transform: uppercase; 
     }
 
-    /* 無課金：小文字（lowercase）+ 単色 */
+    /* 無課金：小文字 + 単色 */
     .badge-bronze { background: #cd7f32; color: #fff; text-transform: lowercase; }
     .badge-iron { background: #6c757d; color: #fff; text-transform: lowercase; }
 </style>
@@ -86,3 +86,58 @@
                                     <i class="bi bi-arrow-up-circle"></i> ランクアップする
                                 </a>
                             {% else %}
+                                <div class="mb-3 text-muted small fw-bold">
+                                    <i class="bi bi-patch-check-fill text-info"></i> 最高ランク PLATINA をご利用中です
+                                </div>
+                            {% endif %} </div>
+                    {% endif %} </div>
+                <div class="card-footer bg-white text-center py-4 border-top-0">
+                     <p class="mb-0 text-secondary small" style="white-space: pre-wrap;">{{ target_user.profile.description|default:"自己紹介文はまだありません。" }}</p>
+                </div>
+            </div>
+
+            {% if user == target_user %}
+            <div class="card shadow border-0 mb-4 p-4 rounded-4">
+                <h6 class="fw-bold text-sumi mb-3"><i class="bi bi-star-fill text-warning me-2"></i>お気に入りエリア設定</h6>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% for area in fav_areas %}
+                        <div class="badge bg-light text-dark border p-2 d-flex align-items-center rounded-3">
+                            <span>📍 {{ area.prefecture }} {{ area.city }}</span>
+                            <a href="{% url 'delete_favorite_area' area.id %}" class="text-danger ms-2 text-decoration-none fw-bold">&times;</a>
+                        </div>
+                    {% empty %}
+                        <p class="small text-muted mb-0">よく行くエリアを登録してください。</p>
+                    {% endfor %}
+                </div>
+                <form action="{% url 'add_favorite_area' %}" method="post" class="row g-2">
+                    {% csrf_token %}
+                    <div class="col-sm-5">
+                        <select name="prefecture" class="form-select form-select-sm" required>
+                            <option value="">都道府県</option>
+                            {% for val, name in prefectures %}
+                                <option value="{{ val }}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-4"><input type="text" name="city" class="form-control form-control-sm" placeholder="市区町村名"></div>
+                    <div class="col-sm-3"><button type="submit" class="btn btn-sumi btn-sm w-100">追加</button></div>
+                </form>
+            </div>
+            {% endif %}
+
+            <h5 class="fw-bold mb-3">募集履歴</h5>
+            <div class="list-group shadow-sm rounded-4 overflow-hidden mb-5">
+                {% for job in jobs %}
+                    <a href="{% url 'job_detail' job.id %}" class="list-group-item list-group-item-action p-3">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1 fw-bold">{{ job.title }}</h6>
+                            <small class="text-muted">{{ job.created_at|date:"Y/m/d" }}</small>
+                        </div>
+                        <small class="text-sumi fw-bold">¥{{ job.price|intcomma }} / {{ job.get_unit_display }}</small>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
