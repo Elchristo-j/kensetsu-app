@@ -9,17 +9,41 @@
     .btn-sumi { background-color: #15151a !important; color: white !important; border: none; }
     .btn-sumi:hover { opacity: 0.8; color: white !important; }
     
-    /* グラデーションから青みを排除（純粋な黒〜グレーへ） */
     .profile-header-gradient { 
         height: 120px; 
         background: linear-gradient(135deg, #15151a 0%, #444444 100%); 
     }
     
     .avatar-wrapper { margin-top: -60px; }
-    .badge-premium { border: 1px solid #ffc107; color: #ffc107; font-weight: bold; }
-    
-    /* 本人確認マークの色を墨色に変更 */
     .verified-check { color: #15151a; } 
+
+    /* --- 新規追加：ランクバッジの差別化スタイル --- */
+    .rank-badge {
+        font-weight: bold;
+        padding: 5px 15px;
+        border-radius: 50px;
+        display: inline-block;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        font-size: 0.85rem;
+    }
+
+    /* 課金：大文字（uppercase）+ グラデーション */
+    .badge-PLATINA { 
+        background: linear-gradient(135deg, #ffffff, #e0e0e0); color: #444; 
+        border: 1px solid #ccc; text-transform: uppercase; 
+    }
+    .badge-GOLD { 
+        background: linear-gradient(135deg, #FFD700, #FFA500); color: #fff; 
+        text-transform: uppercase; 
+    }
+    .badge-SILVER { 
+        background: linear-gradient(135deg, #C0C0C0, #808080); color: #fff; 
+        text-transform: uppercase; 
+    }
+
+    /* 無課金：小文字（lowercase）+ 単色 */
+    .badge-bronze { background: #cd7f32; color: #fff; text-transform: lowercase; }
+    .badge-iron { background: #6c757d; color: #fff; text-transform: lowercase; }
 </style>
 
 <div class="container mt-4 mb-5">
@@ -46,17 +70,9 @@
                     </h3>
 
                     <div class="mb-3">
-                        {% if target_user.profile.display_rank == 'iron' %}
-                            <span class="badge rounded-pill bg-secondary px-3 py-2 shadow-sm">⚙️ アイアン（鉄）</span>
-                        {% elif target_user.profile.display_rank == 'bronze' %}
-                            <span class="badge rounded-pill px-3 py-2 shadow-sm" style="background-color: #cd7f32; color: white;">🥉 ブロンズ（銅）</span>
-                        {% elif target_user.profile.display_rank == 'silver' %}
-                            <span class="badge rounded-pill bg-light text-dark border px-3 py-2 shadow-sm">🥈 シルバー（銀）</span>
-                        {% elif target_user.profile.display_rank == 'gold' %}
-                            <span class="badge rounded-pill bg-warning text-dark px-3 py-2 shadow-sm">🥇 ゴールド（金）</span>
-                        {% elif target_user.profile.display_rank == 'platinum' %}
-                            <span class="badge rounded-pill bg-info text-dark px-3 py-2 shadow-sm">💎 プラチナ</span>
-                        {% endif %}
+                        <span class="rank-badge badge-{{ target_user.profile.rank }}">
+                            {{ target_user.profile.rank }}
+                        </span>
                     </div>
 
                     <p class="text-muted mb-3"><i class="bi bi-geo-alt"></i> {{ target_user.profile.location|default:"エリア未設定" }}</p>
@@ -65,59 +81,8 @@
                         <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark btn-sm rounded-pill px-4 mb-3">プロフィールを編集する</a>
                         
                         <div class="mt-2">
-                            <a href="{% url 'upgrade_plan_page' %}" class="btn btn-primary btn-sm rounded-pill px-4 mb-3 shadow-sm">
-                                <i class="bi bi-arrow-up-circle"></i> ランクアップする
-                            </a>
-                        </div>
-
-                    {% endif %} </div>
-                <div class="card-footer bg-white text-center py-4 border-top-0">
-                     <p class="mb-0 text-secondary small" style="white-space: pre-wrap;">{{ target_user.profile.description|default:"自己紹介文はまだありません。" }}</p>
-                </div>
-            </div>
-
-            {% if user == target_user %}
-            <div class="card shadow border-0 mb-4 p-4 rounded-4">
-                <h6 class="fw-bold text-sumi mb-3"><i class="bi bi-star-fill text-warning me-2"></i>お気に入りエリア設定</h6>
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                    {% for area in fav_areas %}
-                        <div class="badge bg-light text-dark border p-2 d-flex align-items-center rounded-3">
-                            <span>📍 {{ area.prefecture }} {{ area.city }}</span>
-                            <a href="{% url 'delete_favorite_area' area.id %}" class="text-danger ms-2 text-decoration-none fw-bold">&times;</a>
-                        </div>
-                    {% empty %}
-                        <p class="small text-muted mb-0">よく行くエリアを登録してください。</p>
-                    {% endfor %}
-                </div>
-                <form action="{% url 'add_favorite_area' %}" method="post" class="row g-2">
-                    {% csrf_token %}
-                    <div class="col-sm-5">
-                        <select name="prefecture" class="form-select form-select-sm" required>
-                            <option value="">都道府県</option>
-                            {% for val, name in prefectures %}
-                                <option value="{{ val }}">{{ name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-sm-4"><input type="text" name="city" class="form-control form-control-sm" placeholder="市区町村名"></div>
-                    <div class="col-sm-3"><button type="submit" class="btn btn-sumi btn-sm w-100">追加</button></div>
-                </form>
-            </div>
-            {% endif %}
-
-            <h5 class="fw-bold mb-3">募集履歴</h5>
-            <div class="list-group shadow-sm rounded-4 overflow-hidden mb-5">
-                {% for job in jobs %}
-                    <a href="{% url 'job_detail' job.id %}" class="list-group-item list-group-item-action p-3">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1 fw-bold">{{ job.title }}</h6>
-                            <small class="text-muted">{{ job.created_at|date:"Y/m/d" }}</small>
-                        </div>
-                        <small class="text-sumi fw-bold">¥{{ job.price|intcomma }} / {{ job.get_unit_display }}</small>
-                    </a>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
+                            {% if user.profile.rank != 'PLATINA' %}
+                                <a href="{% url 'upgrade_plan_page' %}" class="btn btn-primary btn-sm rounded-pill px-4 mb-3 shadow-sm">
+                                    <i class="bi bi-arrow-up-circle"></i> ランクアップする
+                                </a>
+                            {% else %}
