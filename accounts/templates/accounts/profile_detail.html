@@ -3,20 +3,19 @@
 {% block content %}
 <style>
     .text-sumi { color: #15151a !important; }
-    .btn-sumi { background-color: #15151a !important; color: white !important; border-radius: 50px; }
     .profile-header-gradient { height: 160px; background: linear-gradient(135deg, #15151a 0%, #333333 100%); border-radius: 0 0 20px 20px; }
     .avatar-wrapper { margin-top: -80px; }
     .rank-badge-container { font-weight: bold; padding: 8px 24px; border-radius: 50px; display: inline-block; font-size: 1rem; }
 </style>
 <div class="container mt-4 mb-5">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow-lg border-0 mb-4 overflow-hidden rounded-4 text-center">
+        <div class="col-lg-8 text-center">
+            <div class="card shadow border-0 overflow-hidden rounded-4 mb-4">
                 <div class="profile-header-gradient"></div>
                 <div class="card-body avatar-wrapper">
                     <div class="mb-3">
                         {% if target_user.profile.image %}<img src="{{ target_user.profile.image.url }}" class="rounded-circle border border-4 border-white shadow" width="140" height="140">
-                        {% else %}<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center border border-4 border-white shadow mx-auto" style="width: 140px; height: 140px; font-size: 3rem;">👤</div>{% endif %}
+                        {% else %}<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto" style="width: 140px; height: 140px; font-size: 3rem;">👤</div>{% endif %}
                     </div>
                     <h2 class="fw-bold text-sumi">{{ target_user.profile.company_name|default:target_user.username }}</h2>
                     <div class="mb-4 mt-3"><div class="rank-badge-container {{ target_user.profile.rank_class }}">{{ target_user.profile.display_rank }}</div></div>
@@ -24,8 +23,8 @@
                 </div>
                 <div class="card-footer bg-white py-4 border-top-0 text-secondary" style="white-space: pre-wrap;">{{ target_user.profile.description|default:"未記入" }}</div>
             </div>
-            <h5 class="fw-bold text-sumi mb-3">募集履歴</h5>
-            <div class="list-group">
+            <h5 class="fw-bold text-sumi mb-3 text-start">募集履歴</h5>
+            <div class="list-group text-start">
                 {% for job in jobs %}
                     <a href="{% url 'job_detail' job.id %}" class="list-group-item p-4 border-0 mb-2 shadow-sm rounded-4">
                         <div class="d-flex justify-content-between"><h6 class="fw-bold text-sumi">{{ job.title }}</h6><small>{{ job.created_at|date:"Y/m/d" }}</small></div>

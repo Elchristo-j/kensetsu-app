@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>エルクリスト - 建設マッチング</title>
+    <title>エルクリスト</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
         :root { --sumi-color: #15151a; }
-        body { font-family: sans-serif; background-color: #f4f5f7; color: var(--sumi-color); }
+        body { background-color: #f4f5f7; color: var(--sumi-color); }
         .bg-sumi { background-color: var(--sumi-color) !important; }
-        /* ロゴ調整：建設マッチングより二回り小さく */
+        /* ロゴ：エルクリストを二回り小さく */
         .brand-title { font-weight: bold; font-size: 1.2rem; }
-        .brand-sub { font-size: 0.8rem; opacity: 0.8; font-family: serif; letter-spacing: 0.05em; }
-        /* バッジ：強制的に大文字にする */
+        .brand-sub { font-size: 0.85rem; opacity: 0.8; font-family: serif; }
+        /* バッジ：強制大文字 */
         .badge-PLATINA, .badge-platinum, .badge-GOLD, .badge-gold, .badge-SILVER, .badge-silver { text-transform: uppercase !important; }
-        .badge-platinum, .badge-PLATINA { background: linear-gradient(45deg, #2c3e50, #00d2ff) !important; color: #fff !important; }
-        .badge-gold, .badge-GOLD { background: linear-gradient(45deg, #d4af37, #f1c40f) !important; color: #fff !important; }
+        .badge-platinum, .badge-PLATINA { background: linear-gradient(45deg, #2c3e50, #00d2ff) !important; color: white !important; }
+        .badge-gold, .badge-GOLD { background: linear-gradient(45deg, #d4af37, #f1c40f) !important; color: white !important; }
         .badge-silver, .badge-SILVER { background: linear-gradient(45deg, #bdc3c7, #95a5a6) !important; color: #333 !important; }
-        .badge-bronze { background-color: #cd7f32 !important; color: #fff !important; }
-        .badge-iron { background-color: #6c757d !important; color: #fff !important; }
+        .badge-bronze { background-color: #cd7f32 !important; color: white !important; }
+        .badge-iron { background-color: #6c757d !important; color: white !important; }
     </style>
 </head>
 <body>
@@ -52,10 +52,6 @@
         {% endif %}
         {% block content %}{% endblock %}
     </div>
-    <footer class="bg-sumi text-white py-4 mt-5 text-center">
-        <a href="{% url 'law' %}" class="text-white-50 text-decoration-none small">特定商取引法</a>
-        <p class="small text-white-50 mt-2">&copy; 2026 Elcrist</p>
-    </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
