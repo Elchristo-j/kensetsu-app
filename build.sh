@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
-# exit on error
+# エラーが起きたら即終了させる設定
 set -o errexit
 
-pip install -r requirements.txt
+# 1. Poetryを使ってライブラリをインストール
+poetry install
 
-python manage.py collectstatic --no-input
-python manage.py migrate
-echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('yamada', 'admin@example.com', 'mypass123') if not User.objects.filter(username='yamada').exists() else print('Admin already exists')" | python manage.py shell
+# 2. 静的ファイルの集約（CSSや画像をまとめる）
+poetry run python manage.py collectstatic --no-input
+
+# 3. データベースの更新
+poetry run python manage.py migrate
