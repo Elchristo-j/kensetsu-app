@@ -45,6 +45,19 @@ class Profile(models.Model):
         if self.is_verified and self.rank == 'iron':
             return 'bronze'
         return self.rank
+    
+    # accounts/models.py の Profile クラス内
+
+    @property
+    def rank_display_text(self):
+        """バッジに表示する文字（PLATINAなどは大文字、ironなどは小文字）"""
+        # display_rank は既に PLATINA, GOLD, SILVER, bronze, iron を返すと想定
+        return self.display_rank
+
+    @property
+    def rank_class(self):
+        """CSSクラス名を返す（PLATINA -> badge-PLATINA）"""
+        return f"badge-{self.display_rank}"
 
     # --- 2. ランク項目を追加（ここを追加） ---
     rank = models.CharField(
