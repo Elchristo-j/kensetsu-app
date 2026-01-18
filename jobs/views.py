@@ -40,6 +40,16 @@ def create_job(request):
     else: form = JobForm()
     return render(request, 'jobs/create_job.html', {'form': form, 'is_edit': False})
 
+# jobs/views.py の create_job 関数内
+@login_required
+def create_job(request):
+    # 【執行】募集投稿ができるランクかチェック
+    if not request.user.profile.can_post_job():
+        messages.error(request, f"現在のランク（{request.user.profile.display_rank}）では募集投稿の権限がないか、上限に達しています。")
+        return redirect('profile_detail', user_id=request.user.id)
+    
+    # ...通常の投稿処理...
+
 # --- 4. edit_job ---
 @login_required
 def edit_job(request, job_id):

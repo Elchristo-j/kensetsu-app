@@ -44,4 +44,31 @@ class FavoriteArea(models.Model):
 @receiver(post_save, sender=User)
 def handle_user_profile_sync(sender, instance, created, **kwargs):
     if created: Profile.objects.get_or_create(user=instance)
-    
+
+    # accounts/models.py
+
+@property
+def monthly_limit(self):
+    """応募制限のロジック"""
+    r = self.display_rank.lower()
+    if r == 'iron': return 3
+    if r == 'bronze': return 10
+    return "無制限"
+
+@property
+def posting_limit(self):
+    """募集投稿制限のロジック"""
+    r = self.display_rank.lower()
+    if r in ['iron', 'bronze']: return 0 # 投稿不可
+    if r == 'silver': return 3
+    return "無制限"
+
+def can_post_job(self):
+    """募集投稿ができるか判定"""
+    limit = self.posting_limit
+    if limit == 0: return False
+    if limit == "無制限": return True
+    # 今月の投稿数をカウント
+    from jobs.models import Job
+    count = Job.objects.filter(created_by=self.user, created_at__gte=timezone.now().replace(day=1, hour=0, minute=0)).count()
+    return count < limit

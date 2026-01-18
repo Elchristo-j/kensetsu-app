@@ -10,10 +10,47 @@
         :root { --sumi-color: #15151a; }
         body { background-color: #f4f5f7; color: var(--sumi-color); }
         .bg-sumi { background-color: var(--sumi-color) !important; }
-        /* ロゴ：エルクリストを二回り小さく */
-        .brand-title { font-weight: bold; font-size: 1.2rem; }
-        .brand-sub { font-size: 0.85rem; opacity: 0.8; font-family: serif; }
-        /* バッジ：強制大文字 */
+        .brand-title { font-weight: bold; font-size: 1.2rem; line-height: 1; }
+        /* ロゴ：ゴシック系、下揃え、~ を追加 */
+        .brand-sub { 
+            font-family: sans-serif !important; 
+            font-size: 0.75rem; 
+            opacity: 0.8; 
+            margin-bottom: 2px; /* 下側に揃えるための調整 */
+        }
+        /* スマホメニューの文字をはっきり白く */
+        .navbar-dark .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 1) !important;
+            font-weight: 500;
+        }
+    </style>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-sumi sticky-top shadow">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-end" href="{% url 'home' %}">
+                <span class="brand-title">建設マッチング</span>
+                <span class="brand-sub ms-2">~ エルクリスト ~</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">案件を探す</a></li>
+                    {% if user.is_authenticated %}
+                        {% if user.is_staff %}
+                            <li class="nav-item"><a class="nav-link text-warning fw-bold" href="{% url 'admin_dashboard' %}"><i class="bi bi-gear-fill me-1"></i>管理画面</a></li>
+                        {% endif %}
+                    
+                        <li class="nav-item"><a class="nav-link" href="{% url 'create_job' %}">募集する</a></li>
+                        <li class="nav-item ms-2"><a class="nav-link btn btn-outline-light btn-sm px-3 rounded-pill" href="{% url 'profile_detail' user.id %}">マイページ</a></li>
+                        {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
         .badge-PLATINA, .badge-platinum, .badge-GOLD, .badge-gold, .badge-SILVER, .badge-silver { text-transform: uppercase !important; }
         .badge-platinum, .badge-PLATINA { background: linear-gradient(45deg, #2c3e50, #00d2ff) !important; color: white !important; }
         .badge-gold, .badge-GOLD { background: linear-gradient(45deg, #d4af37, #f1c40f) !important; color: white !important; }
