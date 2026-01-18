@@ -19,8 +19,6 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     rank = models.CharField(max_length=20, choices=RANK_CHOICES, default='iron')
     is_verified = models.BooleanField(default=False)
-    
-    # 消してしまっていた重要フィールドを全て復元
     company_name = models.CharField(max_length=100, blank=True, verbose_name="表示名")
     location = models.CharField(max_length=100, blank=True, choices=PREFECTURES, verbose_name="地域")
     description = models.TextField(blank=True, verbose_name="自己紹介・実績")
@@ -32,7 +30,9 @@ class Profile(models.Model):
         return 'bronze' if self.is_verified and self.rank == 'iron' else self.rank
 
     @property
-    def rank_class(self): return f"badge-{self.display_rank}"
+    def unread_notifications_count(self):
+        """★HTMLエラー回避：未読通知数をここ（Python側）で計算する"""
+        return self.user.notifications.filter(is_read=False).count()
 
     @property
     def monthly_limit(self):

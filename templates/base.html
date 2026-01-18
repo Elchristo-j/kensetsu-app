@@ -10,25 +10,23 @@
         :root { --sumi-color: #15151a; }
         body { font-family: "Hiragino Sans", "Meiryo", sans-serif; background-color: #f4f5f7; color: var(--sumi-color); }
         .bg-sumi { background-color: var(--sumi-color) !important; }
-        /* ロゴ：上下配置 */
-        .brand-title { font-weight: bold; font-size: 1.15rem; display: block; line-height: 1.2; }
-        .brand-sub { font-size: 0.7rem; opacity: 0.7; display: block; margin-top: -2px; }
-        /* ナビ文字色とログイン名 */
+        .navbar-brand { line-height: 1.2; display: flex; flex-direction: column; }
+        .brand-title { font-weight: bold; font-size: 1.15rem; }
+        .brand-sub { font-size: 0.7rem; opacity: 0.7; font-weight: normal; margin-top: -2px; }
         .navbar-dark .navbar-nav .nav-link { color: #ffffff !important; font-weight: 500; }
         .nav-username { color: #ffffff; font-size: 0.8rem; margin-right: 15px; border-right: 1px solid rgba(255,255,255,0.3); padding-right: 15px; }
         .badge-notify { font-size: 0.6rem; position: absolute; top: 0; right: 0; transform: translate(50%, -50%); }
+        .badge-PLATINUM, .badge-GOLD, .badge-SILVER { text-transform: uppercase !important; }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-sumi sticky-top shadow">
         <div class="container">
-            <a class="navbar-brand d-flex flex-column" href="{% url 'home' %}">
+            <a class="navbar-brand" href="{% url 'home' %}">
                 <span class="brand-title">建設マッチング</span>
                 <span class="brand-sub">~ エルクリスト ~</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">案件を探す</a></li>
@@ -38,9 +36,9 @@
                         <li class="nav-item me-3">
                             <a class="nav-link position-relative p-1" href="{% url 'notifications' %}">
                                 <i class="bi bi-bell-fill fs-5"></i>
-                                {% with count=user.notifications.filter.is_read=False.count %}
-                                    {% if count > 0 %}<span class="badge rounded-pill bg-danger badge-notify">{{ count }}</span>{% endif %}
-                                {% endwith %}
+                                {% if user.profile.unread_notifications_count > 0 %}
+                                    <span class="badge rounded-pill bg-danger badge-notify">{{ user.profile.unread_notifications_count }}</span>
+                                {% endif %}
                             </a>
                         </li>
 
