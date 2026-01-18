@@ -1,53 +1,70 @@
 {% extends 'base.html' %}
-
 {% block content %}
 <div class="container mt-5 mb-5">
     <div class="text-center mb-5">
-        <h2 class="fw-bold">プランをアップグレード</h2>
-        <p class="text-muted">Stripe決済テスト：実際のプランを選択してください。</p>
+        <h2 class="fw-bold text-dark">プランを選択してランクアップ</h2>
+        <p class="text-muted">あなたのビジネスを加速させる最適なプランをお選びください。</p>
+        
+        <div class="alert alert-warning d-inline-block rounded-pill px-4 shadow-sm">
+            <i class="bi bi-megaphone-fill me-2"></i>
+            <strong>早期入会キャンペーン！</strong> 3月末までにシルバー以上にご入会で、永年<strong>「創設メンバー」</strong>バッジを付与！
+        </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        <div class="col">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body text-center p-4">
-                    <h5 class="fw-bold mb-3">🥈 シルバー</h5>
-                    <h2 class="mb-4">¥550<span class="fs-6 text-muted"> /月</span></h2>
-                    <ul class="list-unstyled mb-4 text-start">
-                        <li><i class="bi bi-check2 text-success me-2"></i>応募制限：10件</li>
-                        <li><i class="bi bi-check2 text-success me-2"></i>シルバーバッジ</li>
-                    </ul>
-                    <a href="{% url 'create_checkout_session' 'silver' %}" class="btn btn-outline-dark w-100 rounded-pill">シルバーを選択</a>
+    <div class="row g-4 justify-content-center">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 rounded-4">
+                <div class="card-body p-4 text-center">
+                    <span class="badge bg-light text-dark border mb-2 fw-bold" style="letter-spacing: 1px;">SILVER</span>
+                    <h3 class="fw-bold">シルバー</h3>
+                    <h4 class="text-primary fw-bold mb-3">¥550 <small class="text-muted">/月</small></h4>
+                    <p class="text-start small text-muted mb-4">
+                        <strong>【おすすめ：一般の施主様】</strong><br>
+                        「信頼できる職人さんに直接頼みたい」というエンドユーザー様向け。月3回までの募集が可能で、中間マージンなしの直接取引を実現します。
+                    </p>
+                    <a href="{% url 'create_checkout_session' 'silver' %}" class="btn btn-outline-dark w-100 rounded-pill fw-bold">SILVERを選択</a>
                 </div>
             </div>
         </div>
 
-        <div class="col">
-            <div class="card h-100 shadow border-0" style="border: 2px solid #ffc107 !important;">
-                <div class="card-body text-center p-4">
-                    <span class="badge bg-warning text-dark mb-2">推奨</span>
-                    <h5 class="fw-bold mb-3">🥇 ゴールド</h5>
-                    <h2 class="mb-4">¥2,200<span class="fs-6 text-muted"> /月</span></h2>
-                    <ul class="list-unstyled mb-4 text-start">
-                        <li><i class="bi bi-check2 text-success me-2"></i>応募制限：無制限</li>
-                        <li><i class="bi bi-check2 text-success me-2"></i>ゴールドバッジ</li>
-                    </ul>
-                    <a href="{% url 'create_checkout_session' 'gold' %}" class="btn btn-warning w-100 rounded-pill fw-bold">ゴールドを選択</a>
+        <div class="col-md-4">
+            <div class="card h-100 shadow border-primary rounded-4" style="border-width: 2px; border-color: #ffc107 !important;">
+                <div class="card-body p-4 text-center">
+                    <span class="badge bg-warning text-dark mb-2 fw-bold" style="letter-spacing: 1px;">GOLD</span>
+                    <h3 class="fw-bold">ゴールド</h3>
+                    <h4 class="text-primary fw-bold mb-3">¥2,200 <small class="text-muted">/月</small></h4>
+                    <p class="text-start small text-muted mb-4">
+                        <strong>【おすすめ：一人親方・工務店様】</strong><br>
+                        「現場を回しながら次の案件も確保したい」プロ向け。月10回までの募集が可能で、エリアを絞った効率的な職人探し・仕事探しに最適です。
+                    </p>
+                    <a href="{% url 'create_checkout_session' 'gold' %}" class="btn btn-warning w-100 rounded-pill fw-bold shadow">GOLDを選択</a>
                 </div>
             </div>
         </div>
 
-        <div class="col">
-            <div class="card h-100 shadow-sm border-0" style="background-color: #15151a; color: white;">
-                <div class="card-body text-center p-4">
-                    <h5 class="fw-bold mb-3">💎 プラチナ</h5>
-                    <h2 class="mb-4">¥5,500<span class="fs-6 text-muted"> /月</span></h2>
-                    <ul class="list-unstyled mb-4 text-start">
-                        <li><i class="bi bi-check2 text-info me-2"></i>すべての機能を解放</li>
-                        <li><i class="bi bi-check2 text-info me-2"></i>最優先表示</li>
-                    </ul>
-                    <a href="{% url 'create_checkout_session' 'platinum' %}" class="btn btn-light w-100 rounded-pill fw-bold">プラチナを選択</a>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 rounded-4" style="background-color: #15151a; color: white;">
+                <div class="card-body p-4 text-center">
+                    <span class="badge bg-light text-dark mb-2 fw-bold" style="letter-spacing: 1px;">PLATINA</span>
+                    <h3 class="fw-bold">プラチナ</h3>
+                    <h4 class="text-primary fw-bold mb-3 text-info">¥5,500 <small class="text-white-50">/月</small></h4>
+                    <p class="text-start small text-light mb-4 opacity-75">
+                        <strong>【おすすめ：多忙な元請け・会社様】</strong><br>
+                        「常に人手が欲しい、大量の案件を動かしたい」企業様向け。募集回数は無制限。圧倒的なスピード感で現場の穴を埋め、事業拡大を加速させます。
+                    </p>
+                    <a href="{% url 'create_checkout_session' 'platinum' %}" class="btn btn-light w-100 rounded-pill fw-bold">PLATINAを選択</a>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5 p-4 bg-light rounded-4 text-center">
+        <h6 class="fw-bold mb-3">プランの変更・解約について</h6>
+        <div class="row text-start justify-content-center">
+            <div class="col-md-8 small text-muted">
+                <p class="mb-1">・プランの変更（アップグレード・ダウングレード）はマイページからいつでも可能です。</p>
+                <p class="mb-1">・解約に違約金は一切かかりません。解約後も有効期限内は現在のランク機能をご利用いただけます。</p>
+                <p class="mb-0">・決済は世界標準のセキュリティを誇る <strong>Stripe</strong> を採用しており、当アプリでカード情報を保持することはありません。</p>
             </div>
         </div>
     </div>
