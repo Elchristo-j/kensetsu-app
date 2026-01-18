@@ -49,18 +49,19 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
+# --- ここを修正しました！ ---
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'], # プロジェクトルートのtemplatesフォルダを探す設定
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-
-                # --- ここを追加！ ---
+                # 承認待ち件数のカウント
                 'jobs.context_processors.pending_verification_count',
             ],
         },
@@ -128,14 +129,12 @@ LOGOUT_REDIRECT_URL = 'home'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 465               # SSL接続用のポート
-EMAIL_USE_TLS = False          # 465番の場合はFalse
-EMAIL_USE_SSL = True           # 465番の場合はTrue
+EMAIL_PORT = 465
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
 EMAIL_HOST_USER = 'hiroshi.77dk@gmail.com'
 EMAIL_HOST_PASSWORD = 'fjzafkfjetgueblb'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-# 接続待ち時間を10秒に設定
 EMAIL_TIMEOUT = 10
 
 
@@ -162,22 +161,18 @@ if 'RENDER' in os.environ:
 # Stripe設定
 # ==========================================
 
-# 公開可能キー
 STRIPE_PUBLISHABLE_KEY = os.environ.get(
     'STRIPE_PUBLISHABLE_KEY', 
     'pk_test_51R4us3DADu8qJkAGldBZjQUaJGvQuxfXRlGpDcVjrTrbrpyfDIibFKymQmHYccC9XBIBd7zdZfw0ekDPV92R3hZX009p1pDn4g'
 )
 
-# シークレットキー
 STRIPE_SECRET_KEY = os.environ.get(
     'STRIPE_SECRET_KEY', 
     'sk_test_51R4us3DADu8qJkAGUGryys0UPY8HNJCwtIl40CMS3H80S2I5MciV8RmUUzYnxgBZvWeK9a7bkWGFhUzISJUeVZrk000PyPj0UO'
 )
 
-# Webhookシークレット（追加）
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
 
-# 価格ID（余計な文字を削除）
 STRIPE_PRICE_IDS = {
     'silver': 'price_1SoEIGDADu8qJkAGq7P5azgd',
     'gold': 'price_1SoEJMDADu8qJkAG1kNZbtM9',
