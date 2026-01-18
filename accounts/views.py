@@ -172,7 +172,10 @@ def stripe_webhook(request):
 
 def profile_detail(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
-    jobs = target_user.jobs.all().order_by('-created_at') # ユーザーの投稿した仕事
+
+    from jobs.models import Job
+    jobs = Job.objects.filter(created_by=target_user).order_by('-created_at')
+   
     context = {
         'target_user': target_user,
         'jobs': jobs,
