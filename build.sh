@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
-# エラーが起きたら即終了させる設定
+# エラーが起きたら即終了させる
 set -o errexit
 
-# 1. Poetryを使ってライブラリをインストール
-poetry install
+# 1. pipを最新にする（念のため）
+pip install --upgrade pip
 
-# 2. 静的ファイルの集約（CSSや画像をまとめる）
-poetry run python manage.py collectstatic --no-input
+# 2. 指示書（requirements.txt）に従ってインストール
+pip install -r requirements.txt
 
-# 3. データベースの更新
-poetry run python manage.py migrate
+# 3. 静的ファイルをまとめる
+python manage.py collectstatic --no-input
+
+# 4. データベースの更新
+python manage.py migrate
