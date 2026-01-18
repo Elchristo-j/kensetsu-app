@@ -14,7 +14,9 @@ class ProfileForm(forms.ModelForm):
         model = Profile
         fields = ['company_name', 'location', 'description', 'image', 'id_card_image']
         widgets = {
-            'company_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'company_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '会社名または個人名'}),
             'location': forms.Select(attrs={'class': 'form-select'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': '実績や資格を記入'}),
+            'image': forms.FileInput(attrs={'class': 'form-control'}),
+            'id_card_image': forms.FileInput(attrs={'class': 'form-control'}),
         }

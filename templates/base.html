@@ -10,27 +10,19 @@
         :root { --sumi-color: #15151a; }
         body { font-family: "Hiragino Sans", "Meiryo", sans-serif; background-color: #f4f5f7; color: var(--sumi-color); }
         .bg-sumi { background-color: var(--sumi-color) !important; }
-        
-        /* ロゴ調整：上下配置 */
-        .navbar-brand { line-height: 1.2; display: flex; flex-direction: column; }
-        .brand-title { font-weight: bold; font-size: 1.2rem; }
-        .brand-sub { font-size: 0.75rem; opacity: 0.7; font-weight: normal; margin-top: -2px; }
-
-        /* スマホメニュー：文字をはっきり白に */
-        .navbar-dark .navbar-nav .nav-link { color: #ffffff !important; font-weight: 600; }
-
-        /* バッジ：大文字化 */
-        .badge-PLATINUM, .badge-platinum { background: linear-gradient(45deg, #2c3e50, #00d2ff) !important; color: white !important; text-transform: uppercase !important; }
-        .badge-GOLD, .badge-gold { background: linear-gradient(45deg, #d4af37, #f1c40f) !important; color: white !important; text-transform: uppercase !important; }
-        .badge-SILVER, .badge-silver { background: linear-gradient(45deg, #bdc3c7, #95a5a6) !important; color: #333 !important; text-transform: uppercase !important; }
-        .badge-bronze { background-color: #cd7f32 !important; color: white !important; }
-        .badge-iron { background-color: #6c757d !important; color: white !important; }
+        /* ロゴ：上下配置 */
+        .brand-title { font-weight: bold; font-size: 1.15rem; display: block; line-height: 1.2; }
+        .brand-sub { font-size: 0.7rem; opacity: 0.7; display: block; margin-top: -2px; }
+        /* ナビ文字色とログイン名 */
+        .navbar-dark .navbar-nav .nav-link { color: #ffffff !important; font-weight: 500; }
+        .nav-username { color: #ffffff; font-size: 0.8rem; margin-right: 15px; border-right: 1px solid rgba(255,255,255,0.3); padding-right: 15px; }
+        .badge-notify { font-size: 0.6rem; position: absolute; top: 0; right: 0; transform: translate(50%, -50%); }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-sumi sticky-top shadow">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">
+            <a class="navbar-brand d-flex flex-column" href="{% url 'home' %}">
                 <span class="brand-title">建設マッチング</span>
                 <span class="brand-sub">~ エルクリスト ~</span>
             </a>
@@ -41,18 +33,23 @@
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">案件を探す</a></li>
                     {% if user.is_authenticated %}
-                        {% if user.is_staff %}
-                            <li class="nav-item"><a class="nav-link text-warning fw-bold" href="{% url 'admin_dashboard' %}">管理画面</a></li>
-                        {% endif %}
+                        <span class="nav-username d-none d-lg-inline">{{ user.username }} 様</span>
+                        
+                        <li class="nav-item me-3">
+                            <a class="nav-link position-relative p-1" href="{% url 'notifications' %}">
+                                <i class="bi bi-bell-fill fs-5"></i>
+                                {% with count=user.notifications.filter.is_read=False.count %}
+                                    {% if count > 0 %}<span class="badge rounded-pill bg-danger badge-notify">{{ count }}</span>{% endif %}
+                                {% endwith %}
+                            </a>
+                        </li>
+
+                        {% if user.is_staff %}<li class="nav-item"><a class="nav-link text-warning fw-bold" href="{% url 'admin_dashboard' %}">管理画面</a>{% endif %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'create_job' %}">募集する</a></li>
-                        <li class="nav-item ms-2">
-                            <a class="nav-link btn btn-outline-light btn-sm px-3 rounded-pill" href="{% url 'profile_detail' user.id %}">マイページ</a>
-                        </li>
-                        <li class="nav-item ms-2">
-                            <form action="{% url 'logout' %}" method="post" class="d-inline">{% csrf_token %}<button type="submit" class="btn btn-link nav-link">ログアウト</button></form>
-                        </li>
+                        <li class="nav-item ms-2"><a class="nav-link btn btn-outline-light btn-sm px-3 rounded-pill" href="{% url 'profile_detail' user.id %}">マイページ</a></li>
+                        <li class="nav-item ms-2"><form action="{% url 'logout' %}" method="post" class="d-inline">{% csrf_token %}<button type="submit" class="btn btn-link nav-link">ログアウト</button></form></li>
                     {% else %}
-                        <li class="nav-item ms-2"><a class="nav-link" href="{% url 'login' %}">ログイン</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">ログイン</a></li>
                         <li class="nav-item ms-2"><a class="btn btn-warning text-dark fw-bold rounded-pill px-4" href="{% url 'signup' %}">新規登録</a></li>
                     {% endif %}
                 </ul>

@@ -15,13 +15,12 @@ PREFECTURES = [
 ]
 
 class Profile(models.Model):
-    RANK_CHOICES = [
-        ('iron', 'iron'), ('bronze', 'bronze'), 
-        ('SILVER', 'SILVER'), ('GOLD', 'GOLD'), ('PLATINUM', 'PLATINUM')
-    ]
+    RANK_CHOICES = [('iron', 'iron'), ('bronze', 'bronze'), ('SILVER', 'SILVER'), ('GOLD', 'GOLD'), ('PLATINUM', 'PLATINUM')]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     rank = models.CharField(max_length=20, choices=RANK_CHOICES, default='iron')
     is_verified = models.BooleanField(default=False)
+    
+    # 消してしまっていた重要フィールドを全て復元
     company_name = models.CharField(max_length=100, blank=True, verbose_name="表示名")
     location = models.CharField(max_length=100, blank=True, choices=PREFECTURES, verbose_name="地域")
     description = models.TextField(blank=True, verbose_name="自己紹介・実績")
@@ -37,32 +36,31 @@ class Profile(models.Model):
 
     @property
     def monthly_limit(self):
-        """応募制限（鉄の掟）"""
+        """応募制限：iron(3), bronze(10), silver以上(無制限)"""
         r = self.display_rank.lower()
         if r == 'iron': return 3
         if r == 'bronze': return 10
-        return 999 # シルバー以上は無制限
+        return 999 
 
     @property
     def posting_limit(self):
-        """募集投稿制限（鉄の掟）"""
+        """募集制限：iron/bronze(0), silver(3), gold以上(無制限)"""
         r = self.display_rank.lower()
-        if r in ['iron', 'bronze']: return 0 # ブロンズ・アイアンは投稿不可
+        if r in ['iron', 'bronze']: return 0
         if r == 'silver': return 3
-        return 999 # ゴールド以上は無制限
+        return 999
 
     def can_apply(self):
         from jobs.models import Application
-        start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        cnt = Application.objects.filter(applicant=self.user, applied_at__gte=start).count()
+        cnt = Application.objects.filter(applicant=self.user, applied_at__gte=timezone.now().replace(day=1, hour=0, minute=0)).count()
         return cnt < self.monthly_limit
 
     def can_post_job(self):
         from jobs.models import Job
-        if self.posting_limit == 0: return False
-        start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        cnt = Job.objects.filter(created_by=self.user, created_at__gte=start).count()
-        return cnt < self.posting_limit
+        limit = self.posting_limit
+        if limit == 0: return False
+        cnt = Job.objects.filter(created_by=self.user, created_at__gte=timezone.now().replace(day=1, hour=0, minute=0)).count()
+        return cnt < limit
 
     def __str__(self): return f"{self.user.username}のプロフィール"
 
