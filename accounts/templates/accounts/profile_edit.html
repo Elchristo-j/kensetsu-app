@@ -1,108 +1,40 @@
 {% extends 'base.html' %}
-{% load static %}
-
 {% block content %}
 <div class="container mt-5 mb-5" style="max-width: 600px;">
-  
-  <div class="card shadow border-0">
-    <div class="card-header text-white py-3" style="background-color: #15151a !important; border: none;">
+  <div class="card shadow border-0 rounded-4 overflow-hidden">
+    <div class="card-header text-white py-3 bg-sumi">
       <h4 class="mb-0 fw-bold">👤 プロフィール編集</h4>
     </div>
-    
     <div class="card-body p-4">
       <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-
         <div class="mb-4 text-center">
           <label class="form-label d-block fw-bold text-start">プロフィール画像</label>
-          <div class="mb-3">
-            {% if form.instance.image %}
-              <img src="{{ form.instance.image.url }}" class="rounded-circle border shadow-sm" width="100" height="100" style="object-fit: cover;">
-            {% else %}
-              <div class="rounded-circle bg-secondary mx-auto d-flex align-items-center justify-content-center" style="width: 100px; height: 100px; color: white; font-size: 2rem;">👤</div>
-            {% endif %}
-          </div>
           {{ form.image }}
         </div>
-
-        <hr class="my-4">
-
         <div class="mb-3">
           <label class="form-label fw-bold">表示名（会社名や氏名）</label>
-          {{ form.display_name }}
-        </div>
-
+          {{ form.company_name }} </div>
         <div class="mb-3">
           <label class="form-label fw-bold">地域（都道府県）</label>
-          {{ form.prefecture }}
-        </div>
-
+          {{ form.location }} </div>
         <div class="mb-3">
           <label class="form-label fw-bold">自己紹介・経歴・保有資格</label>
-          {{ form.bio }}
-        </div>
-
-        <hr class="my-4">
-
+          {{ form.description }} </div>
         <div class="mb-4">
             <label class="form-label fw-bold">本人確認書類（免許証など）</label>
             <div class="card bg-light border-0 p-3">
                 {{ form.id_card_image }}
-                
-                <div id="id-card-preview-area" class="mt-3" style="display: none;">
-                    <p class="small text-muted mb-2">💡 アップロードする画像の確認：</p>
-                    <img id="id-card-preview-img" src="" alt="プレビュー" style="max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #dee2e6;">
-                </div>
-
-                <div class="form-text small mt-2 text-muted">
-                    ※ 運営が確認後、承認されるとブロンズランクに昇格します。<br>
-                    ※ 画像は確認後に安全に削除されます。
-                </div>
+                <div class="form-text small mt-2">※ 承認されるとブロンズランクに昇格します。</div>
             </div>
         </div>
-
         <div class="d-grid gap-2 mt-5">
-          <button type="submit" class="btn btn-lg fw-bold shadow-sm rounded-pill text-white" style="background-color: #15151a !important; border: none;">
-            変更を保存する
-          </button>
-          
-          <a href="{% url 'profile_detail' user.id %}" class="btn btn-outline-secondary rounded-pill">
-            キャンセルして戻る
-          </a>
+          <button type="submit" class="btn btn-sumi btn-lg rounded-pill fw-bold shadow">変更を保存する</button>
+          <a href="{% url 'profile_detail' user.id %}" class="btn btn-outline-secondary rounded-pill">キャンセル</a>
         </div>
       </form>
     </div>
   </div>
 </div>
-
-<style>
-  .form-control:focus {
-    border-color: #15151a !important;
-    box-shadow: 0 0 0 0.25rem rgba(21, 21, 26, 0.1) !important;
-  }
-  input[type="file"] {
-    font-size: 0.9rem;
-  }
-</style>
-
-<script>
-  // 本人確認書類の入力欄を取得（Djangoの自動付与ID: id_id_card_image）
-  const idInput = document.getElementById('id_id_card_image');
-  const previewArea = document.getElementById('id-card-preview-area');
-  const previewImg = document.getElementById('id-card-preview-img');
-
-  if (idInput) {
-    idInput.addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          previewImg.src = e.target.result;
-          previewArea.style.display = 'block';
-        }
-        reader.readAsDataURL(file);
-      }
-    });
-  }
-</script>
+<style>.bg-sumi { background-color: #15151a !important; }</style>
 {% endblock %}

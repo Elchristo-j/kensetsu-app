@@ -1,19 +1,21 @@
 {% extends 'base.html' %}
 {% load static %}{% load humanize %}
+
 {% block content %}
 <style>
     .text-sumi { color: #15151a !important; }
     .btn-sumi { background-color: #15151a !important; color: white !important; border-radius: 50px; }
     .profile-header-gradient { height: 160px; background: linear-gradient(135deg, #15151a 0%, #333333 100%); border-radius: 0 0 20px 20px; }
     .avatar-wrapper { margin-top: -80px; }
+    
     .rank-badge-container { font-family: 'Georgia', serif; font-weight: bold; padding: 8px 24px; border-radius: 50px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.1); font-size: 1rem; }
 
-    /* バッジ色：!importantを付与して白飛びを防止 */
-    .badge-PLATINA { background: linear-gradient(45deg, #2c3e50, #00d2ff) !important; color: #fff !important; text-transform: uppercase; }
-    .badge-GOLD { background: linear-gradient(45deg, #d4af37, #f1c40f) !important; color: #fff !important; text-transform: uppercase; }
-    .badge-SILVER { background: linear-gradient(45deg, #bdc3c7, #ffffff) !important; color: #333 !important; text-transform: uppercase; }
-    .badge-bronze { background-color: #cd7f32 !important; color: #fff !important; text-transform: lowercase; }
-    .badge-iron { background-color: #6c757d !important; color: #fff !important; text-transform: lowercase; }
+    /* バッジカラーの修正（!importantを付与） */
+    .badge-PLATINA, .badge-platinum { background: linear-gradient(45deg, #2c3e50, #00d2ff) !important; color: white !important; }
+    .badge-GOLD, .badge-gold { background: linear-gradient(45deg, #f1c40f, #f39c12) !important; color: white !important; }
+    .badge-SILVER, .badge-silver { background: linear-gradient(45deg, #bdc3c7, #95a5a6) !important; color: white !important; }
+    .badge-bronze { background-color: #cd7f32 !important; color: white !important; }
+    .badge-iron { background-color: #6c757d !important; color: white !important; }
 </style>
 
 <div class="container mt-4 mb-5">
@@ -29,35 +31,47 @@
                             <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center border border-4 border-white shadow mx-auto" style="width: 140px; height: 140px; font-size: 3rem;">👤</div>
                         {% endif %}
                     </div>
+
                     <h2 class="fw-bold mb-1 text-sumi">
                         {{ target_user.profile.company_name|default:target_user.username }}
-                        {% if target_user.profile.is_verified %}<i class="bi bi-patch-check-fill text-primary ms-1"></i>{% endif %}
+                        {% if target_user.profile.is_verified %}<span class="ms-1" style="color: #1a73e8;"><i class="bi bi-patch-check-fill"></i></span>{% endif %}
                     </h2>
+
                     <div class="mb-4 mt-3">
                         <div class="rank-badge-container {{ target_user.profile.rank_class }}">
                             {{ target_user.profile.display_rank }}
                         </div>
                     </div>
-                    <p class="text-muted mb-4"><i class="bi bi-geo-alt-fill"></i> {{ target_user.profile.location|default:"エリア未設定" }}</p>
+
+                    <p class="text-muted mb-4"><i class="bi bi-geo-alt-fill me-1"></i> {{ target_user.profile.location|default:"エリア未設定" }}</p>
+
                     {% if user == target_user %}
-                        <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark rounded-pill px-4">編集</a>
+                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                            <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark rounded-pill px-4">プロフィール編集</a>
+                            {% if user.profile.display_rank != 'PLATINA' %}
+                                <a href="{% url 'upgrade_plan_page' %}" class="btn btn-sumi rounded-pill px-4 shadow">ランクアップ</a>
+                            {% endif %}
+                        </div>
                     {% endif %}
                 </div>
+
                 <div class="card-footer bg-white py-5 px-4">
                     <h6 class="fw-bold text-sumi mb-3 border-start border-4 border-dark ps-2">自己紹介・経歴・保有資格</h6>
-                    <p class="text-secondary" style="white-space: pre-wrap;">{{ target_user.profile.description|default:"未記入" }}</p>
+                    <p class="text-secondary mb-0" style="white-space: pre-wrap;">{{ target_user.profile.description|default:"自己紹介文はまだありません。" }}</p>
                 </div>
             </div>
 
             <h5 class="fw-bold text-sumi mb-3">募集履歴</h5>
-            <div class="list-group shadow-sm rounded-4 overflow-hidden">
+            <div class="list-group shadow-sm rounded-4 overflow-hidden border-0">
                 {% for job in jobs %}
                     <a href="{% url 'job_detail' job.id %}" class="list-group-item list-group-item-action p-4 border-0 mb-1">
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex w-100 justify-content-between">
                             <h6 class="fw-bold text-sumi">{{ job.title }}</h6>
-                            <span class="text-muted small">{{ job.created_at|date:"Y/m/d" }}</span>
+                            <small class="text-muted">{{ job.created_at|date:"Y/m/d" }}</small>
                         </div>
-                        <div class="mt-2"><span class="text-sumi fw-bold fs-5">¥{{ job.price|intcomma }}</span><small> / {{ job.get_unit_display }}</small></div>
+                        <div class="mt-2">
+                            <span class="text-sumi fw-bold fs-5">¥{{ job.price|intcomma }}</span> <small class="text-muted"> / {{ job.get_unit_display }}</small>
+                        </div>
                     </a>
                 {% endfor %}
             </div>

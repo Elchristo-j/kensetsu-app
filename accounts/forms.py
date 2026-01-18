@@ -3,33 +3,20 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from .models import Profile, PREFECTURES
 
-# 会員登録用フォーム
 class CustomUserCreationForm(UserCreationForm):
-    email = forms.EmailField(
-        required=True, 
-        label="メールアドレス", 
-        help_text="Stripe決済の通知などに使用するため、必ず入力してください。"
-    )
+    email = forms.EmailField(required=True, label="メールアドレス")
     class Meta(UserCreationForm.Meta):
         model = User
         fields = UserCreationForm.Meta.fields + ('email',)
 
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError("このメールアドレスは既に登録されています。")
-        return email
-
-# プロフィール編集用フォーム
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ['company_name', 'location', 'description', 'image', 'id_card_image']
-        
         widgets = {
-            'company_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '会社名または個人名'}),
-            'location': forms.Select(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': '経歴や資格を記入'}),
+            'company_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '株式会社〇〇 / 山田 太郎'}),
+            'location': forms.Select(attrs={'class': 'form-select'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': '経歴や保有資格を詳しく記入してください'}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
             'id_card_image': forms.FileInput(attrs={'class': 'form-control'}),
         }
