@@ -15,26 +15,56 @@ PREFECTURES = [
 ]
 
 class Profile(models.Model):
-    RANK_CHOICES = [('iron', 'iron'), ('bronze', 'bronze'), ('SILVER', 'SILVER'), ('GOLD', 'GOLD'), ('PLATINA', 'PLATINA')]
+    RANK_CHOICES = [
+        ('iron', 'iron'), ('bronze', 'bronze'), 
+        ('SILVER', 'SILVER'), ('GOLD', 'GOLD'), ('PLATINUM', 'PLATINUM')
+    ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    rank = models.CharField(max_length=20, choices=RANK_CHOICES, default='iron')
+    is_verified = models.BooleanField(default=False)
     company_name = models.CharField(max_length=100, blank=True, verbose_name="表示名")
     location = models.CharField(max_length=100, blank=True, choices=PREFECTURES, verbose_name="地域")
-    description = models.TextField(blank=True, verbose_name="自己紹介")
+    description = models.TextField(blank=True, verbose_name="自己紹介・実績")
     image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
-    is_verified = models.BooleanField(default=False)
     id_card_image = models.ImageField(upload_to='id_cards/', blank=True, null=True)
-    rank = models.CharField(max_length=20, choices=RANK_CHOICES, default='iron')
 
     @property
-    def display_rank(self): return 'bronze' if self.is_verified and self.rank == 'iron' else self.rank
+    def display_rank(self):
+        return 'bronze' if self.is_verified and self.rank == 'iron' else self.rank
+
     @property
     def rank_class(self): return f"badge-{self.display_rank}"
+
     @property
-    def monthly_limit(self): return 3 if self.display_rank.lower() in ['iron', 'bronze'] else 999
+    def monthly_limit(self):
+        """応募制限（鉄の掟）"""
+        r = self.display_rank.lower()
+        if r == 'iron': return 3
+        if r == 'bronze': return 10
+        return 999 # シルバー以上は無制限
+
+    @property
+    def posting_limit(self):
+        """募集投稿制限（鉄の掟）"""
+        r = self.display_rank.lower()
+        if r in ['iron', 'bronze']: return 0 # ブロンズ・アイアンは投稿不可
+        if r == 'silver': return 3
+        return 999 # ゴールド以上は無制限
+
     def can_apply(self):
         from jobs.models import Application
-        cnt = Application.objects.filter(applicant=self.user, applied_at__gte=timezone.now().replace(day=1, hour=0, minute=0)).count()
+        start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        cnt = Application.objects.filter(applicant=self.user, applied_at__gte=start).count()
         return cnt < self.monthly_limit
+
+    def can_post_job(self):
+        from jobs.models import Job
+        if self.posting_limit == 0: return False
+        start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        cnt = Job.objects.filter(created_by=self.user, created_at__gte=start).count()
+        return cnt < self.posting_limit
+
+    def __str__(self): return f"{self.user.username}のプロフィール"
 
 class FavoriteArea(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_areas')
@@ -44,31 +74,3 @@ class FavoriteArea(models.Model):
 @receiver(post_save, sender=User)
 def handle_user_profile_sync(sender, instance, created, **kwargs):
     if created: Profile.objects.get_or_create(user=instance)
-
-    # accounts/models.py
-
-@property
-def monthly_limit(self):
-    """応募制限のロジック"""
-    r = self.display_rank.lower()
-    if r == 'iron': return 3
-    if r == 'bronze': return 10
-    return "無制限"
-
-@property
-def posting_limit(self):
-    """募集投稿制限のロジック"""
-    r = self.display_rank.lower()
-    if r in ['iron', 'bronze']: return 0 # 投稿不可
-    if r == 'silver': return 3
-    return "無制限"
-
-def can_post_job(self):
-    """募集投稿ができるか判定"""
-    limit = self.posting_limit
-    if limit == 0: return False
-    if limit == "無制限": return True
-    # 今月の投稿数をカウント
-    from jobs.models import Job
-    count = Job.objects.filter(created_by=self.user, created_at__gte=timezone.now().replace(day=1, hour=0, minute=0)).count()
-    return count < limit
