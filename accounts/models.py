@@ -3,9 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
-from datetime import datetime
 
-# 都道府県リスト
 PREFECTURES = [
     ('北海道', '北海道'), ('青森県', '青森県'), ('岩手県', '岩手県'), ('宮城県', '宮城県'), ('秋田県', '秋田県'), ('山形県', '山形県'), ('福島県', '福島県'),
     ('茨城県', '茨城県'), ('栃木県', '栃木県'), ('群馬県', '群馬県'), ('埼玉県', '埼玉県'), ('千葉県', '千葉県'), ('東京都', '東京都'), ('神奈川県', '神奈川県'),
@@ -17,121 +15,61 @@ PREFECTURES = [
 ]
 
 class Profile(models.Model):
-    # --- 1. ランクの選択肢を定義（ここを追加） ---
     RANK_CHOICES = [
-        ('iron', 'アイアン（鉄）'),
-        ('bronze', 'ブロンズ（銅）'),
-        ('silver', 'シルバー（銀）'),
-        ('gold', 'ゴールド（金）'),
-        ('platinum', 'プラチナ'),
+        ('iron', 'iron'),
+        ('bronze', 'bronze'),
+        ('SILVER', 'SILVER'),
+        ('GOLD', 'GOLD'),
+        ('PLATINA', 'PLATINA'),
     ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', verbose_name="ユーザー")
-    location = models.CharField(max_length=100, blank=True, default='', verbose_name="拠点")
-    description = models.TextField(blank=True, default='', verbose_name="自己紹介・実績")
-    image = models.ImageField(upload_to='profile_images/', blank=True, null=True, verbose_name="アイコン画像")
-    
-    # 以前の is_premium も残しておいてOKです。今後は rank で管理します。
-    is_premium = models.BooleanField(default=False, verbose_name="有料会員")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    company_name = models.CharField(max_length=100, blank=True, verbose_name="表示名（会社名や氏名）")
+    location = models.CharField(max_length=100, blank=True, choices=PREFECTURES, verbose_name="地域（都道府県）")
+    description = models.TextField(blank=True, verbose_name="自己紹介・経歴・保有資格")
+    image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
+    is_verified = models.BooleanField(default=False)
+    id_card_image = models.ImageField(upload_to='id_cards/', blank=True, null=True)
+    rank = models.CharField(max_length=20, choices=RANK_CHOICES, default='iron')
 
-    # 本人確認用項目
-    is_verified = models.BooleanField(default=False, verbose_name="本人確認済み")
-    id_card_image = models.ImageField(upload_to='id_cards/', blank=True, null=True, verbose_name="身分証画像")
-    
     @property
     def display_rank(self):
-        """表示用のランクを決定する（本人確認済みなら最低でもブロンズ）"""
-    # もし本人確認済みで、かつランクがアイアンのままなら「ブロンズ」とみなす
+        """本人確認済みなら最低でもブロンズに"""
         if self.is_verified and self.rank == 'iron':
             return 'bronze'
         return self.rank
-    
-    # accounts/models.py の Profile クラス内
-
-    @property
-    def rank_display_text(self):
-        """バッジに表示する文字（PLATINAなどは大文字、ironなどは小文字）"""
-        # display_rank は既に PLATINA, GOLD, SILVER, bronze, iron を返すと想定
-        return self.display_rank
 
     @property
     def rank_class(self):
-        """CSSクラス名を返す（PLATINA -> badge-PLATINA）"""
+        """CSSクラス名用。大文字小文字を区別せず badge-PLATINA 等を返す"""
         return f"badge-{self.display_rank}"
 
-    # --- 2. ランク項目を追加（ここを追加） ---
-    rank = models.CharField(
-        max_length=20, 
-        choices=RANK_CHOICES, 
-        default='iron', 
-        verbose_name="会員ランク"
-    )
-
-    class Meta:
-        verbose_name = "プロフィール"
-        verbose_name_plural = "プロフィール一覧"
+    @property
+    def monthly_limit(self):
+        rank = self.display_rank.lower()
+        if rank == 'iron': return 3
+        if rank == 'bronze': return 10
+        return "無制限"
 
     def __str__(self):
         return f"{self.user.username} のプロフィール"
 
-    # --- 3. プロパティ類を整理 ---
-    @property
-    def unread_notifications_count(self):
-        """未読通知の件数を取得"""
-        return self.user.notifications.filter(is_read=False).count()
-
-    @property # この一行を追加します
-    def monthly_limit(self): # 名前を少し短く「monthly_limit」にしましょう
-        """現在のランクの月間制限数を返す"""
-        rank = self.display_rank
-        if rank == 'iron':
-            return 3
-        elif rank == 'bronze':
-            return 10
-        return "無制限"
-
-    @property
-    def total_unread_count(self):
-        """通知の未読数を返す（数字のバッジ用）"""
-        return self.unread_notifications_count
-
     def get_monthly_application_count(self):
-        """今月の応募数をカウントする"""
         from jobs.models import Application
-        now = timezone.now()
-        # 今月の1日 0時0分を取得
-        start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        # 自分の応募のうち、今月作成されたものを数える
+        start_of_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         return Application.objects.filter(applicant=self.user, applied_at__gte=start_of_month).count()
-        # ---------------------------------------------
-    def can_apply(self):
-        """応募可能かどうかを判定する（鉄の掟）"""
-        count = self.get_monthly_application_count()
-        rank = self.display_rank 
-        if rank == 'iron':
-            return count < 3
-        elif rank == 'bronze':
-            return count < 10
-        return True
 
-# お気に入りエリア
+    def can_apply(self):
+        count = self.get_monthly_application_count()
+        limit = self.monthly_limit
+        return count < limit if isinstance(limit, int) else True
+
 class FavoriteArea(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_areas')
-    prefecture = models.CharField(max_length=20, choices=PREFECTURES, verbose_name="都道府県")
-    city = models.CharField(max_length=50, blank=True, default='', verbose_name="市区町村")
+    prefecture = models.CharField(max_length=20, choices=PREFECTURES)
+    city = models.CharField(max_length=50, blank=True)
 
-    class Meta:
-        verbose_name = "お気に入りエリア"
-        verbose_name_plural = "お気に入りエリア一覧"
-
-    def __str__(self):
-        return f"{self.prefecture} {self.city}"
-
-# シグナル：ユーザー作成時にプロフィールを自動生成
 @receiver(post_save, sender=User)
 def handle_user_profile_sync(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
-    else:
-        if hasattr(instance, 'profile'):
-            instance.profile.save()

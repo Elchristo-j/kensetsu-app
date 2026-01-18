@@ -167,3 +167,15 @@ def stripe_webhook(request):
             profile.save()
 
     return HttpResponse(status=200)
+
+# accounts/views.py の一番下にこれが必要です
+
+def profile_detail(request, user_id):
+    target_user = get_object_or_404(User, pk=user_id)
+    jobs = target_user.jobs.all().order_by('-created_at') # ユーザーの投稿した仕事
+    context = {
+        'target_user': target_user,
+        'jobs': jobs,
+        'prefectures': PREFECTURES,
+    }
+    return render(request, 'accounts/profile_detail.html', context)
