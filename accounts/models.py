@@ -29,13 +29,16 @@ class Profile(models.Model):
 
     @property
     def display_rank(self):
-        # 本人確認済みなら、元のランクがironでも表示はbronze
-        return 'bronze' if self.is_verified and self.rank == 'iron' else self.rank
+        """上位はそのまま（大文字）、iron/bronzeはそのまま（小文字）"""
+        # SILVER, GOLD, PLATINUM はモデル保存時に大文字であることを前提、iron/bronzeはそのまま
+        if self.is_verified and self.rank == 'iron':
+            return 'bronze'
+        return self.rank
 
     @property
     def rank_class(self):
-        # ★修正：CSSクラス名と一致させる
-        return f"badge-{self.display_rank}"
+        """CSSクラス名。大文字のランクでも小文字で渡すように統一"""
+        return f"badge-{self.display_rank.upper() if self.display_rank in ['SILVER', 'GOLD', 'PLATINUM'] else self.display_rank}"
 
     @property
     def unread_notifications_count(self):
