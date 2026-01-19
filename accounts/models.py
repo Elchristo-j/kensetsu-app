@@ -25,9 +25,17 @@ class Profile(models.Model):
     image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
     id_card_image = models.ImageField(upload_to='id_cards/', blank=True, null=True)
 
+    # accounts/models.py 抜粋
+
     @property
     def display_rank(self):
+        # 本人確認済みなら、元のランクがironでも表示はbronze
         return 'bronze' if self.is_verified and self.rank == 'iron' else self.rank
+
+    @property
+    def rank_class(self):
+        # ★修正：CSSクラス名と一致させる
+        return f"badge-{self.display_rank}"
 
     @property
     def unread_notifications_count(self):

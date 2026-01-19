@@ -61,15 +61,19 @@ def delete_job(request, job_id):
     if job.created_by == request.user: job.delete()
     return redirect('home')
 
-# 6. apply_job (応募制限執行)
+# jobs/views.py 抜粋
+
 @login_required
 def apply_job(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     if not request.user.profile.can_apply():
-        messages.error(request, "今月の応募上限に達しました。")
+        # ★修正：現在の表示ランクを表示するように変更
+        current_rank = request.user.profile.display_rank
+        limit = request.user.profile.monthly_limit
+        messages.error(request, f"今月の応募上限に達しました。現在のランク「{current_rank}」の応募枠は月{limit}回です。さらなる応募にはランクアップをご検討ください。")
         return redirect('job_detail', job_id=job.id)
+    
     Application.objects.get_or_create(job=job, applicant=request.user)
-    create_notification(job.created_by, f"「{job.title}」に応募がありました。", f"/job/{job.id}/applicants/")
     return redirect('job_detail', job_id=job.id)
 
 # 7. cancel_application

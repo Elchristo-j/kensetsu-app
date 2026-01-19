@@ -10,13 +10,24 @@
         :root { --sumi-color: #15151a; }
         body { font-family: "Hiragino Sans", "Meiryo", sans-serif; background-color: #f4f5f7; color: var(--sumi-color); }
         .bg-sumi { background-color: var(--sumi-color) !important; }
+        
+        /* ロゴ：上下配置 */
         .navbar-brand { line-height: 1.2; display: flex; flex-direction: column; }
         .brand-title { font-weight: bold; font-size: 1.15rem; }
         .brand-sub { font-size: 0.7rem; opacity: 0.7; font-weight: normal; margin-top: -2px; }
-        .navbar-dark .navbar-nav .nav-link { color: #ffffff !important; font-weight: 500; }
+
+        /* ナビ文字：白、お疲れ様ですの追加 */
+        .navbar-dark .navbar-nav .nav-link { color: #ffffff !important; font-weight: 600; }
         .nav-username { color: #ffffff; font-size: 0.8rem; margin-right: 15px; border-right: 1px solid rgba(255,255,255,0.3); padding-right: 15px; }
+
+        /* ★バッジ：小文字でも大文字でも背景が出るように修正 */
+        .badge-PLATINUM, .badge-platinum { background: linear-gradient(45deg, #2c3e50, #00d2ff) !important; color: white !important; text-transform: uppercase !important; }
+        .badge-GOLD, .badge-gold { background: linear-gradient(45deg, #d4af37, #f1c40f) !important; color: white !important; text-transform: uppercase !important; }
+        .badge-SILVER, .badge-silver { background: linear-gradient(45deg, #bdc3c7, #95a5a6) !important; color: #333 !important; text-transform: uppercase !important; }
+        .badge-bronze { background-color: #cd7f32 !important; color: white !important; text-transform: uppercase !important; }
+        .badge-iron { background-color: #6c757d !important; color: white !important; text-transform: uppercase !important; }
+        
         .badge-notify { font-size: 0.6rem; position: absolute; top: 0; right: 0; transform: translate(50%, -50%); }
-        .badge-PLATINUM, .badge-GOLD, .badge-SILVER { text-transform: uppercase !important; }
     </style>
 </head>
 <body>
@@ -29,9 +40,8 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">案件を探す</a></li>
                     {% if user.is_authenticated %}
-                        <span class="nav-username d-none d-lg-inline">{{ user.username }} 様</span>
+                        <span class="nav-username d-none d-lg-inline">お疲れ様です {{ user.username }} 様</span>
                         
                         <li class="nav-item me-3">
                             <a class="nav-link position-relative p-1" href="{% url 'notifications' %}">
@@ -41,8 +51,7 @@
                                 {% endif %}
                             </a>
                         </li>
-
-                        {% if user.is_staff %}<li class="nav-item"><a class="nav-link text-warning fw-bold" href="{% url 'admin_dashboard' %}">管理画面</a>{% endif %}
+                        {% if user.is_staff %}<li class="nav-item"><a class="nav-link text-warning fw-bold" href="{% url 'admin_dashboard' %}">管理画面</a></li>{% endif %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'create_job' %}">募集する</a></li>
                         <li class="nav-item ms-2"><a class="nav-link btn btn-outline-light btn-sm px-3 rounded-pill" href="{% url 'profile_detail' user.id %}">マイページ</a></li>
                         <li class="nav-item ms-2"><form action="{% url 'logout' %}" method="post" class="d-inline">{% csrf_token %}<button type="submit" class="btn btn-link nav-link">ログアウト</button></form></li>
