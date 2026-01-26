@@ -7,6 +7,7 @@
     .avatar-wrapper { margin-top: -80px; }
     .rank-badge-container { font-weight: bold; padding: 8px 24px; border-radius: 50px; display: inline-block; font-size: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 </style>
+
 <div class="container mt-4 mb-5">
     <div class="row justify-content-center">
         <div class="col-lg-8 text-center">
@@ -14,8 +15,11 @@
                 <div class="profile-header-gradient"></div>
                 <div class="card-body avatar-wrapper">
                     <div class="mb-3">
-                        {% if target_user.profile.image %}<img src="{{ target_user.profile.image.url }}" class="rounded-circle border border-4 border-white shadow" width="140" height="140" style="object-fit: cover;">
-                        {% else %}<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto border border-4 border-white shadow" style="width: 140px; height: 140px; font-size: 3rem;">👤</div>{% endif %}
+                        {% if target_user.profile.image %}
+                            <img src="{{ target_user.profile.image.url }}" class="rounded-circle border border-4 border-white shadow" width="140" height="140" style="object-fit: cover;">
+                        {% else %}
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto border border-4 border-white shadow" style="width: 140px; height: 140px; font-size: 3rem;">👤</div>
+                        {% endif %}
                     </div>
                     <h2 class="fw-bold text-sumi">{{ target_user.profile.company_name|default:target_user.username }}</h2>
                     <div class="mb-4 mt-3">
@@ -23,17 +27,48 @@
                             {{ target_user.profile.display_rank }}
                         </div>
                     </div>
+
                     {% if user == target_user %}
-                        <div class="d-flex justify-content-center gap-2">
+                        <div class="d-flex justify-content-center gap-2 mb-4">
                             <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark rounded-pill px-4">編集</a>
-                            {% if target_user.profile.display_rank.lower != 'platinum' %}
+                            {% if target_user.profile.display_rank != 'platinum' %}
                                 <a href="{% url 'upgrade_plan_page' %}" class="btn btn-rankup rounded-pill px-4 shadow">ランクアップする</a>
                             {% endif %}
+                        </div>
+
+                        <div class="text-start mt-4 p-3 bg-light rounded-4">
+                            <h6 class="fw-bold mb-3"><i class="bi bi-geo-alt-fill me-2"></i>通知・お気に入り地域</h6>
+                            <form action="{% url 'add_favorite_area' %}" method="post" class="row g-2 mb-3">
+                                {% csrf_token %}
+                                <div class="col-6">
+                                    <select name="prefecture" class="form-select form-select-sm rounded-pill" required>
+                                        <option value="">都道府県を選択</option>
+                                        {% for code, name in prefectures %}
+                                            <option value="{{ name }}">{{ name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-4">
+                                    <input type="text" name="city" class="form-control form-select-sm rounded-pill" placeholder="市区町村(任意)">
+                                </div>
+                                <div class="col-2">
+                                    <button type="submit" class="btn btn-dark btn-sm rounded-pill w-100">登録</button>
+                                </div>
+                            </form>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for area in target_user.favorite_areas.all %}
+                                    <span class="badge bg-white text-dark border p-2 rounded-pill">
+                                        {{ area.prefecture }} {{ area.city }}
+                                        <a href="{% url 'delete_favorite_area' area.id %}" class="text-danger ms-1"><i class="bi bi-x-circle-fill"></i></a>
+                                    </span>
+                                {% endfor %}
+                            </div>
                         </div>
                     {% endif %}
                 </div>
                 <div class="card-footer bg-white py-4 border-top-0 text-secondary" style="white-space: pre-wrap;">{{ target_user.profile.description|default:"未記入" }}</div>
             </div>
+
             <h5 class="fw-bold text-sumi mb-3 text-start">募集履歴</h5>
             <div class="list-group text-start">
                 {% for job in jobs %}

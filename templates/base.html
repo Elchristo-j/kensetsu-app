@@ -11,26 +11,21 @@
         body { font-family: "Hiragino Sans", "Meiryo", sans-serif; background-color: #f4f5f7; color: var(--sumi-color); }
         .bg-sumi { background-color: var(--sumi-color) !important; }
         
-        /* ロゴ調整：建設マッチングの下にエルクリスト */
         .navbar-brand { line-height: 1.1; display: flex; flex-direction: column; }
         .brand-title { font-weight: bold; font-size: 1.15rem; }
         .brand-sub { font-size: 0.7rem; opacity: 0.7; font-weight: normal; margin-top: 1px; }
 
-        /* ナビ：白文字と敬称 */
         .navbar-dark .navbar-nav .nav-link { color: #ffffff !important; font-weight: 600; }
         .nav-username { color: #ffffff; font-size: 0.8rem; margin-right: 15px; border-right: 1px solid rgba(255,255,255,0.3); padding-right: 15px; }
 
-        /* バッジ背景と強制文字ケース */
-        .badge-platinum { background: linear-gradient(45deg, #2c3e50, #00d2ff) !important; color: white !important; text-transform: uppercase; }
-        .badge-gold { background: linear-gradient(45deg, #d4af37, #f1c40f) !important; color: white !important; text-transform: uppercase; }
-        .badge-silver { background: linear-gradient(45deg, #bdc3c7, #95a5a6) !important; color: #333 !important; text-transform: uppercase; }
+        .badge-platinum, .badge-gold, .badge-silver { text-transform: uppercase !important; }
+        .badge-platinum { background: linear-gradient(45deg, #2c3e50, #00d2ff) !important; color: white !important; }
+        .badge-gold { background: linear-gradient(45deg, #d4af37, #f1c40f) !important; color: white !important; }
+        .badge-silver { background: linear-gradient(45deg, #bdc3c7, #95a5a6) !important; color: #333 !important; }
         .badge-bronze { background-color: #cd7f32 !important; color: white !important; text-transform: lowercase; }
         .badge-iron { background-color: #6c757d !important; color: white !important; text-transform: lowercase; }
         
-        /* ランクアップボタン青 */
         .btn-rankup { background-color: var(--rankup-blue) !important; color: white !important; border-radius: 50px; font-weight: bold; border: none; }
-        .btn-rankup:hover { opacity: 0.8; }
-
         .badge-notify { font-size: 0.6rem; position: absolute; top: 0; right: 0; transform: translate(50%, -50%); }
     </style>
 </head>
