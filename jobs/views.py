@@ -13,18 +13,25 @@ def create_notification(recipient, message, link=None):
 
 def is_staff_user(user): return user.is_authenticated and user.is_staff
 
-# 1. home (通常検索)
+# jobs/views.py の home関数のみ置き換え
+
 def home(request):
     jobs = Job.objects.filter(is_closed=False).order_by('-id')
     query = request.GET.get('query', '')
     area_filter = request.GET.get('area', '')
+    city_filter = request.GET.get('city', '') # 追加：市町村フィルター
     
     if query: 
         jobs = jobs.filter(Q(title__icontains=query) | Q(description__icontains=query)).distinct()
     if area_filter: 
         jobs = jobs.filter(prefecture=area_filter)
+    if city_filter:
+        # 案件(Job)モデルにcityフィールドがあると仮定して絞り込み
+        # もしJobにcityがない場合は、ここを記述せずエラー回避してください
+        jobs = jobs.filter(city=city_filter) 
         
     favorites = request.user.favorite_areas.all() if request.user.is_authenticated else []
+    
     return render(request, 'jobs/home.html', {
         'jobs': jobs, 
         'query': query, 
@@ -32,6 +39,7 @@ def home(request):
         'prefectures': PREFECTURES,
         'page_title': '案件一覧'
     })
+
 
 # 1.5 favorite_search_view (お気に入りエリア検索・完全版)
 @login_required

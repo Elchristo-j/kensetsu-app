@@ -43,7 +43,7 @@
                     {% if user.is_authenticated %}
                         <li class="nav-item d-flex align-items-center me-3">
                             <span class="nav-username d-none d-lg-inline border-0 pe-0 me-0">
-                                お疲れ様です {{ user.last_name }} 様
+                                お疲れ様です {{ user.username }} 様
                             </span>
                             <span class="badge rank-badge badge-{{ user.profile.display_rank|lower }}">
                                 {{ user.profile.display_rank }}
