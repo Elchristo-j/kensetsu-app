@@ -4,19 +4,18 @@
 <div class="container mt-4">
     <div class="row mb-4">
         <form action="{% url 'home' %}" method="get" class="col-lg-8 mx-auto d-flex gap-2">
-            <input type="text" name="query" class="form-control rounded-pill px-4 shadow-sm" placeholder="案件をキーワードで検索..." value="{{ query }}">
+            <input type="text" name="query" class="form-control rounded-pill px-4 shadow-sm" placeholder="案件検索..." value="{{ query }}">
             <button type="submit" class="btn btn-dark rounded-pill px-4 shadow">検索</button>
         </form>
     </div>
 
-    {% if user.is_authenticated and user.favorite_areas.exists %}
+    {% if user.is_authenticated and favorites %}
     <div class="mb-4 text-center">
-        <p class="small text-muted mb-2">お気に入り地域の案件をチェック：</p>
         <div class="d-flex justify-content-center flex-wrap gap-2">
-            <a href="{% url 'home' %}" class="btn btn-outline-dark btn-sm rounded-pill px-3">すべて</a>
+            <a href="{% url 'home' %}" class="btn btn-outline-dark btn-sm rounded-pill px-3">すべて表示</a>
             {% for area in favorites %}
                 <a href="{% url 'home' %}?area={{ area.prefecture }}" class="btn btn-sm rounded-pill px-3 {% if request.GET.area == area.prefecture %}btn-dark{% else %}btn-outline-dark{% endif %}">
-                    {{ area.prefecture }}
+                    {{ area.prefecture }}の案件
                 </a>
             {% endfor %}
         </div>
@@ -26,19 +25,17 @@
     <div class="row g-4">
         {% for job in jobs %}
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="card h-100 shadow-sm border-0 rounded-4">
                 <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span class="badge bg-light text-dark border rounded-pill">{{ job.location }}</span>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="badge bg-light text-dark border rounded-pill">{{ job.prefecture }}</span>
                         <small class="text-muted">{{ job.created_at|date:"n/j" }}</small>
                     </div>
                     <h5 class="fw-bold mb-3"><a href="{% url 'job_detail' job.id %}" class="text-decoration-none text-dark">{{ job.title }}</a></h5>
-                    <div class="mb-3 text-sumi fw-bold fs-5">¥{{ job.price|intcomma }} <small class="text-muted" style="font-size: 0.8rem;">/ {{ job.get_unit_display }}</small></div>
+                    <div class="text-sumi fw-bold fs-5">¥{{ job.price|intcomma }} <small class="text-muted">/ {{ job.get_unit_display }}</small></div>
                 </div>
             </div>
         </div>
-        {% empty %}
-        <p class="text-center text-muted py-5">条件に合う案件が見つかりませんでした。</p>
         {% endfor %}
     </div>
 </div>
