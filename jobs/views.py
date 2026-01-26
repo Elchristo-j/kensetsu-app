@@ -13,15 +13,59 @@ def create_notification(recipient, message, link=None):
 
 def is_staff_user(user): return user.is_authenticated and user.is_staff
 
-# 1. home (お気に入り検索対応)
+# 1. home (通常検索)
 def home(request):
     jobs = Job.objects.filter(is_closed=False).order_by('-id')
     query = request.GET.get('query', '')
     area_filter = request.GET.get('area', '')
-    if query: jobs = jobs.filter(Q(title__icontains=query) | Q(description__icontains=query)).distinct()
-    if area_filter: jobs = jobs.filter(prefecture=area_filter)
+    
+    if query: 
+        jobs = jobs.filter(Q(title__icontains=query) | Q(description__icontains=query)).distinct()
+    if area_filter: 
+        jobs = jobs.filter(prefecture=area_filter)
+        
     favorites = request.user.favorite_areas.all() if request.user.is_authenticated else []
-    return render(request, 'jobs/home.html', {'jobs': jobs, 'query': query, 'favorites': favorites, 'prefectures': PREFECTURES})
+    return render(request, 'jobs/home.html', {
+        'jobs': jobs, 
+        'query': query, 
+        'favorites': favorites, 
+        'prefectures': PREFECTURES,
+        'page_title': '案件一覧'
+    })
+
+# 1.5 favorite_search_view (お気に入りエリア検索・完全版)
+@login_required
+def favorite_search_view(request):
+    """
+    ユーザーのFavoriteAreaに基づいて案件を検索する。
+    県のみ指定→その県の全案件
+    市まで指定→その県かつその市の案件
+    これらをOR条件で結合する。
+    """
+    favorite_areas = request.user.favorite_areas.all()
+    
+    if not favorite_areas.exists():
+        # お気に入りが登録されていない場合は全件表示か、メッセージを出してhomeへ
+        messages.info(request, "お気に入りエリアが登録されていません。プロフィールから登録してください。")
+        return redirect('profile_detail', user_id=request.user.id)
+
+    # クエリ構築: (県A AND 市a) OR (県B) ...
+    query = Q()
+    for area in favorite_areas:
+        if area.city:
+            query |= Q(prefecture=area.prefecture, city=area.city)
+        else:
+            query |= Q(prefecture=area.prefecture)
+    
+    # 検索実行
+    jobs = Job.objects.filter(query).filter(is_closed=False).order_by('-id')
+    
+    return render(request, 'jobs/home.html', {
+        'jobs': jobs,
+        'favorites': favorite_areas,
+        'prefectures': PREFECTURES,
+        'page_title': 'お気に入りエリアの案件'
+    })
 
 # 2. job_detail
 def job_detail(request, job_id):
@@ -33,13 +77,19 @@ def job_detail(request, job_id):
 @login_required
 def create_job(request):
     if not request.user.profile.can_post_job():
+        # display_rankプロパティを使用
         messages.error(request, f"現在のランク（{request.user.profile.display_rank}）では募集投稿はできません。")
         return redirect('profile_detail', user_id=request.user.id)
+    
     if request.method == 'POST':
         form = JobForm(request.POST)
         if form.is_valid():
-            j = form.save(commit=False); j.created_by = request.user; j.save(); return redirect('home')
-    else: form = JobForm()
+            j = form.save(commit=False)
+            j.created_by = request.user
+            j.save()
+            return redirect('home')
+    else: 
+        form = JobForm()
     return render(request, 'jobs/create_job.html', {'form': form, 'is_edit': False})
 
 # 4. edit_job
@@ -64,10 +114,12 @@ def delete_job(request, job_id):
 @login_required
 def apply_job(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
+    # 応募制限チェック
     if not request.user.profile.can_apply():
         r, l = request.user.profile.display_rank, request.user.profile.monthly_limit
         messages.error(request, f"応募上限です。現在のランク（{r}）の枠は月{l}件です。")
         return redirect('job_detail', job_id=job.id)
+        
     Application.objects.get_or_create(job=job, applicant=request.user)
     create_notification(job.created_by, f"「{job.title}」に応募がありました。", f"/job/{job.id}/applicants/")
     return redirect('job_detail', job_id=job.id)
