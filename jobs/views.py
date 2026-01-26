@@ -8,33 +8,28 @@ from accounts.models import Profile, FavoriteArea, PREFECTURES
 from accounts.forms import ProfileForm
 from .forms import JobForm, MessageForm
 
-# --- ヘルパー ---
 def create_notification(recipient, message, link=None):
     Notification.objects.create(recipient=recipient, message=message, link=link)
 
 def is_staff_user(user): return user.is_authenticated and user.is_staff
 
-# 1. home
+# 1. home (お気に入り検索対応)
 def home(request):
     jobs = Job.objects.filter(is_closed=False).order_by('-id')
     query = request.GET.get('query', '')
     area_filter = request.GET.get('area', '')
-    if query:
-        jobs = jobs.filter(Q(title__icontains=query) | Q(description__icontains=query)).distinct()
-    if area_filter:
-        jobs = jobs.filter(prefecture=area_filter)
+    if query: jobs = jobs.filter(Q(title__icontains=query) | Q(description__icontains=query)).distinct()
+    if area_filter: jobs = jobs.filter(prefecture=area_filter)
     favorites = request.user.favorite_areas.all() if request.user.is_authenticated else []
     return render(request, 'jobs/home.html', {'jobs': jobs, 'query': query, 'favorites': favorites, 'prefectures': PREFECTURES})
 
-# 2. job_detail (★エラーの原因。確実に復元しました)
+# 2. job_detail
 def job_detail(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
-    is_applied = False
-    if request.user.is_authenticated:
-        is_applied = Application.objects.filter(job=job, applicant=request.user).exists()
+    is_applied = Application.objects.filter(job=job, applicant=request.user).exists() if request.user.is_authenticated else False
     return render(request, 'jobs/job_detail.html', {'job': job, 'is_applied': is_applied})
 
-# 3. create_job
+# 3. create_job (制限執行)
 @login_required
 def create_job(request):
     if not request.user.profile.can_post_job():
@@ -65,13 +60,12 @@ def delete_job(request, job_id):
     if job.created_by == request.user: job.delete()
     return redirect('home')
 
-# 6. apply_job
+# 6. apply_job (制限執行)
 @login_required
 def apply_job(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     if not request.user.profile.can_apply():
-        r = request.user.profile.display_rank
-        l = request.user.profile.monthly_limit
+        r, l = request.user.profile.display_rank, request.user.profile.monthly_limit
         messages.error(request, f"応募上限です。現在のランク（{r}）の枠は月{l}件です。")
         return redirect('job_detail', job_id=job.id)
     Application.objects.get_or_create(job=job, applicant=request.user)
@@ -99,7 +93,7 @@ def adopt_applicant(request, application_id):
     if request.user == app.job.created_by: app.status = 'accepted'; app.save()
     return redirect('job_applicants', job_id=app.job.id)
 
-# 10. chat_room
+# 10. chat_room (送信処理含む)
 @login_required
 def chat_room(request, application_id):
     app = get_object_or_404(Application, pk=application_id)
@@ -123,6 +117,7 @@ def notifications(request):
 @login_required
 def profile_detail(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
+    from .models import Job
     jobs = Job.objects.filter(created_by=target_user).order_by('-id')
     return render(request, 'accounts/profile_detail.html', {'target_user': target_user, 'jobs': jobs, 'prefectures': PREFECTURES})
 
@@ -136,12 +131,13 @@ def profile_edit(request):
     else: form = ProfileForm(instance=profile)
     return render(request, 'jobs/profile_edit.html', {'form': form})
 
-# 14. add_favorite_area
+# 14. add_favorite_area (IntegrityError対策)
 @login_required
 def add_favorite_area(request):
     if request.method == 'POST':
         p = request.POST.get('prefecture')
-        if p: FavoriteArea.objects.get_or_create(user=request.user, prefecture=p)
+        c = request.POST.get('city', '') # NULLではなく空文字をセット
+        if p: FavoriteArea.objects.get_or_create(user=request.user, prefecture=p, city=c)
     return redirect('profile_detail', user_id=request.user.id)
 
 # 15. delete_favorite_area
@@ -150,31 +146,25 @@ def delete_favorite_area(request, area_id):
     get_object_or_404(FavoriteArea, id=area_id, user=request.user).delete()
     return redirect('profile_detail', user_id=request.user.id)
 
-# 16. admin_dashboard
+# 16-23. 管理画面・固定ページ・他
 @user_passes_test(is_staff_user)
 def admin_dashboard(request):
-    pending = Profile.objects.filter(is_verified=False, id_card_image__isnull=False).exclude(id_card_image='')
-    return render(request, 'jobs/admin_dashboard.html', {'pending_profiles': pending})
+    p = Profile.objects.filter(is_verified=False, id_card_image__isnull=False).exclude(id_card_image='')
+    return render(request, 'jobs/admin_dashboard.html', {'pending_profiles': p})
 
-# 17. approve_profile
 @user_passes_test(is_staff_user)
 def approve_profile(request, user_id):
-    p = get_object_or_404(User, pk=user_id).profile; p.is_verified = True; p.save()
-    return redirect('admin_dashboard')
+    p = get_object_or_404(User, pk=user_id).profile; p.is_verified = True; p.save(); return redirect('admin_dashboard')
 
-# 18. reject_profile
 @user_passes_test(is_staff_user)
 def reject_profile(request, user_id):
-    p = get_object_or_404(User, pk=user_id).profile; p.id_card_image.delete(); p.save()
-    return redirect('admin_dashboard')
+    p = get_object_or_404(User, pk=user_id).profile; p.id_card_image.delete(); p.save(); return redirect('admin_dashboard')
 
-# 19-22. 固定ページ
 def about_view(request): return render(request, 'jobs/about.html')
 def terms_view(request): return render(request, 'jobs/terms.html')
 def privacy_view(request): return render(request, 'jobs/privacy.html')
 def law_view(request): return render(request, 'jobs/law.html')
 
-# 23. reject_applicant
 @login_required
 def reject_applicant(request, application_id):
     app = get_object_or_404(Application, pk=application_id)

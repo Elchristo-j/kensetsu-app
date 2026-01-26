@@ -15,7 +15,7 @@ PREFECTURES = [
 ]
 
 class Profile(models.Model):
-    RANK_CHOICES = [('iron', 'iron'), ('bronze', 'bronze'), ('SILVER', 'SILVER'), ('GOLD', 'GOLD'), ('PLATINUM', 'PLATINUM')]
+    RANK_CHOICES = [('iron', 'iron'), ('bronze', 'bronze'), ('silver', 'silver'), ('gold', 'gold'), ('platinum', 'platinum')]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     rank = models.CharField(max_length=20, choices=RANK_CHOICES, default='iron')
     is_verified = models.BooleanField(default=False)
@@ -27,14 +27,12 @@ class Profile(models.Model):
 
     @property
     def display_rank(self):
-        """見た目上の文字： iron/bronzeは小文字、それ以外は大文字"""
-        r = 'bronze' if self.is_verified and self.rank == 'iron' else self.rank
-        return r
+        # 鉄の掟：本人確認済みなら最低ブロンズ
+        if self.is_verified and self.rank == 'iron': return 'bronze'
+        return self.rank
 
     @property
-    def rank_class(self):
-        """CSSクラス名：すべて小文字で渡し、base.htmlのCSSと完全に一致させる"""
-        return f"badge-{self.display_rank.lower()}"
+    def rank_class(self): return f"badge-{self.display_rank.lower()}"
 
     @property
     def unread_notifications_count(self):
@@ -61,14 +59,15 @@ class Profile(models.Model):
 
     def can_post_job(self):
         from jobs.models import Job
-        limit = self.posting_limit
-        if limit == 0: return False
+        if self.posting_limit == 0: return False
         cnt = Job.objects.filter(created_by=self.user, created_at__gte=timezone.now().replace(day=1, hour=0, minute=0)).count()
-        return cnt < limit
+        return cnt < self.posting_limit
 
 class FavoriteArea(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_areas')
     prefecture = models.CharField(max_length=20, choices=PREFECTURES)
+    # ★ここを修正しました：null=True, blank=True を追加
+    city = models.CharField(max_length=50, blank=True, null=True, default='')
 
 @receiver(post_save, sender=User)
 def handle_user_profile_sync(sender, instance, created, **kwargs):
