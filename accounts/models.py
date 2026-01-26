@@ -25,29 +25,23 @@ class Profile(models.Model):
     image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
     id_card_image = models.ImageField(upload_to='id_cards/', blank=True, null=True)
 
-    # accounts/models.py 抜粋
-
     @property
     def display_rank(self):
-        """上位はそのまま（大文字）、iron/bronzeはそのまま（小文字）"""
-        # SILVER, GOLD, PLATINUM はモデル保存時に大文字であることを前提、iron/bronzeはそのまま
-        if self.is_verified and self.rank == 'iron':
-            return 'bronze'
-        return self.rank
+        """見た目上のテキスト：上位は大文字、下位は小文字"""
+        r = 'bronze' if self.is_verified and self.rank == 'iron' else self.rank
+        return r # 文字ケースはCSSで制御するためここでは名前のみ返す
 
     @property
     def rank_class(self):
-        """CSSクラス名。大文字のランクでも小文字で渡すように統一"""
-        return f"badge-{self.display_rank.upper() if self.display_rank in ['SILVER', 'GOLD', 'PLATINUM'] else self.display_rank}"
+        """CSS用のクラス名：すべて小文字で統一"""
+        return f"badge-{self.display_rank.lower()}"
 
     @property
     def unread_notifications_count(self):
-        """★HTMLエラー回避：未読通知数をここ（Python側）で計算する"""
         return self.user.notifications.filter(is_read=False).count()
 
     @property
     def monthly_limit(self):
-        """応募制限：iron(3), bronze(10), silver以上(無制限)"""
         r = self.display_rank.lower()
         if r == 'iron': return 3
         if r == 'bronze': return 10
@@ -83,3 +77,4 @@ class FavoriteArea(models.Model):
 @receiver(post_save, sender=User)
 def handle_user_profile_sync(sender, instance, created, **kwargs):
     if created: Profile.objects.get_or_create(user=instance)
+    

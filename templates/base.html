@@ -11,28 +11,25 @@
         body { font-family: "Hiragino Sans", "Meiryo", sans-serif; background-color: #f4f5f7; color: var(--sumi-color); }
         .bg-sumi { background-color: var(--sumi-color) !important; }
         
-        .navbar-brand { line-height: 1.2; display: flex; flex-direction: column; }
+        /* ロゴ調整：建設マッチングの下にエルクリスト */
+        .navbar-brand { line-height: 1.1; display: flex; flex-direction: column; }
         .brand-title { font-weight: bold; font-size: 1.15rem; }
-        .brand-sub { font-size: 0.7rem; opacity: 0.7; font-weight: normal; margin-top: -2px; }
+        .brand-sub { font-size: 0.7rem; opacity: 0.7; font-weight: normal; margin-top: 1px; }
 
-        /* ナビ文字 */
+        /* ナビ：白文字と敬称 */
         .navbar-dark .navbar-nav .nav-link { color: #ffffff !important; font-weight: 600; }
         .nav-username { color: #ffffff; font-size: 0.8rem; margin-right: 15px; border-right: 1px solid rgba(255,255,255,0.3); padding-right: 15px; }
 
-        /* バッジ：上位は大文字、下位は小文字 */
-        .badge-PLATINUM, .badge-GOLD, .badge-SILVER { text-transform: uppercase !important; }
-        .badge-PLATINUM { background: linear-gradient(45deg, #2c3e50, #00d2ff) !important; color: white !important; }
-        .badge-GOLD { background: linear-gradient(45deg, #d4af37, #f1c40f) !important; color: white !important; }
-        .badge-SILVER { background: linear-gradient(45deg, #bdc3c7, #95a5a6) !important; color: #333 !important; }
+        /* バッジ背景と強制文字ケース */
+        .badge-platinum { background: linear-gradient(45deg, #2c3e50, #00d2ff) !important; color: white !important; text-transform: uppercase; }
+        .badge-gold { background: linear-gradient(45deg, #d4af37, #f1c40f) !important; color: white !important; text-transform: uppercase; }
+        .badge-silver { background: linear-gradient(45deg, #bdc3c7, #95a5a6) !important; color: #333 !important; text-transform: uppercase; }
+        .badge-bronze { background-color: #cd7f32 !important; color: white !important; text-transform: lowercase; }
+        .badge-iron { background-color: #6c757d !important; color: white !important; text-transform: lowercase; }
         
-        /* 下位ランクは強制小文字 */
-        .badge-bronze, .badge-iron { text-transform: lowercase !important; }
-        .badge-bronze { background-color: #cd7f32 !important; color: white !important; }
-        .badge-iron { background-color: #6c757d !important; color: white !important; }
-        
-        /* ★ランクアップボタン専用の青色 */
+        /* ランクアップボタン青 */
         .btn-rankup { background-color: var(--rankup-blue) !important; color: white !important; border-radius: 50px; font-weight: bold; border: none; }
-        .btn-rankup:hover { background-color: #0052cc !important; }
+        .btn-rankup:hover { opacity: 0.8; }
 
         .badge-notify { font-size: 0.6rem; position: absolute; top: 0; right: 0; transform: translate(50%, -50%); }
     </style>
@@ -60,7 +57,9 @@
                         {% if user.is_staff %}<li class="nav-item"><a class="nav-link text-warning fw-bold" href="{% url 'admin_dashboard' %}">管理画面</a></li>{% endif %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'create_job' %}">募集する</a></li>
                         <li class="nav-item ms-2"><a class="nav-link btn btn-outline-light btn-sm px-3 rounded-pill" href="{% url 'profile_detail' user.id %}">マイページ</a></li>
-                        <li class="nav-item ms-2"><form action="{% url 'logout' %}" method="post" class="d-inline">{% csrf_token %}<button type="submit" class="btn btn-link nav-link">ログアウト</button></form></li>
+                        <li class="nav-item ms-2">
+                            <form action="{% url 'logout' %}" method="post" class="d-inline">{% csrf_token %}<button type="submit" class="btn btn-link nav-link">ログアウト</button></form>
+                        </li>
                     {% else %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">ログイン</a></li>
                         <li class="nav-item ms-2"><a class="btn btn-warning text-dark fw-bold rounded-pill px-4" href="{% url 'signup' %}">新規登録</a></li>
@@ -69,7 +68,7 @@
             </div>
         </div>
     </nav>
-    <div class="main-content">
+    <div class="main-content min-vh-100">
         {% if messages %}<div class="container mt-3">{% for m in messages %}<div class="alert alert-{{ m.tags }}">{{ m }}</div>{% endfor %}</div>{% endif %}
         {% block content %}{% endblock %}
     </div>
