@@ -1,83 +1,144 @@
 {% extends 'base.html' %}
 {% load humanize %}
-{% block content %}
-<style>
-    .text-sumi { color: #15151a !important; }
-    .profile-header-gradient { height: 160px; background: linear-gradient(135deg, #15151a 0%, #333333 100%); border-radius: 0 0 20px 20px; }
-    .avatar-wrapper { margin-top: -80px; }
-    .rank-badge-container { font-weight: bold; padding: 8px 24px; border-radius: 50px; display: inline-block; font-size: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-</style>
 
-<div class="container mt-4 mb-5">
+{% block content %}
+<div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-lg-8 text-center">
-            <div class="card shadow border-0 overflow-hidden rounded-4 mb-4">
-                <div class="profile-header-gradient"></div>
-                <div class="card-body avatar-wrapper">
-                    <div class="mb-3">
-                        {% if target_user.profile.image %}
-                            <img src="{{ target_user.profile.image.url }}" class="rounded-circle border border-4 border-white shadow" width="140" height="140" style="object-fit: cover;">
+        <div class="col-lg-8">
+            <div class="card shadow border-0 rounded-4 mb-4">
+                <div class="card-body p-5 text-center">
+                    <div class="mb-3 position-relative d-inline-block">
+                        {% if target_user.profile.avatar %}
+                            <img src="{{ target_user.profile.avatar.url }}" class="rounded-circle border border-3 border-light shadow-sm" style="width: 120px; height: 120px; object-fit: cover;">
                         {% else %}
-                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto border border-4 border-white shadow" style="width: 140px; height: 140px; font-size: 3rem;">👤</div>
+                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto text-white fs-1" style="width: 120px; height: 120px;">
+                                {{ target_user.username|slice:":1" }}
+                            </div>
                         {% endif %}
                     </div>
-                    <h2 class="fw-bold text-sumi">{{ target_user.profile.company_name|default:target_user.username }}</h2>
-                    <div class="mb-4 mt-3">
-                        <div class="rank-badge-container {{ target_user.profile.rank_class }}">
+                    
+                    <h3 class="fw-bold">{{ target_user.username }}</h3>
+                    <p class="text-muted mb-2">
+                        {% if target_user.profile.company_name %}{{ target_user.profile.company_name }}{% else %}個人事業主{% endif %}
+                    </p>
+                    
+                    <div class="mb-4">
+                        <span class="badge badge-{{ target_user.profile.display_rank|lower }} fs-6 px-3 py-2">
                             {{ target_user.profile.display_rank }}
-                        </div>
+                        </span>
+                        {% if target_user.profile.is_identity_verified %}
+                            <span class="badge bg-success ms-1"><i class="bi bi-check-circle-fill"></i> 本人確認済</span>
+                        {% endif %}
                     </div>
 
-                    {% if user == target_user %}
-                        <div class="d-flex justify-content-center gap-2 mb-4">
-                            <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark rounded-pill px-4">編集</a>
-                            {% if target_user.profile.display_rank != 'platinum' %}
-                                <a href="{% url 'upgrade_plan_page' %}" class="btn btn-rankup rounded-pill px-4 shadow">ランクアップする</a>
-                            {% endif %}
+                    {% if request.user == target_user %}
+                        <div class="bg-light p-3 rounded-3 mb-4 text-start">
+                            <h6 class="fw-bold mb-3 border-bottom pb-2">今月の利用状況 ({{ target_user.profile.display_rank }})</h6>
+                            
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between small mb-1">
+                                    <span>募集投稿数</span>
+                                    <span>
+                                        {{ posts_this_month }} / 
+                                        {% if target_user.profile.posting_limit == 0 %}不可
+                                        {% elif target_user.profile.posting_limit > 1000 %}無制限
+                                        {% else %}{{ target_user.profile.posting_limit }}{% endif %}
+                                    </span>
+                                </div>
+                                {% if target_user.profile.posting_limit > 0 and target_user.profile.posting_limit < 1000 %}
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                             style="width: {% widthratio posts_this_month target_user.profile.posting_limit 100 %}%;"></div>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                <div class="d-flex justify-content-between small mb-1">
+                                    <span>応募回数</span>
+                                    <span>
+                                        {{ applies_this_month }} / 
+                                        {% if target_user.profile.monthly_limit > 1000 %}無制限
+                                        {% else %}{{ target_user.profile.monthly_limit }}{% endif %}
+                                    </span>
+                                </div>
+                                {% if target_user.profile.monthly_limit < 1000 %}
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: {% widthratio applies_this_month target_user.profile.monthly_limit 100 %}%;"></div>
+                                    </div>
+                                {% endif %}
+                            </div>
                         </div>
 
-                        <div class="text-start mt-4 p-3 bg-light rounded-4">
-                            <h6 class="fw-bold mb-3"><i class="bi bi-geo-alt-fill me-2"></i>通知・お気に入り地域</h6>
-                            <form action="{% url 'add_favorite_area' %}" method="post" class="row g-2 mb-3">
-                                {% csrf_token %}
-                                <div class="col-6">
-                                    <select name="prefecture" class="form-select form-select-sm rounded-pill" required>
-                                        <option value="">都道府県を選択</option>
-                                        {% for code, name in prefectures %}
-                                            <option value="{{ name }}">{{ name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="col-4">
-                                    <input type="text" name="city" class="form-control form-select-sm rounded-pill" placeholder="市区町村(任意)">
-                                </div>
-                                <div class="col-2">
-                                    <button type="submit" class="btn btn-dark btn-sm rounded-pill w-100">登録</button>
-                                </div>
-                            </form>
-                            <div class="d-flex flex-wrap gap-2">
-                                {% for area in target_user.favorite_areas.all %}
-                                    <span class="badge bg-white text-dark border p-2 rounded-pill">
-                                        {{ area.prefecture }} {{ area.city }}
-                                        <a href="{% url 'delete_favorite_area' area.id %}" class="text-danger ms-1"><i class="bi bi-x-circle-fill"></i></a>
-                                    </span>
-                                {% endfor %}
-                            </div>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark rounded-pill px-4">編集</a>
+                            
+                            {% if target_user.profile.display_rank|lower == 'iron' %}
+                                <a href="{% url 'profile_edit' %}#verify-section" class="btn btn-success rounded-pill px-4 fw-bold">
+                                    <i class="bi bi-person-check"></i> 本人確認してBronzeへ
+                                </a>
+                            {% elif target_user.profile.display_rank|lower == 'platinum' %}
+                                <a href="#" class="btn btn-outline-secondary rounded-pill px-4">プラン変更・解約</a>
+                            {% else %}
+                                <button class="btn btn-rankup rounded-pill px-4 shadow-sm">ランクアップする</button>
+                            {% endif %}
                         </div>
                     {% endif %}
                 </div>
-                <div class="card-footer bg-white py-4 border-top-0 text-secondary" style="white-space: pre-wrap;">{{ target_user.profile.description|default:"未記入" }}</div>
             </div>
 
-            <h5 class="fw-bold text-sumi mb-3 text-start">募集履歴</h5>
-            <div class="list-group text-start">
-                {% for job in jobs %}
-                    <a href="{% url 'job_detail' job.id %}" class="list-group-item p-4 border-0 mb-2 shadow-sm rounded-4">
-                        <div class="d-flex justify-content-between"><h6 class="fw-bold text-sumi">{{ job.title }}</h6><small>{{ job.created_at|date:"Y/m/d" }}</small></div>
-                        <div class="mt-2"><span class="text-sumi fw-bold fs-5">¥{{ job.price|intcomma }}</span><small> / {{ job.get_unit_display }}</small></div>
-                    </a>
-                {% endfor %}
-            </div>
+            {% if request.user == target_user %}
+                <div class="card shadow-sm border-0 rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-geo-alt-fill"></i> お気に入りエリア登録</h6>
+                        <form action="{% url 'add_favorite_area' %}" method="post" class="row g-2 align-items-center">
+                            {% csrf_token %}
+                            <div class="col-auto">
+                                <select name="prefecture" class="form-select form-select-sm">
+                                    <option value="">都道府県を選択</option>
+                                    {% for p in prefectures %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <input type="text" name="city" class="form-control form-control-sm" placeholder="市区町村(任意)">
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-dark btn-sm rounded-pill px-3">登録</button>
+                            </div>
+                        </form>
+                        <div class="mt-3 d-flex flex-wrap gap-2">
+                            {% for area in target_user.favorite_areas.all %}
+                                <span class="badge bg-light text-dark border p-2 rounded-pill">
+                                    {{ area.prefecture }}{{ area.city }}
+                                    <a href="{% url 'delete_favorite_area' area.id %}" class="text-danger ms-2 text-decoration-none"><i class="bi bi-x-circle-fill"></i></a>
+                                </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <h5 class="fw-bold mb-3">このユーザーの募集案件</h5>
+            {% for job in jobs %}
+                <div class="card mb-3 shadow-sm border-0 rounded-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="fw-bold"><a href="{% url 'job_detail' job.id %}" class="text-decoration-none text-dark">{{ job.title }}</a></h5>
+                            <span class="text-muted small">{{ job.created_at|date:"Y/m/d" }}</span>
+                        </div>
+                        <p class="text-sumi fw-bold">¥{{ job.price|intcomma }}</p>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'edit_job' job.id %}" class="btn btn-sm btn-outline-secondary">編集</a>
+                            <a href="{% url 'job_applicants' job.id %}" class="btn btn-sm btn-outline-primary">
+                                応募者 ({{ job.applications.count }})
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-muted">まだ募集案件はありません。</p>
+            {% endfor %}
         </div>
     </div>
 </div>

@@ -32,6 +32,26 @@ class Job(models.Model):
     def __str__(self):
         return self.title
 
+    # ▼▼▼ 追加箇所ここから ▼▼▼
+    @property
+    def is_new(self):
+        """投稿から48時間以内ならTrue"""
+        return self.created_at >= timezone.now() - timedelta(hours=48)
+
+    @property
+    def accepted_count(self):
+        """採用済み（status='accepted'）の人数を返す"""
+        return self.applications.filter(status='accepted').count()
+    
+    @property
+    def recruitment_status(self):
+        """表示用：採用人数 / 募集人数"""
+        # headcountフィールドがない場合は暫定で '∞' や '-' にしてください
+        # ここでは headcount がある前提、なければ仮に 1 とします
+        limit = getattr(self, 'headcount', 1) 
+        return f"{self.accepted_count} / {limit}"
+    # ▲▲▲ 追加箇所ここまで ▲▲▲
+
 class Application(models.Model):
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='applications')
     applicant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
