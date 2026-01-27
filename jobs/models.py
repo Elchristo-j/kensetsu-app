@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from accounts.models import PREFECTURES
+from django.utils import timezone  # ← これが不足していました
+from datetime import timedelta     # ← これも必要です
 
 class Job(models.Model):
     title = models.CharField(max_length=100, verbose_name="仕事のタイトル")
