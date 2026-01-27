@@ -138,7 +138,7 @@
                     <div class="alert alert-warning border-0 shadow-sm rounded-4 p-4">
                       <p class="fw-bold mb-2 text-dark"><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>今月の応募制限に達しました</p>
                       <p class="small text-secondary mb-3">
-                        現在のランク「<span class="fw-bold">{{ user.profile.display_rank }}</span>」の応募枠は
+                        現在のランク「<span class="fw-bold">{{ user.profile.display_rank|title }}</span>」の応募枠は
                         月<span class="fw-bold">
                             {% if user.profile.monthly_limit >= 999 %}無制限
                             {% else %}{{ user.profile.monthly_limit }}回{% endif %}

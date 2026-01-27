@@ -24,7 +24,7 @@
             <div class="mb-4">
                 <label class="form-label fw-bold small text-muted">{{ field.label }}</label>
                 
-                {% if 'image' in field.name or 'avatar' in field.name %}
+                {% if field.field.widget.input_type == "file" or 'image' in field.name or 'avatar' in field.name %}
                     {% if user.profile.avatar %}
                          <div class="mb-2">
                             <img src="{{ user.profile.avatar.url }}" class="rounded-circle border shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">

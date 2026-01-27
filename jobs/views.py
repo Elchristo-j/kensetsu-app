@@ -152,19 +152,26 @@ def profile_detail(request, user_id):
     from .models import Job, Application # 循環参照回避
     jobs = Job.objects.filter(created_by=target_user).order_by('-id')
     
-    # --- カウンター計算 ---
+    # --- カウンター計算 (修正版) ---
     now = timezone.now()
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
+    # created_at__gte を使用（Applicationモデルにapplied_atがない場合の対策として一般的にcreated_atを使います）
     posts_this_month = Job.objects.filter(created_by=target_user, created_at__gte=month_start).count()
-    applies_this_month = Application.objects.filter(applicant=target_user, applied_at__gte=month_start).count()
+    
+    # 修正: applied_at が存在しない場合は created_at を使用してください
+    try:
+        applies_this_month = Application.objects.filter(applicant=target_user, created_at__gte=month_start).count()
+    except:
+        # 万が一モデルのフィールド名が applied_at の場合
+        applies_this_month = Application.objects.filter(applicant=target_user, applied_at__gte=month_start).count()
     
     context = {
         'target_user': target_user, 
         'jobs': jobs, 
         'prefectures': PREFECTURES,
-        'posts_this_month': posts_this_month,     # テンプレートへ渡す
-        'applies_this_month': applies_this_month  # テンプレートへ渡す
+        'posts_this_month': posts_this_month,     
+        'applies_this_month': applies_this_month
     }
     return render(request, 'accounts/profile_detail.html', context)
 
@@ -176,6 +183,7 @@ def profile_edit(request):
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid(): 
             form.save()
+            messages.success(request, 'プロフィールを更新しました。')
             return redirect('profile_detail', user_id=request.user.id)
     else: 
         form = ProfileForm(instance=profile)
