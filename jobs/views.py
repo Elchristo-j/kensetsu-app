@@ -9,27 +9,22 @@ from accounts.models import Profile, FavoriteArea, PREFECTURES
 from accounts.forms import ProfileForm
 from .forms import JobForm, MessageForm
 
+# --- ヘルパー関数 ---
 def create_notification(recipient, message, link=None):
     Notification.objects.create(recipient=recipient, message=message, link=link)
 
 def is_staff_user(user): return user.is_authenticated and user.is_staff
 
-# 1. home
+# --- 1. Home & Search ---
 def home(request):
     jobs = Job.objects.filter(is_closed=False).order_by('-id')
     query = request.GET.get('query', '')
     area_filter = request.GET.get('area', '')
-    city_filter = request.GET.get('city', '')
     
     if query: 
         jobs = jobs.filter(Q(title__icontains=query) | Q(description__icontains=query)).distinct()
     if area_filter: 
         jobs = jobs.filter(prefecture=area_filter)
-    if city_filter:
-        # Jobモデルにcityがない場合は、models.pyへのフィールド追加が必要です。
-        # 現在はエラー回避のためパスしています。
-        # jobs = jobs.filter(city=city_filter) 
-        pass 
         
     favorites = request.user.favorite_areas.all() if request.user.is_authenticated else []
     return render(request, 'jobs/home.html', {
@@ -37,7 +32,6 @@ def home(request):
         'prefectures': PREFECTURES, 'page_title': '案件一覧'
     })
 
-# 1.5 favorite_search_view
 @login_required
 def favorite_search_view(request):
     favorite_areas = request.user.favorite_areas.all()
@@ -54,24 +48,22 @@ def favorite_search_view(request):
         'prefectures': PREFECTURES, 'page_title': 'お気に入りエリアの案件'
     })
 
-# 2. job_detail
+# --- 2. Job Detail & Actions ---
 def job_detail(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     is_applied = Application.objects.filter(job=job, applicant=request.user).exists() if request.user.is_authenticated else False
     return render(request, 'jobs/job_detail.html', {'job': job, 'is_applied': is_applied})
 
-# 3. create_job
 @login_required
 def create_job(request):
     profile = request.user.profile
-    
-    # 投稿制限チェック
     if not profile.can_post_job():
         limit = profile.posting_limit
+        rank_display = profile.display_rank
         if limit == 0:
-            messages.error(request, f"現在のランク（{profile.display_rank}）では募集投稿はできません。")
+            messages.error(request, f"現在のランク（{rank_display}）では募集投稿はできません。")
         else:
-            messages.error(request, f"現在のランク（{profile.display_rank}）の募集投稿上限（月{limit}件）を超えています。月が変わるとリセットされます。")
+            messages.error(request, f"現在のランク（{rank_display}）の募集投稿上限（月{limit}件）を超えています。")
         return redirect('profile_detail', user_id=request.user.id)
     
     if request.method == 'POST':
@@ -81,7 +73,6 @@ def create_job(request):
     else: form = JobForm()
     return render(request, 'jobs/create_job.html', {'form': form, 'is_edit': False})
 
-# 4. edit_job
 @login_required
 def edit_job(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
@@ -92,47 +83,50 @@ def edit_job(request, job_id):
     else: form = JobForm(instance=job)
     return render(request, 'jobs/create_job.html', {'form': form, 'is_edit': True})
 
-# 5. delete_job
 @login_required
 def delete_job(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     if job.created_by == request.user: job.delete()
     return redirect('home')
 
-# 6. apply_job
 @login_required
 def apply_job(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     if not request.user.profile.can_apply():
-        r, l = request.user.profile.display_rank, request.user.profile.monthly_limit
+        # display_rankを使用
+        r = request.user.profile.display_rank
+        l = request.user.profile.monthly_limit
         messages.error(request, f"応募上限です。現在のランク（{r}）の枠は月{l}件です。")
         return redirect('job_detail', job_id=job.id)
     Application.objects.get_or_create(job=job, applicant=request.user)
     create_notification(job.created_by, f"「{job.title}」に応募がありました。", f"/job/{job.id}/applicants/")
     return redirect('job_detail', job_id=job.id)
 
-# 7. cancel_application
 @login_required
 def cancel_application(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     Application.objects.filter(job=job, applicant=request.user).delete()
     return redirect('job_detail', job_id=job.id)
 
-# 8. job_applicants
+# --- 3. Management ---
 @login_required
 def job_applicants(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     if job.created_by != request.user: return redirect('home')
     return render(request, 'jobs/job_applicants.html', {'job': job, 'applications': job.applications.all()})
 
-# 9. adopt_applicant
 @login_required
 def adopt_applicant(request, application_id):
     app = get_object_or_404(Application, pk=application_id)
     if request.user == app.job.created_by: app.status = 'accepted'; app.save()
     return redirect('job_applicants', job_id=app.job.id)
 
-# 10. chat_room
+@login_required
+def reject_applicant(request, application_id):
+    app = get_object_or_404(Application, pk=application_id)
+    if request.user == app.job.created_by: app.delete()
+    return redirect('job_applicants', job_id=app.job.id)
+
 @login_required
 def chat_room(request, application_id):
     app = get_object_or_404(Application, pk=application_id)
@@ -146,21 +140,19 @@ def chat_room(request, application_id):
     Message.objects.filter(application=app, is_read=False).exclude(sender=request.user).update(is_read=True)
     return render(request, 'jobs/chat_room.html', {'application': app, 'form': MessageForm(), 'messages': app.messages.all()})
 
-# 11. notifications
 @login_required
 def notifications(request):
     request.user.notifications.filter(is_read=False).update(is_read=True)
     return render(request, 'jobs/notifications.html', {'notifications': request.user.notifications.all().order_by('-created_at')})
 
-# 12. profile_detail (カウントロジック実装済み)
+# --- 4. Profile & Settings ---
 @login_required
 def profile_detail(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
-    # 循環参照防止
-    from .models import Job, Application
+    from .models import Job, Application # 循環参照回避
     jobs = Job.objects.filter(created_by=target_user).order_by('-id')
     
-    # 今月の利用状況計算
+    # --- カウンター計算 ---
     now = timezone.now()
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
@@ -171,20 +163,22 @@ def profile_detail(request, user_id):
         'target_user': target_user, 
         'jobs': jobs, 
         'prefectures': PREFECTURES,
-        'posts_this_month': posts_this_month,
-        'applies_this_month': applies_this_month
+        'posts_this_month': posts_this_month,     # テンプレートへ渡す
+        'applies_this_month': applies_this_month  # テンプレートへ渡す
     }
     return render(request, 'accounts/profile_detail.html', context)
 
-# 13-15. profile_edit, favorites
 @login_required
 def profile_edit(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
-        # FILESがないと画像が保存されません
+        # ★重要: request.FILES を忘れると画像が保存されません
         form = ProfileForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid(): form.save(); return redirect('profile_detail', user_id=request.user.id)
-    else: form = ProfileForm(instance=profile)
+        if form.is_valid(): 
+            form.save()
+            return redirect('profile_detail', user_id=request.user.id)
+    else: 
+        form = ProfileForm(instance=profile)
     return render(request, 'jobs/profile_edit.html', {'form': form})
 
 @login_required
@@ -199,7 +193,7 @@ def delete_favorite_area(request, area_id):
     get_object_or_404(FavoriteArea, id=area_id, user=request.user).delete()
     return redirect('profile_detail', user_id=request.user.id)
 
-# 16-23. Admin & Others
+# --- 5. Admin & Static ---
 @user_passes_test(is_staff_user)
 def admin_dashboard(request):
     p = Profile.objects.filter(is_verified=False, id_card_image__isnull=False).exclude(id_card_image='')
@@ -217,9 +211,3 @@ def about_view(request): return render(request, 'jobs/about.html')
 def terms_view(request): return render(request, 'jobs/terms.html')
 def privacy_view(request): return render(request, 'jobs/privacy.html')
 def law_view(request): return render(request, 'jobs/law.html')
-
-@login_required
-def reject_applicant(request, application_id):
-    app = get_object_or_404(Application, pk=application_id)
-    if request.user == app.job.created_by: app.delete()
-    return redirect('job_applicants', job_id=app.job.id)

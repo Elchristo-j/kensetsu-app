@@ -13,62 +13,43 @@
 
         {% if form.errors %}
             <div class="alert alert-danger">
-                入力内容にエラーがあります。再度確認してください。<br>
+                入力内容にエラーがあります。<br>
                 {{ form.errors }}
             </div>
         {% endif %}
 
-        <h6 class="fw-bold border-bottom pb-2 mb-4">基本設定</h6>
+        <h6 class="fw-bold border-bottom pb-2 mb-4">登録情報</h6>
 
-        <div class="mb-4 text-center">
-          <label class="form-label fw-bold small text-muted d-block">プロフィール画像</label>
-          
-          {% if user.profile.avatar %}
-            <div class="mb-2">
-                <img src="{{ user.profile.avatar.url }}" class="rounded-circle border shadow-sm" style="width: 100px; height: 100px; object-fit: cover;">
-            </div>
-          {% endif %}
-          
-          {{ form.avatar }}
-          <div class="form-text small">顔写真など、あなたと分かる画像を設定してください。</div>
-        </div>
+        {% for field in form %}
+            <div class="mb-4">
+                <label class="form-label fw-bold small text-muted">{{ field.label }}</label>
+                
+                {% if 'image' in field.name or 'avatar' in field.name %}
+                    {% if user.profile.avatar %}
+                         <div class="mb-2">
+                            <img src="{{ user.profile.avatar.url }}" class="rounded-circle border shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
+                            <span class="small text-muted ms-2">現在の画像</span>
+                         </div>
+                    {% elif user.profile.image %}
+                         <div class="mb-2">
+                            <img src="{{ user.profile.image.url }}" class="rounded-circle border shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
+                            <span class="small text-muted ms-2">現在の画像</span>
+                         </div>
+                    {% endif %}
+                {% endif %}
 
-        <div class="mb-4">
-          <label class="form-label fw-bold small text-muted">会社名・屋号</label>
-          {{ form.company_name }}
-        </div>
+                {{ field }}
+                
+                {% if field.help_text %}
+                    <div class="form-text small">{{ field.help_text }}</div>
+                {% endif %}
+                {% if field.errors %}
+                    <div class="text-danger small">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
 
-        <div class="mb-4">
-          <label class="form-label fw-bold small text-muted">自己紹介</label>
-          {{ form.bio }}
-        </div>
-
-        <div class="mt-5 p-4 rounded-3" style="background-color: #f8f9fa; border: 1px solid #dee2e6;" id="verify-section">
-          <h6 class="fw-bold text-sumi mb-2">🛡️ 本人確認書類の提出</h6>
-          <p class="small text-muted mb-3">
-            ランクアップ（Bronze以上）には本人確認が必要です。<br>
-            運転免許証やマイナンバーカード等の画像をアップロードしてください。<br>
-            <strong>※この画像は運営者のみが確認し、一般には公開されません。</strong>
-          </p>
-          
-          <div class="mb-3">
-              {{ form.id_card_image }}
-          </div>
-          
-          {% if user.profile.is_verified %}
-            <div class="alert alert-success py-2 small fw-bold mb-0">
-              <i class="bi bi-check-circle-fill"></i> 現在、本人確認済みです。
-            </div>
-          {% elif user.profile.id_card_image %}
-            <div class="alert alert-warning py-2 small mb-0">
-              <i class="bi bi-hourglass-split"></i> 書類確認中です。承認をお待ちください。
-            </div>
-          {% else %}
-            <div class="text-secondary small">
-              <i class="bi bi-info-circle"></i> 未提出（画像をアップロードして保存してください）
-            </div>
-          {% endif %}
-        </div>
+        <div id="verify-section" class="mt-3"></div>
 
         <div class="d-grid gap-2 mt-5">
           <button type="submit" class="btn btn-dark btn-lg fw-bold shadow rounded-pill">
@@ -82,16 +63,21 @@
 </div>
 
 <style>
-  .text-sumi { color: #15151a; }
   /* 入力欄のデザイン統一 */
-  input[type="text"], textarea, input[type="file"], select, input[type="email"] {
+  input[type="text"], textarea, input[type="file"], select, input[type="email"], input[type="number"] {
     width: 100%;
     padding: 0.5rem 0.75rem;
     border: 1px solid #ced4da;
     border-radius: 0.5rem;
+    display: block;
   }
   input[type="file"] {
     background: white;
+  }
+  /* チェックボックス等の例外 */
+  input[type="checkbox"] {
+    width: auto;
+    display: inline-block;
   }
 </style>
 {% endblock %}

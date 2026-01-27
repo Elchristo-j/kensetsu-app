@@ -83,6 +83,8 @@
               <div class="me-3">
                 {% if job.created_by.profile.avatar %}
                   <img src="{{ job.created_by.profile.avatar.url }}" class="rounded-circle" width="60" height="60" style="object-fit: cover;">
+                {% elif job.created_by.profile.image %}
+                  <img src="{{ job.created_by.profile.image.url }}" class="rounded-circle" width="60" height="60" style="object-fit: cover;">
                 {% else %}
                   <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
                       {{ job.created_by.username|slice:":1" }}
@@ -108,7 +110,6 @@
 
           <div class="text-center mt-4">
             {% if user == job.created_by %}
-              {# --- 自分の投稿 --- #}
               <div class="alert alert-secondary border-0 p-4">
                 <p class="fw-bold mb-3">📢 あなたが募集した仕事です</p>
                 <div class="d-flex flex-wrap justify-content-center gap-2">
@@ -120,16 +121,13 @@
             {% else %}
               {% if user.is_authenticated %}
                 {% if is_applied %}
-                  {# --- 応募済み --- #}
                   <div class="alert alert-success border-0 shadow-sm rounded-4">
                     <p class="fw-bold mb-2">✅ すでに応募済みです</p>
                     <a href="{% url 'cancel_application' job.id %}" class="btn btn-outline-danger btn-sm rounded-pill">応募をキャンセルする</a>
                   </div>
                 {% elif not job.is_closed %}
-                  {# --- 未応募・募集中 --- #}
                   
                   {% if user.profile.can_apply %}
-                    {# --- ランク制限内 --- #}
                     <form action="{% url 'apply_job' job.id %}" method="post">
                       {% csrf_token %}
                       <button type="submit" class="btn btn-lg px-5 shadow rounded-pill text-white" style="background-color: #15151a;">
@@ -137,13 +135,12 @@
                       </button>
                     </form>
                   {% else %}
-                    {# --- ランク制限オーバー --- #}
                     <div class="alert alert-warning border-0 shadow-sm rounded-4 p-4">
                       <p class="fw-bold mb-2 text-dark"><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>今月の応募制限に達しました</p>
                       <p class="small text-secondary mb-3">
-                        現在のランク「<span class="fw-bold text-uppercase">{{ user.profile.display_rank }}</span>」の応募枠は
+                        現在のランク「<span class="fw-bold">{{ user.profile.display_rank }}</span>」の応募枠は
                         月<span class="fw-bold">
-                            {% if user.profile.monthly_limit > 999 %}無制限
+                            {% if user.profile.monthly_limit >= 999 %}無制限
                             {% else %}{{ user.profile.monthly_limit }}回{% endif %}
                         </span>です。<br>
                         さらなる応募にはランクアップをご検討ください。
@@ -155,11 +152,9 @@
                   {% endif %}
 
                 {% else %}
-                  {# --- 募集終了 --- #}
                   <button class="btn btn-secondary btn-lg px-5 rounded-pill" disabled>募集終了しました</button>
                 {% endif %}
               {% else %}
-                {# --- 未ログイン --- #}
                 <div class="alert alert-warning">応募には <a href="{% url 'login' %}">ログイン</a> が必要です。</div>
               {% endif %}
             {% endif %}

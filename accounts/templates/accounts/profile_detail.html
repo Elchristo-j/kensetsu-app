@@ -7,9 +7,12 @@
         <div class="col-lg-8">
             <div class="card shadow border-0 rounded-4 mb-4">
                 <div class="card-body p-5 text-center">
+                    
                     <div class="mb-3 position-relative d-inline-block">
                         {% if target_user.profile.avatar %}
                             <img src="{{ target_user.profile.avatar.url }}" class="rounded-circle border border-3 border-light shadow-sm" style="width: 120px; height: 120px; object-fit: cover;">
+                        {% elif target_user.profile.image %}
+                            <img src="{{ target_user.profile.image.url }}" class="rounded-circle border border-3 border-light shadow-sm" style="width: 120px; height: 120px; object-fit: cover;">
                         {% else %}
                             <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto text-white fs-1" style="width: 120px; height: 120px;">
                                 {{ target_user.username|slice:":1" }}
@@ -41,11 +44,11 @@
                                     <span>
                                         <span class="fw-bold">{{ posts_this_month }}</span> / 
                                         {% if target_user.profile.posting_limit == 0 %}不可
-                                        {% elif target_user.profile.posting_limit > 999 %}∞
+                                        {% elif target_user.profile.posting_limit >= 999 %}∞
                                         {% else %}{{ target_user.profile.posting_limit }}{% endif %}
                                     </span>
                                 </div>
-                                {% if target_user.profile.posting_limit > 0 and target_user.profile.posting_limit < 1000 %}
+                                {% if target_user.profile.posting_limit > 0 and target_user.profile.posting_limit < 999 %}
                                     <div class="progress" style="height: 6px;">
                                         <div class="progress-bar bg-primary" role="progressbar" 
                                              style="width: {% widthratio posts_this_month target_user.profile.posting_limit 100 %}%;"></div>
@@ -58,11 +61,11 @@
                                     <span>応募回数</span>
                                     <span>
                                         <span class="fw-bold">{{ applies_this_month }}</span> / 
-                                        {% if target_user.profile.monthly_limit > 999 %}∞
+                                        {% if target_user.profile.monthly_limit >= 999 %}∞
                                         {% else %}{{ target_user.profile.monthly_limit }}{% endif %}
                                     </span>
                                 </div>
-                                {% if target_user.profile.monthly_limit < 1000 %}
+                                {% if target_user.profile.monthly_limit < 999 %}
                                     <div class="progress" style="height: 6px;">
                                         <div class="progress-bar bg-success" role="progressbar" 
                                              style="width: {% widthratio applies_this_month target_user.profile.monthly_limit 100 %}%;"></div>
@@ -74,15 +77,17 @@
                         <div class="d-flex gap-2 justify-content-center">
                             <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark rounded-pill px-4">編集</a>
                             
-                            {% if target_user.profile.display_rank|lower == 'iron' %}
-                                <a href="{% url 'profile_edit' %}#verify-section" class="btn btn-success rounded-pill px-4 fw-bold">
-                                    <i class="bi bi-person-check"></i> 本人確認してBronzeへ
-                                </a>
-                            {% elif target_user.profile.display_rank|lower == 'platinum' %}
-                                <a href="{% url 'about' %}" class="btn btn-outline-secondary rounded-pill px-4" onclick="alert('解約・プラン変更については運営事務局までお問い合わせください。'); return false;">プラン変更・解約</a>
-                            {% else %}
-                                <button class="btn btn-rankup rounded-pill px-4 shadow-sm">ランクアップする</button>
-                            {% endif %}
+                            {% with rank=target_user.profile.display_rank|lower %}
+                                {% if rank == 'iron' %}
+                                    <a href="{% url 'profile_edit' %}#verify-section" class="btn btn-success rounded-pill px-4 fw-bold">
+                                        <i class="bi bi-person-check"></i> 本人確認してBronzeへ
+                                    </a>
+                                {% elif rank == 'platinum' %}
+                                    <a href="{% url 'about' %}" class="btn btn-outline-secondary rounded-pill px-4" onclick="alert('解約・プラン変更については運営事務局までお問い合わせください。'); return false;">プラン変更・解約</a>
+                                {% else %}
+                                    <button class="btn btn-rankup rounded-pill px-4 shadow-sm">ランクアップする</button>
+                                {% endif %}
+                            {% endwith %}
                         </div>
                     {% endif %}
                 </div>
