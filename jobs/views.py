@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q
 from django.contrib.auth.models import User
-from django.utils import timezone # 追加
+from django.utils import timezone 
 from .models import Job, Application, Message, Notification
 from accounts.models import Profile, FavoriteArea, PREFECTURES
 from accounts.forms import ProfileForm
@@ -14,7 +14,7 @@ def create_notification(recipient, message, link=None):
 
 def is_staff_user(user): return user.is_authenticated and user.is_staff
 
-# 1. home (お気に入り対応版)
+# 1. home
 def home(request):
     jobs = Job.objects.filter(is_closed=False).order_by('-id')
     query = request.GET.get('query', '')
@@ -26,7 +26,8 @@ def home(request):
     if area_filter: 
         jobs = jobs.filter(prefecture=area_filter)
     if city_filter:
-        # Jobモデルにcityがない場合はエラーになるので、モデルに合わせて調整してください
+        # Jobモデルにcityがない場合は、models.pyへのフィールド追加が必要です。
+        # 現在はエラー回避のためパスしています。
         # jobs = jobs.filter(city=city_filter) 
         pass 
         
@@ -59,23 +60,18 @@ def job_detail(request, job_id):
     is_applied = Application.objects.filter(job=job, applicant=request.user).exists() if request.user.is_authenticated else False
     return render(request, 'jobs/job_detail.html', {'job': job, 'is_applied': is_applied})
 
-# 3. create_job (修正2: エラーメッセージの詳細化)
+# 3. create_job
 @login_required
 def create_job(request):
     profile = request.user.profile
     
     # 投稿制限チェック
     if not profile.can_post_job():
-        rank = profile.display_rank.lower()
         limit = profile.posting_limit
-        
-        # ランク自体が投稿不可の場合 (Bronze, Iron)
         if limit == 0:
             messages.error(request, f"現在のランク（{profile.display_rank}）では募集投稿はできません。")
         else:
-            # 回数制限オーバーの場合 (Silverなど)
             messages.error(request, f"現在のランク（{profile.display_rank}）の募集投稿上限（月{limit}件）を超えています。月が変わるとリセットされます。")
-            
         return redirect('profile_detail', user_id=request.user.id)
     
     if request.method == 'POST':
@@ -156,11 +152,12 @@ def notifications(request):
     request.user.notifications.filter(is_read=False).update(is_read=True)
     return render(request, 'jobs/notifications.html', {'notifications': request.user.notifications.all().order_by('-created_at')})
 
-# 12. profile_detail (機能2: 投稿・応募数カウント追加)
+# 12. profile_detail (カウントロジック実装済み)
 @login_required
 def profile_detail(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
-    from .models import Job
+    # 循環参照防止
+    from .models import Job, Application
     jobs = Job.objects.filter(created_by=target_user).order_by('-id')
     
     # 今月の利用状況計算
@@ -179,11 +176,12 @@ def profile_detail(request, user_id):
     }
     return render(request, 'accounts/profile_detail.html', context)
 
-# 13-15. profile_edit, favorites (変更なし)
+# 13-15. profile_edit, favorites
 @login_required
 def profile_edit(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
+        # FILESがないと画像が保存されません
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid(): form.save(); return redirect('profile_detail', user_id=request.user.id)
     else: form = ProfileForm(instance=profile)
@@ -201,7 +199,7 @@ def delete_favorite_area(request, area_id):
     get_object_or_404(FavoriteArea, id=area_id, user=request.user).delete()
     return redirect('profile_detail', user_id=request.user.id)
 
-# 16-23. Admin & Others (変更なし)
+# 16-23. Admin & Others
 @user_passes_test(is_staff_user)
 def admin_dashboard(request):
     p = Profile.objects.filter(is_verified=False, id_card_image__isnull=False).exclude(id_card_image='')

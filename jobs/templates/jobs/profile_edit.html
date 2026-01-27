@@ -1,15 +1,9 @@
 {% extends 'base.html' %}
-{% load static %}
 
 {% block content %}
-{# 編集ミスを防ぐための赤いバー（確認用） #}
-<div style="background: red; color: white; padding: 10px; text-align: center; font-weight: bold;">
-    【警告】この赤いバーが見えていれば、正しいファイルを編集しています
-</div>
-
 <div class="container mt-5" style="max-width: 650px;">
-  <div class="card shadow border-0 mb-5">
-    <div class="card-header text-white py-3" style="background-color: #15151a !important;">
+  <div class="card shadow border-0 mb-5 rounded-4">
+    <div class="card-header py-3" style="background-color: #15151a;">
       <h4 class="mb-0 fw-bold text-white">👤 プロフィールを編集</h4>
     </div>
     
@@ -17,49 +11,70 @@
       <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <h6 class="fw-bold border-bottom pb-2 mb-3">基本設定</h6>
-        <div class="mb-4">
-          <label class="form-label fw-bold small text-muted">{{ form.image.label }}</label>
-          {{ form.image }}
-          <div class="form-text">顔写真など、あなたと分かる画像を設定してください。</div>
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                入力内容にエラーがあります。再度確認してください。<br>
+                {{ form.errors }}
+            </div>
+        {% endif %}
+
+        <h6 class="fw-bold border-bottom pb-2 mb-4">基本設定</h6>
+
+        <div class="mb-4 text-center">
+          <label class="form-label fw-bold small text-muted d-block">プロフィール画像</label>
+          
+          {% if user.profile.avatar %}
+            <div class="mb-2">
+                <img src="{{ user.profile.avatar.url }}" class="rounded-circle border shadow-sm" style="width: 100px; height: 100px; object-fit: cover;">
+            </div>
+          {% endif %}
+          
+          {{ form.avatar }}
+          <div class="form-text small">顔写真など、あなたと分かる画像を設定してください。</div>
         </div>
 
         <div class="mb-4">
-          <label class="form-label fw-bold small text-muted">{{ form.location.label }}</label>
-          {{ form.location }}
+          <label class="form-label fw-bold small text-muted">会社名・屋号</label>
+          {{ form.company_name }}
         </div>
 
         <div class="mb-4">
-          <label class="form-label fw-bold small text-muted">{{ form.description.label }}</label>
-          {{ form.description }}
+          <label class="form-label fw-bold small text-muted">自己紹介</label>
+          {{ form.bio }}
         </div>
 
-        <div class="mt-5 p-3 rounded" style="background-color: #f8f9fa; border: 1px solid #dee2e6;">
-          <h6 class="fw-bold text-sumi mb-2">🛡️ 本人確認（推奨）</h6>
+        <div class="mt-5 p-4 rounded-3" style="background-color: #f8f9fa; border: 1px solid #dee2e6;" id="verify-section">
+          <h6 class="fw-bold text-sumi mb-2">🛡️ 本人確認書類の提出</h6>
           <p class="small text-muted mb-3">
-            免許証などの身分証をアップロードすると、運営の確認後に「本人確認済みバッジ」が付与されます。
-            <br><strong>※この画像は運営者のみが確認し、一般には公開されません。</strong>
+            ランクアップ（Bronze以上）には本人確認が必要です。<br>
+            運転免許証やマイナンバーカード等の画像をアップロードしてください。<br>
+            <strong>※この画像は運営者のみが確認し、一般には公開されません。</strong>
           </p>
           
-          <label class="form-label fw-bold small text-muted">{{ form.id_card_image.label }}</label>
-          {{ form.id_card_image }}
+          <div class="mb-3">
+              {{ form.id_card_image }}
+          </div>
           
           {% if user.profile.is_verified %}
-            <div class="mt-2 text-success small fw-bold">
+            <div class="alert alert-success py-2 small fw-bold mb-0">
               <i class="bi bi-check-circle-fill"></i> 現在、本人確認済みです。
             </div>
+          {% elif user.profile.id_card_image %}
+            <div class="alert alert-warning py-2 small mb-0">
+              <i class="bi bi-hourglass-split"></i> 書類確認中です。承認をお待ちください。
+            </div>
           {% else %}
-            <div class="mt-2 text-secondary small">
-              <i class="bi bi-info-circle"></i> 未承認（画像をアップロードして保存してください）
+            <div class="text-secondary small">
+              <i class="bi bi-info-circle"></i> 未提出（画像をアップロードして保存してください）
             </div>
           {% endif %}
         </div>
 
         <div class="d-grid gap-2 mt-5">
-          <button type="submit" class="btn btn-lg fw-bold text-white shadow" style="background-color: #15151a !important; border: none; border-radius: 50px;">
+          <button type="submit" class="btn btn-dark btn-lg fw-bold shadow rounded-pill">
             変更を保存する
           </button>
-          <a href="{% url 'profile_detail' user.id %}" class="btn btn-link text-secondary">戻る</a>
+          <a href="{% url 'profile_detail' user.id %}" class="btn btn-link text-secondary">キャンセルして戻る</a>
         </div>
       </form>
     </div>
@@ -68,9 +83,15 @@
 
 <style>
   .text-sumi { color: #15151a; }
-  /* 入力フォームのスタイル調整 */
-  input[type="text"], textarea, input[type="file"], select {
-    border-radius: 8px !important;
+  /* 入力欄のデザイン統一 */
+  input[type="text"], textarea, input[type="file"], select, input[type="email"] {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.5rem;
+  }
+  input[type="file"] {
+    background: white;
   }
 </style>
 {% endblock %}

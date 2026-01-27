@@ -39,9 +39,9 @@
                                 <div class="d-flex justify-content-between small mb-1">
                                     <span>募集投稿数</span>
                                     <span>
-                                        {{ posts_this_month }} / 
+                                        <span class="fw-bold">{{ posts_this_month }}</span> / 
                                         {% if target_user.profile.posting_limit == 0 %}不可
-                                        {% elif target_user.profile.posting_limit > 1000 %}無制限
+                                        {% elif target_user.profile.posting_limit > 999 %}∞
                                         {% else %}{{ target_user.profile.posting_limit }}{% endif %}
                                     </span>
                                 </div>
@@ -57,8 +57,8 @@
                                 <div class="d-flex justify-content-between small mb-1">
                                     <span>応募回数</span>
                                     <span>
-                                        {{ applies_this_month }} / 
-                                        {% if target_user.profile.monthly_limit > 1000 %}無制限
+                                        <span class="fw-bold">{{ applies_this_month }}</span> / 
+                                        {% if target_user.profile.monthly_limit > 999 %}∞
                                         {% else %}{{ target_user.profile.monthly_limit }}{% endif %}
                                     </span>
                                 </div>
@@ -79,7 +79,7 @@
                                     <i class="bi bi-person-check"></i> 本人確認してBronzeへ
                                 </a>
                             {% elif target_user.profile.display_rank|lower == 'platinum' %}
-                                <a href="#" class="btn btn-outline-secondary rounded-pill px-4">プラン変更・解約</a>
+                                <a href="{% url 'about' %}" class="btn btn-outline-secondary rounded-pill px-4" onclick="alert('解約・プラン変更については運営事務局までお問い合わせください。'); return false;">プラン変更・解約</a>
                             {% else %}
                                 <button class="btn btn-rankup rounded-pill px-4 shadow-sm">ランクアップする</button>
                             {% endif %}
