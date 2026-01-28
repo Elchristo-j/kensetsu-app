@@ -152,47 +152,15 @@ def profile_detail(request, user_id):
     from .models import Job, Application # 循環参照回避
     jobs = Job.objects.filter(created_by=target_user).order_by('-id')
     
-    # --- カウンター計算 (修正版: 年と月で指定) ---
-    now = timezone.now()
-    
-    # 投稿数
-    posts_this_month = Job.objects.filter(
-        created_by=target_user,
-        created_at__year=now.year,
-        created_at__month=now.month
-    ).count()
-    
-    # 応募数
-    # Applicationモデルに applied_at があるか created_at があるか両方試す
-    try:
-        # まず created_at (標準的なDjangoモデル) を試す
-        applies_this_month = Application.objects.filter(
-            applicant=target_user,
-            created_at__year=now.year,
-            created_at__month=now.month
-        ).count()
-    except:
-        try:
-            # 次に applied_at を試す
-            applies_this_month = Application.objects.filter(
-                applicant=target_user,
-                applied_at__year=now.year,
-                applied_at__month=now.month
-            ).count()
-        except:
-            # 万が一どちらもダメなら0
-            applies_this_month = 0
-            print("Warning: Could not count applications. Check model fields.")
-
-    # デバッグ用ログ (RenderのLogsに出力されます)
-    print(f"User: {target_user.username}, Posts: {posts_this_month}, Applies: {applies_this_month}")
+    # カウンター計算は現在無効化しています（テンプレート側では '-' を表示）
+    # 将来的に実装する場合はここで計算ロジックを追加してください
     
     context = {
         'target_user': target_user, 
         'jobs': jobs, 
         'prefectures': PREFECTURES,
-        'posts_this_month': posts_this_month,     
-        'applies_this_month': applies_this_month
+        # カウンター変数は渡さず、テンプレートのdefault表示に任せるか、
+        # 明示的にNoneを渡しても良いです
     }
     return render(request, 'accounts/profile_detail.html', context)
 

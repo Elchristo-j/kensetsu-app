@@ -17,8 +17,12 @@
 
         .navbar-dark .navbar-nav .nav-link { color: #ffffff !important; font-weight: 600; }
         .nav-username { color: #ffffff; font-size: 0.8rem; margin-right: 15px; border-right: 1px solid rgba(255,255,255,0.3); padding-right: 15px; }
+        
+        /* 解約リンク用の控えめなスタイル */
+        .nav-link-cancel { font-size: 0.75rem !important; color: rgba(255,255,255,0.6) !important; font-weight: normal !important; }
+        .nav-link-cancel:hover { color: rgba(255,255,255,1.0) !important; text-decoration: underline; }
 
-        /* ランクバッジスタイル (元のCSS設定) */
+        /* ランクバッジスタイル */
         .rank-badge { font-size: 0.75rem; padding: 0.25em 0.6em; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
         .badge-platinum { background: linear-gradient(45deg, #2c3e50, #00d2ff) !important; color: white !important; text-transform: uppercase; }
         .badge-gold { background: linear-gradient(45deg, #d4af37, #f1c40f) !important; color: white !important; text-transform: uppercase; }
@@ -80,11 +84,16 @@
                         
                         {% if user.is_staff %}<li class="nav-item"><a class="nav-link text-warning fw-bold" href="{% url 'admin_dashboard' %}">管理画面</a></li>{% endif %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'create_job' %}">募集する</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'guide_view' %}"><i class="bi bi-book"></i> ご利用ガイド</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'guide_view' %}"><i class="bi bi-book"></i> ガイド</a></li>
                         <li class="nav-item ms-2"><a class="nav-link btn btn-outline-light btn-sm px-3 rounded-pill" href="{% url 'profile_detail' user.id %}">マイページ</a></li>
                         <li class="nav-item ms-2">
                             <form action="{% url 'logout' %}" method="post" class="d-inline">{% csrf_token %}<button type="submit" class="btn btn-link nav-link">ログアウト</button></form>
                         </li>
+                        
+                        <li class="nav-item ms-2 border-start border-secondary ps-2">
+                             <a class="nav-link nav-link-cancel" href="{% url 'subscription_plans' %}#cancel-info">解約について</a>
+                        </li>
+
                     {% else %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">ログイン</a></li>
                         <li class="nav-item ms-2"><a class="btn btn-warning text-dark fw-bold rounded-pill px-4" href="{% url 'signup' %}">新規登録</a></li>
