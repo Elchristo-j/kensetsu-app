@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <h2 class="fw-bold text-center mb-4"><i class="bi bi-book"></i> ご利用ガイド & Q&A</h2>
+
+    <ul class="nav nav-tabs justify-content-center mb-4" id="guideTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active text-dark fw-bold" id="flow-tab" data-bs-toggle="tab" data-bs-target="#flow" type="button">ご利用の流れ</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link text-dark fw-bold" id="manner-tab" data-bs-toggle="tab" data-bs-target="#manner" type="button">マナー・ルール</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link text-dark fw-bold" id="qa-tab" data-bs-toggle="tab" data-bs-target="#qa" type="button">よくある質問 (Q&A)</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="guideTabContent">
+        
+        <div class="tab-pane fade show active" id="flow" role="tabpanel">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm border-0 rounded-4">
+                        <div class="card-header bg-dark text-white fw-bold">👷 職人（ワーカー）の方</div>
+                        <div class="card-body">
+                            <ol class="list-group list-group-flush list-group-numbered">
+                                <li class="list-group-item"><strong>案件を探す</strong><br>エリアや条件で検索し、気になる案件を見つけます。</li>
+                                <li class="list-group-item"><strong>応募する</strong><br>募集内容をよく確認し、「応募する」ボタンを押します。</li>
+                                <li class="list-group-item"><strong>チャットで調整</strong><br>発注者から連絡が来たら、チャット機能で詳細（集合場所、持ち物など）を調整します。</li>
+                                <li class="list-group-item"><strong>当日作業・完了</strong><br>現場で作業を行い、完了したら報告します。</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm border-0 rounded-4">
+                        <div class="card-header bg-primary text-white fw-bold">🏢 発注者（オーナー）の方</div>
+                        <div class="card-body">
+                            <ol class="list-group list-group-flush list-group-numbered">
+                                <li class="list-group-item"><strong>案件を投稿する</strong><br>「募集する」ボタンから、現場の情報を詳しく入力します。</li>
+                                <li class="list-group-item"><strong>応募者を待つ</strong><br>応募が来ると通知が届きます。プロフィールや評価を確認しましょう。</li>
+                                <li class="list-group-item"><strong>採用・メッセージ</strong><br>条件が合えば「採用」し、チャットで詳細を伝えます。</li>
+                                <li class="list-group-item"><strong>作業完了・支払い</strong><br>作業完了後、直接または規定の方法で報酬を支払います。</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="manner" role="tabpanel">
+            <div class="card bg-light border-0 p-4 rounded-4">
+                <h5 class="fw-bold mb-3 text-danger"><i class="bi bi-exclamation-triangle-fill"></i> 必ずお守りください</h5>
+                <ul>
+                    <li class="mb-2"><strong>無断キャンセルの禁止</strong>: 当日の無断欠勤（ドタキャン）は、現場に多大な迷惑がかかります。絶対におやめください。</li>
+                    <li class="mb-2"><strong>安全第一</strong>: ヘルメットや安全帯など、現場で必要な安全装備は必ず持参・着用してください。</li>
+                    <li class="mb-2"><strong>丁寧なコミュニケーション</strong>: チャットでの言葉遣いは丁寧に。返信は早めに行いましょう。</li>
+                    <li class="mb-2"><strong>直接取引の注意</strong>: トラブル防止のため、初回のやり取りは必ずアプリ内のチャット機能を使用してください。</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="qa" role="tabpanel">
+            <div class="accordion" id="accordionQA">
+                
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#qa1">
+                            Q. 利用料はかかりますか？
+                        </button>
+                    </h2>
+                    <div id="qa1" class="accordion-collapse collapse show" data-bs-parent="#accordionQA">
+                        <div class="accordion-body">
+                            A. 基本的な利用は無料です。より多くの案件に応募したり、優先的に募集を表示させたい場合に「有料プラン」をご用意しています。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#qa2">
+                            Q. 報酬の支払いはどうなりますか？
+                        </button>
+                    </h2>
+                    <div id="qa2" class="accordion-collapse collapse" data-bs-parent="#accordionQA">
+                        <div class="accordion-body">
+                            A. 現時点では、<strong>「当日現金払い」または「発注者からの銀行振込」</strong>など、当事者間での直接支払いをお願いしています。アプリ内決済機能は今後導入予定です。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#qa3">
+                            Q. 応募したのに返信が来ません。
+                        </button>
+                    </h2>
+                    <div id="qa3" class="accordion-collapse collapse" data-bs-parent="#accordionQA">
+                        <div class="accordion-body">
+                            A. 発注者が忙しく確認できていない可能性があります。2〜3日待っても連絡がない場合は、他の案件への応募を検討してください。
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

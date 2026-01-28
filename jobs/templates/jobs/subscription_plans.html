@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">プランのアップグレード・変更</h2>
+        <p class="text-muted">より多くの機能を使って、ビジネスを加速させましょう。</p>
+    </div>
+
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8">
+            <div class="alert alert-info text-center">
+                <strong>現在準備中です。</strong><br>
+                プランの変更をご希望の方は、お問い合わせフォームよりご連絡ください。
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+    <div class="row justify-content-center" id="cancel-info">
+        <div class="col-md-8">
+            <h4 class="fw-bold mb-3">プランの解約・変更について</h4>
+            <div class="card bg-light border-0 p-4 rounded-4">
+                <p>有料プランの解約（フリープランへの変更）は以下の手順で行えます。</p>
+                <ol class="list-group list-group-numbered mb-3">
+                    <li class="list-group-item bg-transparent border-0">
+                        次回更新日の3日前までに手続きをお願いします。
+                    </li>
+                    <li class="list-group-item bg-transparent border-0">
+                        現在は自動処理システム準備中のため、お手数ですが<strong>「解約希望」</strong>と記載し、下記より運営事務局へメッセージを送信してください。
+                    </li>
+                    <li class="list-group-item bg-transparent border-0">
+                        運営確認後、2営業日以内にプラン変更処理が完了します。
+                    </li>
+                </ol>
+                <div class="text-center mt-3">
+                    <a href="mailto:support@example.com" class="btn btn-outline-danger rounded-pill px-4">
+                        <i class="bi bi-envelope"></i> 解約・変更を申請する
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

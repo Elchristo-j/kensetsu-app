@@ -152,18 +152,18 @@ def profile_detail(request, user_id):
     from .models import Job, Application # 循環参照回避
     jobs = Job.objects.filter(created_by=target_user).order_by('-id')
     
-    # --- カウンター計算 (修正版) ---
+    # --- カウンター計算 (修正版: created_at を基準にする) ---
     now = timezone.now()
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
-    # created_at__gte を使用（Applicationモデルにapplied_atがない場合の対策として一般的にcreated_atを使います）
+    # 今月の投稿数
     posts_this_month = Job.objects.filter(created_by=target_user, created_at__gte=month_start).count()
     
-    # 修正: applied_at が存在しない場合は created_at を使用してください
+    # 今月の応募数
+    # Applicationモデルに applied_at がなければ created_at を使用する
     try:
         applies_this_month = Application.objects.filter(applicant=target_user, created_at__gte=month_start).count()
     except:
-        # 万が一モデルのフィールド名が applied_at の場合
         applies_this_month = Application.objects.filter(applicant=target_user, applied_at__gte=month_start).count()
     
     context = {
@@ -201,7 +201,7 @@ def delete_favorite_area(request, area_id):
     get_object_or_404(FavoriteArea, id=area_id, user=request.user).delete()
     return redirect('profile_detail', user_id=request.user.id)
 
-# --- 5. Admin & Static ---
+# --- 5. Admin & Static & New Pages ---
 @user_passes_test(is_staff_user)
 def admin_dashboard(request):
     p = Profile.objects.filter(is_verified=False, id_card_image__isnull=False).exclude(id_card_image='')
@@ -219,3 +219,11 @@ def about_view(request): return render(request, 'jobs/about.html')
 def terms_view(request): return render(request, 'jobs/terms.html')
 def privacy_view(request): return render(request, 'jobs/privacy.html')
 def law_view(request): return render(request, 'jobs/law.html')
+
+# 【追加】 Q&A・ガイドページ
+def guide_view(request):
+    return render(request, 'jobs/guide_qa.html')
+
+# 【追加】 プラン・解約ページ
+def subscription_plans(request):
+    return render(request, 'jobs/subscription_plans.html')

@@ -37,12 +37,30 @@
                 <span class="brand-title">建設マッチング</span>
                 <span class="brand-sub">~ エルクリスト ~</span>
             </a>
+
+            {% if user.is_authenticated %}
+                <div class="d-flex align-items-center d-lg-none ms-auto me-3">
+                    <span class="text-white small fw-bold me-1">{{ user.username }}</span>
+                    <span class="badge badge-{{ user.profile.display_rank|lower }}" style="font-size: 0.6rem;">
+                        {{ user.profile.display_rank|slice:":1" }}
+                    </span>
+                    <a class="position-relative text-white ms-3" href="{% url 'notifications' %}">
+                        <i class="bi bi-bell-fill"></i>
+                        {% if user.profile.unread_notifications_count > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem;">
+                                {{ user.profile.unread_notifications_count }}
+                            </span>
+                        {% endif %}
+                    </a>
+                </div>
+            {% endif %}
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     {% if user.is_authenticated %}
-                        <li class="nav-item d-flex align-items-center me-3">
-                            <span class="nav-username d-none d-lg-inline border-0 pe-0 me-0">
+                        <li class="nav-item d-none d-lg-flex align-items-center me-3">
+                            <span class="nav-username border-0 pe-0 me-0">
                                 お疲れ様です {{ user.username }} 様
                             </span>
                             <span class="badge rank-badge badge-{{ user.profile.display_rank|lower }}">
@@ -50,7 +68,7 @@
                             </span>
                         </li>
 
-                        <li class="nav-item me-3">
+                        <li class="nav-item me-3 d-none d-lg-block">
                             <a class="nav-link position-relative p-1" href="{% url 'notifications' %}">
                                 <i class="bi bi-bell-fill fs-5"></i>
                                 {% if user.profile.unread_notifications_count > 0 %}
@@ -58,6 +76,7 @@
                                 {% endif %}
                             </a>
                         </li>
+                        
                         {% if user.is_staff %}<li class="nav-item"><a class="nav-link text-warning fw-bold" href="{% url 'admin_dashboard' %}">管理画面</a></li>{% endif %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'create_job' %}">募集する</a></li>
                         <li class="nav-item ms-2"><a class="nav-link btn btn-outline-light btn-sm px-3 rounded-pill" href="{% url 'profile_detail' user.id %}">マイページ</a></li>
