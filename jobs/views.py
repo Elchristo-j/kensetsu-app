@@ -152,23 +152,41 @@ def profile_detail(request, user_id):
     from .models import Job, Application # 循環参照回避
     jobs = Job.objects.filter(created_by=target_user).order_by('-id')
     
-    # --- カウンター計算 (修正版: created_at を基準にする) ---
+    # --- カウンター計算 (修正版: 年と月で指定) ---
     now = timezone.now()
-    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
-    # 投稿数カウント
-    posts_this_month = Job.objects.filter(created_by=target_user, created_at__gte=month_start).count()
+    # 投稿数
+    posts_this_month = Job.objects.filter(
+        created_by=target_user,
+        created_at__year=now.year,
+        created_at__month=now.month
+    ).count()
     
-    # 応募数カウント (フィールド名揺らぎ対応)
-    # Applicationモデルに applied_at があればそれを使用、なければ created_at
+    # 応募数
+    # Applicationモデルに applied_at があるか created_at があるか両方試す
     try:
-        if hasattr(Application, 'applied_at'):
-            applies_this_month = Application.objects.filter(applicant=target_user, applied_at__gte=month_start).count()
-        else:
-            applies_this_month = Application.objects.filter(applicant=target_user, created_at__gte=month_start).count()
+        # まず created_at (標準的なDjangoモデル) を試す
+        applies_this_month = Application.objects.filter(
+            applicant=target_user,
+            created_at__year=now.year,
+            created_at__month=now.month
+        ).count()
     except:
-        applies_this_month = 0
+        try:
+            # 次に applied_at を試す
+            applies_this_month = Application.objects.filter(
+                applicant=target_user,
+                applied_at__year=now.year,
+                applied_at__month=now.month
+            ).count()
+        except:
+            # 万が一どちらもダメなら0
+            applies_this_month = 0
+            print("Warning: Could not count applications. Check model fields.")
 
+    # デバッグ用ログ (RenderのLogsに出力されます)
+    print(f"User: {target_user.username}, Posts: {posts_this_month}, Applies: {applies_this_month}")
+    
     context = {
         'target_user': target_user, 
         'jobs': jobs, 
