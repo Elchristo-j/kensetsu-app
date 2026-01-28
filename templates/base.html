@@ -18,7 +18,7 @@
         .navbar-dark .navbar-nav .nav-link { color: #ffffff !important; font-weight: 600; }
         .nav-username { color: #ffffff; font-size: 0.8rem; margin-right: 15px; border-right: 1px solid rgba(255,255,255,0.3); padding-right: 15px; }
 
-        /* ランクバッジスタイル */
+        /* ランクバッジスタイル (元のCSSに戻しました) */
         .rank-badge { font-size: 0.75rem; padding: 0.25em 0.6em; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
         .badge-platinum { background: linear-gradient(45deg, #2c3e50, #00d2ff) !important; color: white !important; text-transform: uppercase; }
         .badge-gold { background: linear-gradient(45deg, #d4af37, #f1c40f) !important; color: white !important; text-transform: uppercase; }
@@ -42,7 +42,7 @@
                 <div class="d-flex align-items-center d-lg-none ms-auto me-3">
                     <span class="text-white small fw-bold me-1">{{ user.username }}</span>
                     <span class="badge badge-{{ user.profile.display_rank|lower }}" style="font-size: 0.6rem;">
-                        {{ user.profile.display_rank|slice:":1" }}
+                        {{ user.profile.display_rank }}
                     </span>
                     <a class="position-relative text-white ms-3" href="{% url 'notifications' %}">
                         <i class="bi bi-bell-fill"></i>
@@ -79,6 +79,7 @@
                         
                         {% if user.is_staff %}<li class="nav-item"><a class="nav-link text-warning fw-bold" href="{% url 'admin_dashboard' %}">管理画面</a></li>{% endif %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'create_job' %}">募集する</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'guide_view' %}"><i class="bi bi-book"></i> ご利用ガイド</a></li>
                         <li class="nav-item ms-2"><a class="nav-link btn btn-outline-light btn-sm px-3 rounded-pill" href="{% url 'profile_detail' user.id %}">マイページ</a></li>
                         <li class="nav-item ms-2">
                             <form action="{% url 'logout' %}" method="post" class="d-inline">{% csrf_token %}<button type="submit" class="btn btn-link nav-link">ログアウト</button></form>

@@ -156,16 +156,19 @@ def profile_detail(request, user_id):
     now = timezone.now()
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
-    # 今月の投稿数
+    # 投稿数カウント
     posts_this_month = Job.objects.filter(created_by=target_user, created_at__gte=month_start).count()
     
-    # 今月の応募数
-    # Applicationモデルに applied_at がなければ created_at を使用する
+    # 応募数カウント (フィールド名揺らぎ対応)
+    # Applicationモデルに applied_at があればそれを使用、なければ created_at
     try:
-        applies_this_month = Application.objects.filter(applicant=target_user, created_at__gte=month_start).count()
+        if hasattr(Application, 'applied_at'):
+            applies_this_month = Application.objects.filter(applicant=target_user, applied_at__gte=month_start).count()
+        else:
+            applies_this_month = Application.objects.filter(applicant=target_user, created_at__gte=month_start).count()
     except:
-        applies_this_month = Application.objects.filter(applicant=target_user, applied_at__gte=month_start).count()
-    
+        applies_this_month = 0
+
     context = {
         'target_user': target_user, 
         'jobs': jobs, 
@@ -179,7 +182,6 @@ def profile_detail(request, user_id):
 def profile_edit(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
-        # ★重要: request.FILES を忘れると画像が保存されません
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid(): 
             form.save()

@@ -26,8 +26,8 @@
                     </p>
                     
                     <div class="mb-4">
-                        <span class="badge bg-dark fs-6 px-3 py-2">
-                            {{ target_user.profile.display_rank|title }}
+                        <span class="badge badge-{{ target_user.profile.display_rank|lower }} fs-6 px-3 py-2">
+                            {{ target_user.profile.display_rank }}
                         </span>
                         {% if target_user.profile.is_identity_verified %}
                             <span class="badge bg-success ms-1"><i class="bi bi-check-circle-fill"></i> 本人確認済</span>
@@ -36,13 +36,13 @@
 
                     {% if request.user == target_user %}
                         <div class="bg-light p-3 rounded-3 mb-4 text-start">
-                            <h6 class="fw-bold mb-3 border-bottom pb-2">今月の利用状況 ({{ target_user.profile.display_rank|title }})</h6>
+                            <h6 class="fw-bold mb-3 border-bottom pb-2">今月の利用状況 ({{ target_user.profile.display_rank }})</h6>
                             
                             <div class="mb-3">
                                 <div class="d-flex justify-content-between small mb-1">
                                     <span>募集投稿数</span>
                                     <span>
-                                        <span class="fw-bold">{{ posts_this_month }}</span> / 
+                                        <span class="fw-bold">{{ posts_this_month|default:"0" }}</span> / 
                                         {% if target_user.profile.posting_limit == 0 %}不可
                                         {% elif target_user.profile.posting_limit >= 999 %}∞
                                         {% else %}{{ target_user.profile.posting_limit }}{% endif %}
@@ -60,7 +60,7 @@
                                 <div class="d-flex justify-content-between small mb-1">
                                     <span>応募回数</span>
                                     <span>
-                                        <span class="fw-bold">{{ applies_this_month }}</span> / 
+                                        <span class="fw-bold">{{ applies_this_month|default:"0" }}</span> / 
                                         {% if target_user.profile.monthly_limit >= 999 %}∞
                                         {% else %}{{ target_user.profile.monthly_limit }}{% endif %}
                                     </span>
@@ -80,22 +80,19 @@
                             </a>
                             
                             {% with rank=target_user.profile.display_rank|lower %}
-                                {% if rank == 'iron' or rank == 'free' %}
-                                    <a href="{% url 'subscription_plans' %}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
-                                        <i class="bi bi-gem"></i> ランクアップする
+                                {% if rank == 'iron' %}
+                                    <a href="{% url 'profile_edit' %}#verify-section" class="btn btn-success rounded-pill px-4 fw-bold">
+                                        <i class="bi bi-person-check"></i> 本人確認してBronzeへ
+                                    </a>
+                                {% elif rank == 'platinum' %}
+                                    <a href="{% url 'subscription_plans' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                                        プラン変更・解約
                                     </a>
                                 {% else %}
-                                    <a href="{% url 'subscription_plans' %}" class="btn btn-outline-secondary rounded-pill px-4">
-                                        <i class="bi bi-gear"></i> プラン変更・解約
-                                    </a>
+                                    <a href="{% url 'subscription_plans' %}" class="btn btn-rankup rounded-pill px-4 shadow-sm">ランクアップする</a>
+                                    <a href="{% url 'subscription_plans' %}" class="btn btn-sm btn-link text-muted">解約</a>
                                 {% endif %}
                             {% endwith %}
-                        </div>
-
-                        <div class="mt-3 text-center">
-                            <a href="{% url 'guide_view' %}" class="text-muted small text-decoration-none">
-                                <i class="bi bi-question-circle"></i> 使い方・よくある質問はこちら
-                            </a>
                         </div>
                     {% endif %}
                 </div>
