@@ -11,7 +11,7 @@ urlpatterns = [
     path('job/<int:job_id>/cancel/', views.cancel_application, name='cancel_application'),
     path('job/<int:job_id>/applicants/', views.job_applicants, name='job_applicants'),
     path('adopt/<int:application_id>/', views.adopt_applicant, name='adopt_applicant'),
-    path('reject-applicant/<int:application_id>/', views.reject_applicant, name='reject_applicant'), # 順序整理
+    path('reject-applicant/<int:application_id>/', views.reject_applicant, name='reject_applicant'),
     path('application/<int:application_id>/chat/', views.chat_room, name='chat_room'),
     path('notifications/', views.notifications, name='notifications'),
     path('profile/<int:user_id>/', views.profile_detail, name='profile_detail'),
@@ -26,8 +26,9 @@ urlpatterns = [
     path('privacy/', views.privacy_view, name='privacy'),
     path('law/', views.law_view, name='law'),
     
-    # 【追加】ガイド・Q&Aページ
+    # 【追加】 Q&A・ガイドページ
     path('guide/', views.guide_view, name='guide_view'),
-    # 【追加】プラン詳細・解約案内ページ
+    
+    # 【追加】 プラン・解約ページ (ここへのリンクがつながっていませんでした)
     path('plan/', views.subscription_plans, name='subscription_plans'),
 ]
