@@ -274,3 +274,11 @@ def stripe_webhook(request):
                 print("Error updating profile:", e)
 
     return HttpResponse(status=200)
+# jobs/views.py の一番最後に追加
+
+@login_required
+def payment_success(request):
+    """決済完了後に戻ってくる場所"""
+    messages.success(request, 'お支払いが完了しました！ランク情報は間もなく更新されます。')
+    # 自分のマイページへ転送
+    return redirect('profile_detail', user_id=request.user.id)
