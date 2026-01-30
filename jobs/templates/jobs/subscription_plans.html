@@ -8,8 +8,14 @@
     .btn-platinum { background-color: #00d2ff !important; border-color: #00d2ff !important; color: white !important; }
     .btn-platinum:hover { background-color: #00b0d9 !important; border-color: #00b0d9 !important; }
     
-    /* 説明文のスタイル調整 */
-    .plan-desc { font-size: 0.85rem; color: #6c757d; margin-top: 10px; line-height: 1.5; }
+    /* 説明文のスタイル調整（高さ揃え・位置調整） */
+    .plan-desc { 
+        font-size: 0.85rem; 
+        color: #6c757d; 
+        margin-top: 10px; 
+        line-height: 1.5;
+        min-height: 5em; /* ★ここ重要：説明文エリアの高さを最低5行分確保して揃える */
+    }
 </style>
 
 <div class="container mt-5 mb-5">
@@ -45,7 +51,7 @@
         </div>
 
         <div class="col">
-            <div class="card mb-4 rounded-4 shadow border-warning">
+            <div class="card mb-4 rounded-4 shadow h-100 border-warning">
                 <div class="card-header py-3 text-white bg-warning">
                     <h4 class="my-0 fw-bold text-dark">GOLD</h4>
                 </div>
@@ -69,7 +75,7 @@
         </div>
 
         <div class="col">
-            <div class="card mb-4 rounded-4 shadow-sm border-platinum">
+            <div class="card mb-4 rounded-4 shadow-sm h-100 border-platinum">
                 <div class="card-header py-3 bg-platinum">
                     <h4 class="my-0 fw-normal">PLATINUM</h4>
                 </div>
@@ -79,10 +85,10 @@
                         <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> 応募：<strong>無制限</strong></li>
                         <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> 募集：<strong>無制限</strong></li>
                         <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> 優先表示：<strong>50pt/月</strong></li>
-                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> アプリ内で広告可能</li>
                     </ul>
                     <div class="plan-desc text-start border-top pt-2 mb-4">
                         中〜大規模事業者様、とにかく安定して人員を確保したい、雇用したい事業者様に向いています。
+                        アプリ内で広告可能。
                     </div>
                     <div class="mt-auto">
                         <a href="https://buy.stripe.com/test_fZucN56u10FB4109ap73G03?client_reference_id={{ user.id }}" class="w-100 btn btn-lg btn-platinum rounded-pill">
