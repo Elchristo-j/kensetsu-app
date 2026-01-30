@@ -1,6 +1,6 @@
 from django import forms
 from .models import Job, Message
-from accounts.models import Profile
+# accounts.models からの Profile インポートは不要になったので削除しました
 
 class JobForm(forms.ModelForm):
     class Meta:
@@ -41,24 +41,7 @@ class JobForm(forms.ModelForm):
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
 
-class ProfileForm(forms.ModelForm):
-    class Meta:
-        model = Profile
-        # --- id_card_image を追加しました ---
-        fields = ['image', 'location', 'description', 'id_card_image']
-        labels = {
-            'image': 'プロフィール画像（顔写真など）',
-            'location': '拠点',
-            'description': '自己紹介・実績',
-            'id_card_image': '本人確認書類（免許証など）',
-        }
-        widgets = {
-            'image': forms.FileInput(attrs={'class': 'form-control'}),
-            'location': forms.TextInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            'id_card_image': forms.FileInput(attrs={'class': 'form-control'}),
-        }
-        # ----------------------------------
+# ここにあった ProfileForm は削除しました（accounts/forms.py に移動済みのため）
 
 class MessageForm(forms.ModelForm):
     class Meta:
