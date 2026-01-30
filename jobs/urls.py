@@ -31,4 +31,8 @@ urlpatterns = [
     
     # 【追加】 プラン・解約ページ (ここへのリンクがつながっていませんでした)
     path('plan/', views.subscription_plans, name='subscription_plans'),
+
+# jobs/urls.py の urlpatterns の中に追加
+    path('webhook/', views.stripe_webhook, name='stripe_webhook'),
+
 ]

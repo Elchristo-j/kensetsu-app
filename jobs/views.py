@@ -8,6 +8,11 @@ from .models import Job, Application, Message, Notification
 from accounts.models import Profile, FavoriteArea, PREFECTURES
 from accounts.forms import ProfileForm
 from .forms import JobForm, MessageForm
+# jobs/views.py の冒頭に追加が必要なインポート
+import stripe
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
+from django.conf import settings
 
 # --- ヘルパー関数 ---
 def create_notification(recipient, message, link=None):
@@ -215,3 +220,57 @@ def guide_view(request):
 # 【追加】 プラン・解約ページ
 def subscription_plans(request):
     return render(request, 'jobs/subscription_plans.html')
+
+# 【ファイルの末尾に追加してください】
+
+@csrf_exempt
+def stripe_webhook(request):
+    """Stripeからの決済完了通知を受け取り、ランクを更新する"""
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    event = None
+    
+    # settings.py に STRIPE_WEBHOOK_SECRET が設定されている前提
+    webhook_secret = getattr(settings, 'STRIPE_WEBHOOK_SECRET', '')
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, webhook_secret
+        )
+    except ValueError as e:
+        return HttpResponse(status=400) # Invalid payload
+    except stripe.error.SignatureVerificationError as e:
+        return HttpResponse(status=400) # Invalid signature
+
+    # 決済完了イベントのみ処理
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        
+        # テンプレートで埋め込んだ user.id を取得
+        client_reference_id = session.get('client_reference_id')
+        amount_total = session.get('amount_total') # 支払い金額 (例: 550)
+
+        if client_reference_id:
+            try:
+                user = User.objects.get(id=client_reference_id)
+                # Profileモデルの rank フィールドを更新
+                # ※モデルのフィールド名が 'rank' 以外(display_rank等)の場合はここを修正してください
+                profile = user.profile
+                
+                # 金額に応じてランク判定
+                if amount_total == 550:
+                    profile.rank = 'silver'
+                elif amount_total == 2200:
+                    profile.rank = 'gold'
+                elif amount_total == 5500:
+                    profile.rank = 'platinum'
+                
+                profile.save()
+                print(f"User {user.username} upgraded to {profile.rank}")
+                
+            except User.DoesNotExist:
+                print("User not found for ID:", client_reference_id)
+            except Exception as e:
+                print("Error updating profile:", e)
+
+    return HttpResponse(status=200)
