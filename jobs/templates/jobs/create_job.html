@@ -12,14 +12,22 @@
     <div class="card-body p-4 bg-light bg-opacity-10">
       <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
+        
         <div class="mb-5">
           <h6 class="fw-bold text-sumi border-bottom pb-2 mb-3">1. 基本内容</h6>
+          
+          {# --- ★追加：業種選択（ここが一番大事なので最上部に配置） --- #}
+          <div class="mb-3">
+            <label class="form-label fw-bold small text-primary">{{ form.category.label }}（必須）</label>
+            {{ form.category }}
+            <div class="form-text small">※仕事の内容に最も近い業種を選択してください。</div>
+          </div>
+
           <div class="mb-3">
             <label class="form-label fw-bold small">{{ form.title.label }}</label>
             {{ form.title }}
           </div>
           <div class="mb-3">
-            {# --- 追加：勤務日 --- #}
             <label class="form-label fw-bold small text-primary">{{ form.work_date.label }}（必須級）</label>
             {{ form.work_date }}
           </div>
@@ -29,8 +37,6 @@
           </div>
         </div>
         
-        {# --- 以下のセクション2〜4、ボタン類は以前と同じ（変更なし） --- #}
-        {# 以前お渡しした create_job.html の続きをそのまま使ってください #}
         <div class="mb-5">
           <h6 class="fw-bold text-sumi border-bottom pb-2 mb-3">2. 勤務条件・資格</h6>
           <div class="row mb-3">
@@ -39,6 +45,7 @@
           </div>
           <div class="mb-3"><label class="form-label fw-bold small">{{ form.qualifications.label }}</label>{{ form.qualifications }}</div>
         </div>
+
         <div class="mb-5">
           <h6 class="fw-bold text-sumi border-bottom pb-2 mb-3">3. 給与・場所・人数</h6>
           <div class="row mb-3">
@@ -54,8 +61,18 @@
             <div class="col-6"><label class="form-label fw-bold small">{{ form.deadline.label }}</label>{{ form.deadline }}</div>
           </div>
         </div>
-        <div class="mb-5"><h6 class="fw-bold text-sumi border-bottom pb-2 mb-3">4. その他</h6><div class="mb-3"><label class="form-label fw-bold small">{{ form.notes.label }}</label>{{ form.notes }}</div></div>
-        <div class="d-grid gap-2 mt-5"><button type="submit" class="btn btn-lg btn-dark fw-bold shadow rounded-pill py-3">{% if is_edit %}変更を保存する{% else %}募集を開始する{% endif %}</button><a href="{% if is_edit %}{% url 'job_detail' form.instance.id %}{% else %}{% url 'home' %}{% endif %}" class="btn btn-link text-secondary">キャンセル</a></div>
+
+        <div class="mb-5">
+          <h6 class="fw-bold text-sumi border-bottom pb-2 mb-3">4. その他</h6>
+          <div class="mb-3"><label class="form-label fw-bold small">{{ form.notes.label }}</label>{{ form.notes }}</div>
+        </div>
+
+        <div class="d-grid gap-2 mt-5">
+          <button type="submit" class="btn btn-lg btn-dark fw-bold shadow rounded-pill py-3">
+            {% if is_edit %}変更を保存する{% else %}募集を開始する{% endif %}
+          </button>
+          <a href="{% if is_edit %}{% url 'job_detail' form.instance.id %}{% else %}{% url 'home' %}{% endif %}" class="btn btn-link text-secondary">キャンセル</a>
+        </div>
       </form>
     </div>
   </div>
