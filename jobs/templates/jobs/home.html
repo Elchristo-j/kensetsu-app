@@ -131,6 +131,19 @@
                         {% endif %}
                     </div>
 
+                    {% if job.created_by.profile.position %}
+                        <div class="small text-muted ms-3 border-start ps-2 mt-1" style="font-size: 0.8rem;">
+                            {{ job.created_by.profile.position }}
+                        </div>
+                    {% endif %}
+
+                    <div class="mt-2">
+                        <span class="badge rank-badge badge-{{ job.created_by.profile.display_rank|lower }}">
+                            {{ job.created_by.profile.display_rank }}会員
+                        </span>
+                    </div>
+                </div>
+
                     <hr class="my-2" style="opacity: 0.1;">
 
                     <div class="d-flex justify-content-between align-items-end mt-3">

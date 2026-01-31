@@ -23,6 +23,9 @@ class Profile(models.Model):
         ('silver', 'silver'), 
         ('gold', 'gold'), 
         ('platinum', 'platinum')
+
+    # 【追加】 役職フィールド
+    position = models.CharField(max_length=100, blank=True, null=True, verbose_name="役職・部署")
     ]
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')

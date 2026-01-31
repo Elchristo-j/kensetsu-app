@@ -14,6 +14,7 @@ class ProfileForm(forms.ModelForm):
         model = Profile
         fields = [
             'company_name', 
+            'position', # ★ここに追加！
             'location', 
             'bio',          # description から変更
             'avatar',       # image から変更
