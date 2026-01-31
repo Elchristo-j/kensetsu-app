@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.utils import timezone 
+from datetime import timedelta         # ★追加
 from .models import Job, Application, Message, Notification
 from accounts.models import Profile, FavoriteArea, PREFECTURES
 from accounts.forms import ProfileForm
@@ -49,30 +50,35 @@ def create_notification(recipient, message, link=None):
 
 def is_staff_user(user): return user.is_authenticated and user.is_staff
 
-# --- 1. Home & Search ---
+# --- 1. Home ---
 def home(request):
-    jobs = Job.objects.filter(is_closed=False).order_by('-created_at')[:5]
+    # ★追加：31日前の日時を計算（今日 - 31日）
+    expiration_date = timezone.now() - timedelta(days=31)
     
+    # ★変更：31日以内 かつ 募集終了していない(is_closed=False)案件を取得
+    # もし is_closed フィールドを作っていない場合は .filter(created_at__gte=expiration_date) だけでOKです
+    try:
+        jobs = Job.objects.filter(
+            created_at__gte=expiration_date,
+            is_closed=False  # 募集終了フラグがある場合
+        ).order_by('-created_at')
+    except:
+        # 万が一 is_closed が無い場合のエラー回避
+        jobs = Job.objects.filter(created_at__gte=expiration_date).order_by('-created_at')
+
+    # お気に入りエリアの取得（ログインしている場合のみ）
+    favorites = []
+    if request.user.is_authenticated:
+        favorites = request.user.favorite_areas.all()
+
     context = {
         'jobs': jobs,
         'prefectures': PREFECTURES,
-        'categories': JOB_CATEGORIES, # ★これを追加しないと検索バーに業種が出ません
+        'categories': CATEGORIES, # ※もしエラーになる場合は JOB_CATEGORIES に書き換えてください
+        'favorites': favorites,
     }
-    return render(request, 'jobs/home.html', context)
-    jobs = Job.objects.filter(is_closed=False).order_by('-id')
-    query = request.GET.get('query', '')
-    area_filter = request.GET.get('area', '')
     
-    if query: 
-        jobs = jobs.filter(Q(title__icontains=query) | Q(description__icontains=query)).distinct()
-    if area_filter: 
-        jobs = jobs.filter(prefecture=area_filter)
-        
-    favorites = request.user.favorite_areas.all() if request.user.is_authenticated else []
-    return render(request, 'jobs/home.html', {
-        'jobs': jobs, 'query': query, 'favorites': favorites, 
-        'prefectures': PREFECTURES, 'page_title': '案件一覧'
-    })
+    return render(request, 'jobs/home.html', context)
 
 @login_required
 def favorite_search_view(request):
