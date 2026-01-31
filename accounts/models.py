@@ -22,31 +22,39 @@ class Profile(models.Model):
         ('bronze', 'bronze'), 
         ('silver', 'silver'), 
         ('gold', 'gold'), 
-        ('platinum', 'platinum')
+        ('platinum', 'platinum'), # ← ここにカンマを追加しました
+    ] # ← ここでリストを閉じます！
 
-    # 【追加】 役職フィールド
-    position = models.CharField(max_length=100, blank=True, null=True, verbose_name="役職・部署")
-    ]
-    
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    
+    # 【追加】 役職フィールド（リストの外に書くのが正解です）
+    position = models.CharField(max_length=100, blank=True, null=True, verbose_name="役職・部署")
+    
     rank = models.CharField(max_length=20, choices=RANK_CHOICES, default='iron')
     is_verified = models.BooleanField(default=False, verbose_name="本人確認済み")
     
     # 基本情報
     company_name = models.CharField(max_length=100, blank=True, verbose_name="屋号・会社名")
     location = models.CharField(max_length=100, blank=True, choices=PREFECTURES, verbose_name="所在地")
-    bio = models.TextField(blank=True, verbose_name="自己紹介") # テンプレートに合わせて 'bio' 推奨
+    bio = models.TextField(blank=True, verbose_name="自己紹介")
     
     # 画像関連
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name="アバター画像")
-    image = models.ImageField(upload_to='profile_images/', blank=True, null=True, verbose_name="旧プロフィール画像") # 互換性のため残す
+    image = models.ImageField(upload_to='profile_images/', blank=True, null=True, verbose_name="旧プロフィール画像")
     id_card_image = models.ImageField(upload_to='id_cards/', blank=True, null=True, verbose_name="本人確認書類")
 
-    # 【追加】詳細プロフィール項目 (タブ表示・編集用)
+    # 詳細プロフィール項目
     experience_years = models.IntegerField(default=0, verbose_name="経験年数")
     qualifications = models.CharField(max_length=255, blank=True, null=True, verbose_name="保有資格")
     skills = models.CharField(max_length=255, blank=True, null=True, verbose_name="得意な工事・スキル")
     invoice_num = models.CharField(max_length=50, blank=True, null=True, verbose_name="インボイス登録番号")
+    
+    # 決済情報（Stripe用に追加しておくと安全です）
+    stripe_customer_id = models.CharField(max_length=100, blank=True, null=True)
+    stripe_subscription_id = models.CharField(max_length=100, blank=True, null=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     # --- プロパティ・ロジック ---
 
@@ -87,30 +95,20 @@ class Profile(models.Model):
 
     def can_apply(self):
         """今月応募できるか判定"""
-        # 循環参照回避のためメソッド内でインポート
         from jobs.models import Application
-        
-        # 月初の日時を取得
         start_of_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        
-        # 今月の応募数をカウント (applied_at がなければ created_at を使う安全策)
         try:
             cnt = Application.objects.filter(applicant=self.user, applied_at__gte=start_of_month).count()
         except:
             cnt = Application.objects.filter(applicant=self.user, created_at__gte=start_of_month).count()
-            
         return cnt < self.monthly_limit
 
     def can_post_job(self):
         """今月募集投稿できるか判定"""
         from jobs.models import Job
-        
-        # 上限0なら即False
         if self.posting_limit == 0: return False
-        
         start_of_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         cnt = Job.objects.filter(created_by=self.user, created_at__gte=start_of_month).count()
-        
         return cnt < self.posting_limit
     
     def __str__(self):
