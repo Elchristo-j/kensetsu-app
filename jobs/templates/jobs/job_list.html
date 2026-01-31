@@ -1,127 +1,147 @@
 {% extends 'base.html' %}
 {% load humanize %}
+{% load job_extras %} {# ★カスタム時間表示用 #}
 
 {% block content %}
-<div class="container mt-4 mb-5">
-    
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold"><i class="bi bi-list-ul"></i> 案件一覧</h2>
-        <a href="{% url 'create_job' %}" class="btn btn-primary rounded-pill fw-bold shadow-sm">
-            <i class="bi bi-plus-lg"></i> 募集する
-        </a>
-    </div>
-
-    <div class="card mb-4 border-0 shadow-sm bg-light">
-        <div class="card-body p-4">
-            <form method="get" action="{% url 'job_list' %}" class="row g-3">
-                
-                <div class="col-md-4">
-                    <label class="form-label fw-bold text-muted small">業種・職種</label>
-                    <select name="category" class="form-select">
-                        <option value="">すべての業種</option>
-                        {% for key, value in categories %}
-                            <option value="{{ key }}" {% if request.GET.category == key %}selected{% endif %}>
-                                {{ value }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label fw-bold text-muted small">勤務エリア</label>
-                    <select name="prefecture" class="form-select">
-                        <option value="">すべてのエリア</option>
-                        {% for p in prefectures %}
-                            {% if p.0 %}
-                                <option value="{{ p.0 }}" {% if request.GET.prefecture == p.0 %}selected{% endif %}>
-                                    {{ p.1 }}
-                                </option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label fw-bold text-muted small">キーワード</label>
-                    <input type="text" name="q" class="form-control" placeholder="例: 徳島市, 荷揚げ" value="{{ request.GET.q }}">
-                </div>
-
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-dark w-100 fw-bold">
-                        <i class="bi bi-search"></i> 検索
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <div class="row">
-        {% for job in jobs %}
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4 job-card-hover">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 rounded-pill px-3">
-                            {{ job.get_category_display }}
-                        </span>
-                        <small class="text-muted">{{ job.created_at|date:"m/d" }}</small>
-                    </div>
-
-                    <h5 class="card-title fw-bold mb-3">
-                        <a href="{% url 'job_detail' job.id %}" class="text-dark text-decoration-none stretched-link">
-                            {{ job.title }}
-                        </a>
-                        {% if job.is_new %}
-                            <span class="badge bg-danger ms-1 small">NEW</span>
-                        {% endif %}
-                    </h5>
-
-                    <div class="mb-3">
-                        <div class="d-flex align-items-center mb-1 text-muted small">
-                            <i class="bi bi-geo-alt-fill me-2 text-primary"></i>
-                            {{ job.prefecture }} {{ job.city }}
-                        </div>
-                        <div class="d-flex align-items-center mb-1 text-muted small">
-                            <i class="bi bi-calendar-event me-2 text-primary"></i>
-                            {{ job.work_date|default:"日時相談" }}
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-end mt-auto pt-3 border-top">
-                        <div>
-                            <span class="small text-muted fw-bold">金額</span>
-                            <div class="h5 fw-bold text-dark mb-0">
-                                ¥{{ job.price|intcomma }}<small class="fs-6 text-muted fw-normal">/{{ job.unit }}</small>
-                            </div>
-                        </div>
-                        <span class="text-primary small fw-bold">詳細を見る <i class="bi bi-arrow-right"></i></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% empty %}
-        <div class="col-12 text-center py-5">
-            <div class="text-muted mb-3">
-                <i class="bi bi-search fs-1"></i>
-            </div>
-            <h5 class="fw-bold">条件に一致する案件は見つかりませんでした</h5>
-            <p class="text-muted">検索条件を変更するか、新しい案件が投稿されるのをお待ちください。</p>
-            <a href="{% url 'job_list' %}" class="btn btn-outline-secondary rounded-pill mt-2">
-                すべての案件を表示
-            </a>
-        </div>
-        {% endfor %}
-    </div>
-    
-    </div>
-
 <style>
-    /* カードにホバーした時の浮き上がりエフェクト */
+    /* ランク別カードスタイル */
+    .card-rank-platinum { border: 2px solid #00d2ff; }
+    .card-rank-gold { border: 2px solid #f1c40f; }
+    .card-rank-silver { border: 2px solid #95a5a6; }
+
+    /* 新着バッジ */
+    .badge-new {
+        position: absolute; top: -10px; left: -10px;
+        background: linear-gradient(45deg, #ff357a, #fff172);
+        color: white; font-weight: bold; padding: 5px 10px;
+        border-radius: 50px; font-size: 0.8rem; z-index: 10;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .company-name { font-size: 0.9rem; color: #333; font-weight: bold; }
+    .job-price { color: #15151a; font-weight: 800; font-size: 1.25rem; }
+
+    /* ★復活！カードのホバーエフェクト */
     .job-card-hover {
         transition: transform 0.2s, box-shadow 0.2s;
     }
     .job-card-hover:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+        z-index: 5; /* ホバー時に他の要素より前に出す */
     }
 </style>
+
+<div class="container mt-5 mb-5">
+    
+    <div class="mb-4">
+        <h2 class="fw-bold mb-3"><i class="bi bi-search"></i> 検索結果</h2>
+        <div class="card bg-light border-0 p-3 rounded-4">
+            <form action="{% url 'job_list' %}" method="get" class="row g-2 align-items-center">
+                <div class="col-md-3">
+                    <select name="category" class="form-select border-0">
+                        <option value="">🛠 全ての業種</option>
+                        {% for key, value in categories %}
+                            <option value="{{ key }}">{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="prefecture" class="form-select border-0">
+                        <option value="">📍 全てのエリア</option>
+                        {% for p in prefectures %}
+                            {% if p.0 %}<option value="{{ p.0 }}">{{ p.1 }}</option>{% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="q" class="form-control border-0" placeholder="キーワード (例: 荷揚げ, 夜勤)" value="{{ request.GET.q }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-dark w-100 rounded-pill fw-bold">再検索</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for job in jobs %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 rounded-4 position-relative card-rank-{{ job.created_by.profile.display_rank|lower }} shadow-sm job-card-hover">
+                
+                {% if job.is_new %}
+                    <span class="badge-new">NEW!!</span>
+                {% endif %}
+
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-3 align-items-start">
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2">
+                            {{ job.get_category_display }}
+                        </span>
+                        <div class="text-end">
+                            <span class="badge bg-light text-dark border rounded-pill px-2 mb-1">
+                                {{ job.prefecture }}{{ job.city }}
+                            </span>
+                            <div class="text-muted" style="font-size: 0.75rem;">
+                                {# ★カスタム時間表示 #}
+                                {{ job.created_at|custom_timesince }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold mb-2">
+                        <a href="{% url 'job_detail' job.id %}" class="text-decoration-none text-dark stretched-link">
+                            {{ job.title|truncatechars:20 }}
+                        </a>
+                    </h5>
+
+                    <div class="mb-3">
+                        <div class="company-name">
+                            <i class="bi bi-building"></i> 
+                            {% if job.created_by.profile.company_name %}
+                                {{ job.created_by.profile.company_name }}
+                            {% else %}
+                                {{ job.created_by.username }}
+                            {% endif %}
+                        </div>
+
+                        {% if job.created_by.profile.position %}
+                            <div class="small text-muted ms-3 border-start ps-2 mt-1" style="font-size: 0.8rem;">
+                                {{ job.created_by.profile.position }}
+                            </div>
+                        {% endif %}
+
+                        <div class="mt-2">
+                            <span class="badge rank-badge badge-{{ job.created_by.profile.display_rank|lower }}">
+                                {{ job.created_by.profile.display_rank }}会員
+                            </span>
+                        </div>
+                    </div>
+
+                    <hr class="my-2" style="opacity: 0.1;">
+
+                    <div class="d-flex justify-content-between align-items-end mt-3">
+                        <div class="job-price">
+                            ¥{{ job.price|intcomma }} <small class="fw-normal fs-6">/ {{ job.get_unit_display }}</small>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted d-block" style="font-size: 0.7rem;">採用 / 募集</small>
+                            <span class="fw-bold">{{ job.recruitment_status }}</span>
+                            <small class="text-muted">人</small>
+                        </div>
+                    </div>
+                </div> 
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="text-muted">
+                <i class="bi bi-search display-1 mb-3"></i>
+                <p>条件に一致する募集は見つかりませんでした。</p>
+                <a href="{% url 'job_list' %}" class="btn btn-outline-dark rounded-pill mt-3">すべての案件を見る</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}
