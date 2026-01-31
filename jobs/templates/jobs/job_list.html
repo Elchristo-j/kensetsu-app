@@ -23,12 +23,25 @@
 
     /* ★復活！カードのホバーエフェクト */
     .job-card-hover {
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition: transform 0.3s ease, box-shadow 0.3s ease; /* 滑らかに動くように調整 */
     }
+
+    /* 基本のホバー（シルバー・無料会員など） */
     .job-card-hover:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
-        z-index: 5; /* ホバー時に他の要素より前に出す */
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+        z-index: 5;
+    }
+
+    /* ▼▼▼ ここが追加ポイント（光る色の設定） ▼▼▼ */
+    /* ゴールド会員：金色のぼんやり光る影 */
+    .card-rank-gold.job-card-hover:hover {
+        box-shadow: 0 10px 25px rgba(241, 196, 15, 0.5) !important;
+    }
+
+    /* プラチナ会員：青く光る影 */
+    .card-rank-platinum.job-card-hover:hover {
+        box-shadow: 0 10px 25px rgba(0, 210, 255, 0.5) !important;
     }
 </style>
 
