@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% load humanize %}
-{% load job_extras %} {# ★これを追加しないとカスタム時間表示が動きません #}
 
 {% block content %}
 <style>
@@ -105,8 +104,8 @@
                                 {{ job.prefecture }}{{ job.city }}
                             </span>
                             <div class="text-muted" style="font-size: 0.75rem;">
-                                {# ★ここでカスタム時間表示を使用 #}
-                                {{ job.created_at|custom_timesince }}
+                                {# ★標準の時間表示に戻しました #}
+                                {{ job.created_at|timesince }}前
                             </div>
                         </div>
                     </div>
@@ -152,9 +151,9 @@
                             <small class="text-muted">人</small>
                         </div>
                     </div>
-                </div> </div>
+                </div>
+            </div>
         </div>
-        {# ★ここに余計な </div> があったので削除しました #}
         {% empty %}
         <div class="col-12 text-center py-5">
             <p class="text-muted">現在、募集中の案件はありません。</p>
