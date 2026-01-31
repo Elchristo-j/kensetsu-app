@@ -1,3 +1,4 @@
+from accounts.models import PREFECTURES
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -13,6 +14,34 @@ import stripe
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from django.conf import settings
+from .models import Job, JOB_CATEGORIES # JOB_CATEGORIESをインポートに追加
+
+def job_list(request):
+    jobs = Job.objects.all().order_by('-created_at')
+    
+    # --- 検索フィルター機能 ---
+    
+    # キーワード検索
+    query = request.GET.get('q')
+    if query:
+        jobs = jobs.filter(title__icontains=query)
+
+    # 【追加】 業種での絞り込み
+    category = request.GET.get('category')
+    if category:
+        jobs = jobs.filter(category=category)
+
+    # 【追加】 エリア（都道府県）での絞り込み
+    prefecture = request.GET.get('prefecture')
+    if prefecture:
+        jobs = jobs.filter(prefecture=prefecture)
+    
+    context = {
+        'jobs': jobs,
+        'categories': JOB_CATEGORIES, # テンプレートで選択肢を表示するために渡す
+        'prefectures': PREFECTURES,   # accounts.modelsからインポートが必要
+    }
+    return render(request, 'jobs/job_list.html', context)
 
 # --- ヘルパー関数 ---
 def create_notification(recipient, message, link=None):

@@ -1,15 +1,35 @@
 from django.db import models
 from django.contrib.auth.models import User
 from accounts.models import PREFECTURES
-from django.utils import timezone  # ← これが不足していました
-from datetime import timedelta     # ← これも必要です
+from django.utils import timezone
+from datetime import timedelta
+
+# 【追加】 業種・職種のリスト定義
+JOB_CATEGORIES = [
+    ('general', '多能工・手元'),
+    ('carpenter', '大工・造作'),
+    ('electric', '電気・通信'),
+    ('plumbing', '設備・水道'),
+    ('interior', '内装・クロス・床'),
+    ('exterior', '外装・塗装・防水'),
+    ('scaffold', '足場・鳶・土工'),
+    ('hvac', '空調・ダクト'),
+    ('cleaning', 'クリーニング・雑工'),
+    ('other', 'その他'),
+]
 
 class Job(models.Model):
     title = models.CharField(max_length=100, verbose_name="仕事のタイトル")
     
-    # 追加した項目：勤務日・期間
-    work_date = models.CharField(max_length=100, blank=True, verbose_name="勤務日・期間")
+    # 【追加】 業種（カテゴリ）フィールド
+    category = models.CharField(
+        max_length=50, 
+        choices=JOB_CATEGORIES, 
+        default='general', 
+        verbose_name='業種・職種'
+    )
 
+    work_date = models.CharField(max_length=100, blank=True, verbose_name="勤務日・期間")
     description = models.TextField(verbose_name="作業内容の詳細")
     working_hours = models.CharField(max_length=100, blank=True, verbose_name="勤務時間帯")
     break_time = models.CharField(max_length=100, blank=True, verbose_name="休憩時間")
@@ -34,7 +54,6 @@ class Job(models.Model):
     def __str__(self):
         return self.title
 
-    # ▼▼▼ 追加箇所ここから ▼▼▼
     @property
     def is_new(self):
         """投稿から48時間以内ならTrue"""
@@ -48,11 +67,9 @@ class Job(models.Model):
     @property
     def recruitment_status(self):
         """表示用：採用人数 / 募集人数"""
-        # headcountフィールドがない場合は暫定で '∞' や '-' にしてください
-        # ここでは headcount がある前提、なければ仮に 1 とします
         limit = getattr(self, 'headcount', 1) 
         return f"{self.accepted_count} / {limit}"
-    # ▲▲▲ 追加箇所ここまで ▲▲▲
+
 
 class Application(models.Model):
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='applications')
@@ -69,15 +86,19 @@ class Application(models.Model):
     def __str__(self):
         return f"{self.applicant.username} -> {self.job.title}"
 
+
 class Message(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
+    # もし画像送信機能をつける場合はここに image = models.ImageField(...) が必要ですが
+    # 現状のコードには無かったため、エラー回避のため入れていません。
     created_at = models.DateTimeField(auto_now_add=True)
-    is_read = models.BooleanField(default=False)  # ←これを追加
+    is_read = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Message by {self.sender.username}"
+
 
 class Notification(models.Model):
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')

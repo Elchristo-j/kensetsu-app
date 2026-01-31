@@ -6,11 +6,13 @@ class JobForm(forms.ModelForm):
     class Meta:
         model = Job
         fields = [
+            'category', # 【追加】 ここに追加！ (titleの上あたりが良いです)
             'title', 'work_date', 'description', 'working_hours', 'break_time', 
             'qualifications', 'price', 'unit', 'prefecture', 'city', 
             'headcount', 'deadline', 'notes'
         ]
         labels = {
+            'category': '募集する業種・職種', # 【追加】
             'title': '仕事のタイトル',
             'work_date': '勤務日・期間',
             'description': '作業内容の詳細',
@@ -26,6 +28,7 @@ class JobForm(forms.ModelForm):
             'notes': '備考・特記事項',
         }
         widgets = {
+            'category': forms.Select(attrs={'class': 'form-select'}), # 【追加】
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例：木造住宅の荷揚げ作業'}),
             'work_date': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例：1月15日(水)〜17日(金)の3日間'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
