@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load humanize %}
+{% load job_extras %} {# ★今度はこれが動きます！ #}
 
 {% block content %}
 <style>
@@ -104,8 +105,8 @@
                                 {{ job.prefecture }}{{ job.city }}
                             </span>
                             <div class="text-muted" style="font-size: 0.75rem;">
-                                {# ★標準の時間表示に戻しました #}
-                                {{ job.created_at|timesince }}前
+                                {# ★ここでカスタム時間表示を使用 #}
+                                {{ job.created_at|custom_timesince }}
                             </div>
                         </div>
                     </div>
@@ -151,7 +152,7 @@
                             <small class="text-muted">人</small>
                         </div>
                     </div>
-                </div>
+                </div> 
             </div>
         </div>
         {% empty %}
