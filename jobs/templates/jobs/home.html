@@ -3,7 +3,7 @@
 
 {% block content %}
 <style>
-    /* ランク別カードスタイル */
+    /* ランク別カードスタイル (既存のデザインを維持) */
     .card-rank-platinum { border: 2px solid #00d2ff; box-shadow: 0 4px 15px rgba(0, 210, 255, 0.2); }
     .card-rank-gold { border: 2px solid #f1c40f; box-shadow: 0 4px 15px rgba(241, 196, 15, 0.2); }
     .card-rank-silver { border: 2px solid #95a5a6; }
@@ -19,23 +19,69 @@
     
     .company-name { font-size: 0.85rem; color: #666; }
     .job-price { color: #15151a; font-weight: 800; font-size: 1.25rem; }
+
+    /* ヒーローエリアのスタイル */
+    .hero-section {
+        background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=1600&auto=format&fit=crop') no-repeat center center;
+        background-size: cover;
+        padding: 4rem 0;
+        margin-bottom: 3rem;
+        border-radius: 0 0 2rem 2rem; /* 下だけ丸くする */
+    }
 </style>
 
-<div class="container mt-4">
-    <div class="row mb-4">
-        <form action="{% url 'home' %}" method="get" class="col-lg-8 mx-auto d-flex gap-2">
-            <input type="text" name="query" class="form-control rounded-pill px-4 shadow-sm" placeholder="案件検索..." value="{{ query }}">
-            <button type="submit" class="btn btn-dark rounded-pill px-4 shadow">検索</button>
-        </form>
+<div class="hero-section text-white">
+    <div class="container text-center">
+        <h1 class="display-5 fw-bold mb-3">現場の「困った」を解決する。</h1>
+        <p class="lead mb-4 opacity-75">職人・手元のマッチングプラットフォーム</p>
+        
+        <div class="card p-3 border-0 shadow-lg mx-auto" style="max-width: 900px; background: rgba(255,255,255,0.95);">
+            <form action="{% url 'job_list' %}" method="get" class="row g-2 align-items-center">
+                
+                <div class="col-md-3">
+                    <select name="category" class="form-select border-0 bg-light py-2 fw-bold text-dark">
+                        <option value="">🛠 全ての業種</option>
+                        {% for key, value in categories %}
+                            <option value="{{ key }}">{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <select name="prefecture" class="form-select border-0 bg-light py-2 fw-bold text-dark">
+                        <option value="">📍 全てのエリア</option>
+                        {% for p in prefectures %}
+                            {% if p.0 %}
+                                <option value="{{ p.0 }}">{{ p.1 }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-4">
+                    <input type="text" name="q" class="form-control border-0 bg-light py-2" placeholder="キーワード (例: 荷揚げ, 夜勤)">
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-dark w-100 py-2 fw-bold rounded-pill">
+                        検索
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
+</div>
+
+<div class="container mt-4 mb-5">
 
     {% if user.is_authenticated and favorites %}
-    <div class="mb-4 text-center">
+    <div class="mb-5 text-center">
+        <p class="text-muted small mb-2">よく見るエリア</p>
         <div class="d-flex justify-content-center flex-wrap gap-2">
-            <a href="{% url 'home' %}" class="btn btn-outline-dark btn-sm rounded-pill px-3">すべて表示</a>
+            <a href="{% url 'job_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">すべて表示</a>
             {% for area in favorites %}
-                <a href="{% url 'home' %}?area={{ area.prefecture }}{% if area.city %}&city={{ area.city }}{% endif %}" 
-                   class="btn btn-sm rounded-pill px-3 btn-outline-dark">
+                <a href="{% url 'job_list' %}?prefecture={{ area.prefecture }}&q={{ area.city }}" 
+                   class="btn btn-sm rounded-pill px-3 btn-outline-dark bg-white">
                     {% if area.city %}{{ area.prefecture }}{{ area.city }}{% else %}{{ area.prefecture }}の案件{% endif %}
                 </a>
             {% endfor %}
@@ -43,26 +89,36 @@
     </div>
     {% endif %}
 
+    <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+        <h4 class="fw-bold m-0"><i class="bi bi-fire text-danger"></i> 新着の募集</h4>
+        <a href="{% url 'job_list' %}" class="text-decoration-none small fw-bold text-primary">もっと見る <i class="bi bi-chevron-right"></i></a>
+    </div>
+
     <div class="row g-4">
         {% for job in jobs %}
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 border-0 rounded-4 position-relative card-rank-{{ job.created_by.profile.display_rank|lower }}">
+            <div class="card h-100 border-0 rounded-4 position-relative card-rank-{{ job.created_by.profile.display_rank|lower }} shadow-sm">
                 
                 {% if job.is_new %}
                     <span class="badge-new">NEW!!</span>
                 {% endif %}
 
                 <div class="card-body p-4">
-                    <div class="d-flex justify-content-between mb-2 align-items-center">
-                        <span class="badge bg-light text-dark border rounded-pill px-2">
-                            {{ job.prefecture }}{{ job.city }}
+                    <div class="d-flex justify-content-between mb-3 align-items-start">
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2">
+                            {{ job.get_category_display }}
                         </span>
-                        <small class="text-muted" style="font-size: 0.75rem;">{{ job.created_at|timesince }}前</small>
+                        <div class="text-end">
+                            <span class="badge bg-light text-dark border rounded-pill px-2 mb-1">
+                                {{ job.prefecture }}{{ job.city }}
+                            </span>
+                            <div class="text-muted" style="font-size: 0.75rem;">{{ job.created_at|timesince }}前</div>
+                        </div>
                     </div>
 
                     <h5 class="fw-bold mb-2">
                         <a href="{% url 'job_detail' job.id %}" class="text-decoration-none text-dark stretched-link">
-                            {{ job.title }}
+                            {{ job.title|truncatechars:20 }}
                         </a>
                     </h5>
 
@@ -92,7 +148,7 @@
         </div>
         {% empty %}
         <div class="col-12 text-center py-5">
-            <p class="text-muted">条件に一致する案件は見つかりませんでした。</p>
+            <p class="text-muted">現在、募集中の案件はありません。</p>
         </div>
         {% endfor %}
     </div>

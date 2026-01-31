@@ -51,6 +51,14 @@ def is_staff_user(user): return user.is_authenticated and user.is_staff
 
 # --- 1. Home & Search ---
 def home(request):
+    jobs = Job.objects.filter(is_closed=False).order_by('-created_at')[:5]
+    
+    context = {
+        'jobs': jobs,
+        'prefectures': PREFECTURES,
+        'categories': JOB_CATEGORIES, # ★これを追加しないと検索バーに業種が出ません
+    }
+    return render(request, 'jobs/home.html', context)
     jobs = Job.objects.filter(is_closed=False).order_by('-id')
     query = request.GET.get('query', '')
     area_filter = request.GET.get('area', '')
