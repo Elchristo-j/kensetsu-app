@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% load humanize %}
-{% load job_extras %} {# ★今度はこれが動きます！ #}
+{% load job_extras %} {# ★カスタム時間表示用 #}
 
 {% block content %}
 <style>
     /* ランク別カードスタイル */
-    .card-rank-platinum { border: 2px solid #00d2ff; box-shadow: 0 4px 15px rgba(0, 210, 255, 0.2); }
-    .card-rank-gold { border: 2px solid #f1c40f; box-shadow: 0 4px 15px rgba(241, 196, 15, 0.2); }
+    .card-rank-platinum { border: 2px solid #00d2ff; }
+    .card-rank-gold { border: 2px solid #f1c40f; }
     .card-rank-silver { border: 2px solid #95a5a6; }
     
     /* 新着バッジ */
@@ -28,6 +28,28 @@
         padding: 4rem 0;
         margin-bottom: 3rem;
         border-radius: 0 0 2rem 2rem;
+    }
+
+    /* ▼▼▼ ここが追加ポイント（ホバーエフェクト） ▼▼▼ */
+    .job-card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    /* 基本のホバー */
+    .job-card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+        z-index: 5;
+    }
+
+    /* ゴールド会員：金色のぼんやり光る影 */
+    .card-rank-gold.job-card-hover:hover {
+        box-shadow: 0 10px 25px rgba(241, 196, 15, 0.5) !important;
+    }
+
+    /* プラチナ会員：青く光る影 */
+    .card-rank-platinum.job-card-hover:hover {
+        box-shadow: 0 10px 25px rgba(0, 210, 255, 0.5) !important;
     }
 </style>
 
@@ -89,7 +111,7 @@
     <div class="row g-4">
         {% for job in jobs %}
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 border-0 rounded-4 position-relative card-rank-{{ job.created_by.profile.display_rank|lower }} shadow-sm">
+            <div class="card h-100 border-0 rounded-4 position-relative card-rank-{{ job.created_by.profile.display_rank|lower }} shadow-sm job-card-hover">
                 
                 {% if job.is_new %}
                     <span class="badge-new">NEW!!</span>
@@ -105,7 +127,7 @@
                                 {{ job.prefecture }}{{ job.city }}
                             </span>
                             <div class="text-muted" style="font-size: 0.75rem;">
-                                {# ★ここでカスタム時間表示を使用 #}
+                                {# ★カスタム時間表示 #}
                                 {{ job.created_at|custom_timesince }}
                             </div>
                         </div>
