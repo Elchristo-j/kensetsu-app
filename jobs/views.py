@@ -74,7 +74,7 @@ def home(request):
     context = {
         'jobs': jobs,
         'prefectures': PREFECTURES,
-        'categories': CATEGORIES, # ※もしエラーになる場合は JOB_CATEGORIES に書き換えてください
+        'categories':JOB_CATEGORIES, # ※もしエラーになる場合は JOB_CATEGORIES に書き換えてください
         'favorites': favorites,
     }
     
