@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
 {% load humanize %}
+{% load job_extras %} {# ★これを追加しないとカスタム時間表示が動きません #}
 
 {% block content %}
 <style>
-    /* ランク別カードスタイル (既存のデザインを維持) */
+    /* ランク別カードスタイル */
     .card-rank-platinum { border: 2px solid #00d2ff; box-shadow: 0 4px 15px rgba(0, 210, 255, 0.2); }
     .card-rank-gold { border: 2px solid #f1c40f; box-shadow: 0 4px 15px rgba(241, 196, 15, 0.2); }
     .card-rank-silver { border: 2px solid #95a5a6; }
@@ -17,16 +18,16 @@
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
     
-    .company-name { font-size: 0.85rem; color: #666; }
+    .company-name { font-size: 0.9rem; color: #333; font-weight: bold; }
     .job-price { color: #15151a; font-weight: 800; font-size: 1.25rem; }
 
-    /* ヒーローエリアのスタイル */
+    /* ヒーローエリア */
     .hero-section {
         background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=1600&auto=format&fit=crop') no-repeat center center;
         background-size: cover;
         padding: 4rem 0;
         margin-bottom: 3rem;
-        border-radius: 0 0 2rem 2rem; /* 下だけ丸くする */
+        border-radius: 0 0 2rem 2rem;
     }
 </style>
 
@@ -37,7 +38,6 @@
         
         <div class="card p-3 border-0 shadow-lg mx-auto" style="max-width: 900px; background: rgba(255,255,255,0.95);">
             <form action="{% url 'job_list' %}" method="get" class="row g-2 align-items-center">
-                
                 <div class="col-md-3">
                     <select name="category" class="form-select border-0 bg-light py-2 fw-bold text-dark">
                         <option value="">🛠 全ての業種</option>
@@ -46,26 +46,19 @@
                         {% endfor %}
                     </select>
                 </div>
-
                 <div class="col-md-3">
                     <select name="prefecture" class="form-select border-0 bg-light py-2 fw-bold text-dark">
                         <option value="">📍 全てのエリア</option>
                         {% for p in prefectures %}
-                            {% if p.0 %}
-                                <option value="{{ p.0 }}">{{ p.1 }}</option>
-                            {% endif %}
+                            {% if p.0 %}<option value="{{ p.0 }}">{{ p.1 }}</option>{% endif %}
                         {% endfor %}
                     </select>
                 </div>
-                
                 <div class="col-md-4">
                     <input type="text" name="q" class="form-control border-0 bg-light py-2" placeholder="キーワード (例: 荷揚げ, 夜勤)">
                 </div>
-
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-dark w-100 py-2 fw-bold rounded-pill">
-                        検索
-                    </button>
+                    <button type="submit" class="btn btn-dark w-100 py-2 fw-bold rounded-pill">検索</button>
                 </div>
             </form>
         </div>
@@ -73,7 +66,6 @@
 </div>
 
 <div class="container mt-4 mb-5">
-
     {% if user.is_authenticated and favorites %}
     <div class="mb-5 text-center">
         <p class="text-muted small mb-2">よく見るエリア</p>
@@ -112,7 +104,10 @@
                             <span class="badge bg-light text-dark border rounded-pill px-2 mb-1">
                                 {{ job.prefecture }}{{ job.city }}
                             </span>
-                            <div class="text-muted" style="font-size: 0.75rem;">{{ job.created_at|timesince }}前</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">
+                                {# ★ここでカスタム時間表示を使用 #}
+                                {{ job.created_at|custom_timesince }}
+                            </div>
                         </div>
                     </div>
 
@@ -122,27 +117,28 @@
                         </a>
                     </h5>
 
-                    <div class="company-name mb-3">
-                        <i class="bi bi-building"></i> 
-                        {% if job.created_by.profile.company_name %}
-                            {{ job.created_by.profile.company_name }}
-                        {% else %}
-                            {{ job.created_by.username }}
-                        {% endif %}
-                    </div>
-
-                    {% if job.created_by.profile.position %}
-                        <div class="small text-muted ms-3 border-start ps-2 mt-1" style="font-size: 0.8rem;">
-                            {{ job.created_by.profile.position }}
+                    <div class="mb-3">
+                        <div class="company-name">
+                            <i class="bi bi-building"></i> 
+                            {% if job.created_by.profile.company_name %}
+                                {{ job.created_by.profile.company_name }}
+                            {% else %}
+                                {{ job.created_by.username }}
+                            {% endif %}
                         </div>
-                    {% endif %}
 
-                    <div class="mt-2">
-                        <span class="badge rank-badge badge-{{ job.created_by.profile.display_rank|lower }}">
-                            {{ job.created_by.profile.display_rank }}会員
-                        </span>
+                        {% if job.created_by.profile.position %}
+                            <div class="small text-muted ms-3 border-start ps-2 mt-1" style="font-size: 0.8rem;">
+                                {{ job.created_by.profile.position }}
+                            </div>
+                        {% endif %}
+
+                        <div class="mt-2">
+                            <span class="badge rank-badge badge-{{ job.created_by.profile.display_rank|lower }}">
+                                {{ job.created_by.profile.display_rank }}会員
+                            </span>
+                        </div>
                     </div>
-                </div>
 
                     <hr class="my-2" style="opacity: 0.1;">
 
@@ -156,9 +152,9 @@
                             <small class="text-muted">人</small>
                         </div>
                     </div>
-                </div>
-            </div>
+                </div> </div>
         </div>
+        {# ★ここに余計な </div> があったので削除しました #}
         {% empty %}
         <div class="col-12 text-center py-5">
             <p class="text-muted">現在、募集中の案件はありません。</p>
