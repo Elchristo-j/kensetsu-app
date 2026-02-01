@@ -1,10 +1,11 @@
 from django.urls import path
 from . import views
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('', views.home, name='home'),
     
-    # ★ここに追加：案件一覧（検索結果）ページ
+    # 案件一覧（検索結果）ページ
     path('search/', views.job_list, name='job_list'),
 
     # 案件詳細・作成・編集
@@ -18,7 +19,7 @@ urlpatterns = [
     path('job/<int:job_id>/cancel/', views.cancel_application, name='cancel_application'),
     path('job/<int:job_id>/applicants/', views.job_applicants, name='job_applicants'),
     
-    # ※お客様の環境に合わせて関数名（adopt_applicantなど）を維持しています
+    # 採用処理
     path('adopt/<int:application_id>/', views.adopt_applicant, name='adopt_applicant'),
     path('reject-applicant/<int:application_id>/', views.reject_applicant, name='reject_applicant'),
     
@@ -37,8 +38,11 @@ urlpatterns = [
     path('approve/<int:user_id>/', views.approve_profile, name='approve_profile'),
     path('reject/<int:user_id>/', views.reject_profile, name='reject_profile'),
     path('about/', views.about_view, name='about'),
-    path('terms/', views.terms_view, name='terms'),
-    path('privacy/', views.privacy_view, name='privacy'),
+    
+    # ★ここが今回追加した規約・ポリシー部分
+    path('privacy/', TemplateView.as_view(template_name='privacy.html'), name='privacy'),
+    path('terms/', TemplateView.as_view(template_name='terms.html'), name='terms'),
+    
     path('law/', views.law_view, name='law'),
     
     # Q&A・ガイドページ
