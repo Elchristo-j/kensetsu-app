@@ -14,27 +14,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name="job",
-            name="category",
-            field=models.CharField(
-                choices=[
-                    ("general", "多能工・手元"),
-                    ("carpenter", "大工・造作"),
-                    ("electric", "電気・通信"),
-                    ("plumbing", "設備・水道"),
-                    ("interior", "内装・クロス・床"),
-                    ("exterior", "外装・塗装・防水"),
-                    ("scaffold", "足場・鳶・土工"),
-                    ("hvac", "空調・ダクト"),
-                    ("cleaning", "クリーニング・雑工"),
-                    ("other", "その他"),
-                ],
-                default="general",
-                max_length=50,
-                verbose_name="業種・職種",
-            ),
-        ),
+        # ↓↓↓ このブロックをコメントアウトして無効化します ↓↓↓
+        # migrations.AddField(
+        #     model_name='job',
+        #     name='category',
+        #     field=models.CharField(choices=[('general', '多能工・手元')...], default='general', max_length=50, verbose_name='業種・職種'),
+        # ),
+        # ↑↑↑ ここまで ↑↑↑
         migrations.AlterField(
             model_name="job",
             name="prefecture",
