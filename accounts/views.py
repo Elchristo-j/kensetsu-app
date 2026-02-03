@@ -35,7 +35,7 @@ def profile_edit(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
     
     # 【Render対策】サーバー再起動による画像消失時のリンク切れガード
-    for attr in ['avatar', 'id_card_image']: # image -> avatar に変更されたため修正
+    for attr in ['avatar', 'id_card_image']: 
         img_field = getattr(profile, attr, None)
         if img_field:
             try:
@@ -50,37 +50,52 @@ def profile_edit(request):
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
-            return redirect('profile_detail', user_id=request.user.id)
+            # 編集後はマイページへ戻る
+            return redirect('mypage')
     else:
         form = ProfileForm(instance=profile)
     
     return render(request, 'accounts/profile_edit.html', {'form': form})
 
-# --- マイページ ---
+# --- マイページ（評価・ランク表示対応） ---
 @login_required
 def mypage(request):
+    # プロフィール取得
+    profile = request.user.profile
+    
+    # ★追加: 自分の評価スタッツを取得（レーダーチャート用）
+    stats = profile.get_worker_stats()
+
     my_applications = Application.objects.filter(applicant=request.user).order_by('-applied_at')
     my_posted_jobs = Job.objects.filter(created_by=request.user).order_by('-created_at')
     
     context = {
+        'user': request.user,
+        'profile': profile,   # ランク表示に必要
+        'stats': stats,       # 評価チャートに必要
         'my_applications': my_applications,
         'my_posted_jobs': my_posted_jobs,
     }
     return render(request, 'accounts/mypage.html', context)
 
-# --- プロフィール詳細 ---
+# --- プロフィール詳細（他人を見る時も評価を表示） ---
 @login_required
 def profile_detail(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
+    # プロフィール取得（なければ自動作成）
+    profile, _ = Profile.objects.get_or_create(user=target_user)
     
-    # このユーザーが募集している案件を取得
+    # ★追加: 対象ユーザーの評価スタッツを取得
+    stats = profile.get_worker_stats()
+    
     jobs = Job.objects.filter(created_by=target_user).order_by('-created_at')
     
-    # テンプレートに渡すデータ
     context = {
         'target_user': target_user,
+        'profile': profile,   # 追加
+        'stats': stats,       # 追加
         'jobs': jobs,
-        'prefectures': PREFECTURES, # エリア選択用リスト
+        'prefectures': PREFECTURES,
     }
     return render(request, 'accounts/profile_detail.html', context)
 
@@ -96,6 +111,7 @@ def add_favorite_area(request):
                 prefecture=prefecture,
                 city=city
             )
+    # マイページへ戻すのが自然かもしれません（適宜調整してください）
     return redirect('profile_detail', user_id=request.user.id)
 
 # --- お気に入りエリアの削除 ---
@@ -113,7 +129,6 @@ def upgrade_plan_page(request):
 # --- Stripe決済セッション作成 ---
 @login_required
 def create_checkout_session(request, plan_type):
-    # settings.py に定義された STRIPE_PRICE_IDS からIDを取得
     price_id = settings.STRIPE_PRICE_IDS.get(plan_type)
     
     if not price_id:
@@ -121,25 +136,23 @@ def create_checkout_session(request, plan_type):
 
     user_email = request.user.email if request.user.email else None
 
-    # Stripeの決済画面を作成
     checkout_session = stripe.checkout.Session.create(
         customer_email=user_email,
         payment_method_types=['card'],
         line_items=[{'price': price_id, 'quantity': 1}],
         mode='subscription',
-        # 決済成功・キャンセル時の戻り先URL
-        success_url=request.build_absolute_uri('/jobs/payment/success/'), # 修正済みのURL
+        success_url=request.build_absolute_uri('/jobs/payment/success/'),
         cancel_url=request.build_absolute_uri('/jobs/plan/'),
         metadata={
             'user_id': request.user.id,
             'plan_type': plan_type
         },
-        client_reference_id=str(request.user.id) # 念のためここにも追加
+        client_reference_id=str(request.user.id)
     )
     
     return redirect(checkout_session.url, code=303)
 
-# --- Stripe Webhook (自動ランク更新用) ---
+# --- Stripe Webhook ---
 @csrf_exempt
 def stripe_webhook(request):
     payload = request.body
@@ -153,11 +166,7 @@ def stripe_webhook(request):
 
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
-        
-        # client_reference_id または metadata からユーザーを特定
         user_id = session.get('client_reference_id') or session['metadata'].get('user_id')
-        
-        # 金額からランクを判定 (metadataのplan_typeがあればそれを使用、なければ金額判定)
         amount_total = session.get('amount_total')
         plan_type = session['metadata'].get('plan_type')
 
@@ -166,7 +175,6 @@ def stripe_webhook(request):
                 user = User.objects.get(id=user_id)
                 profile = user.profile
                 
-                # プラン判定ロジック
                 if plan_type:
                     profile.rank = plan_type
                 elif amount_total == 550:
