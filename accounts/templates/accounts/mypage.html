@@ -3,53 +3,169 @@
 
 {% block content %}
 <div class="container mt-5 mb-5">
+    
     <div class="card shadow-sm border-0 mb-4 p-4 rounded-4 bg-light">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h3 class="fw-bold mb-1">{{ user.username }} さんのマイページ</h3>
-                <p class="text-muted mb-0">
-                    現在のランク：
-                    <span class="badge rounded-pill bg-dark px-3 py-2 ms-2">
-                        {{ user.profile.get_rank_display }}
-                    </span>
-                </p>
+        <div class="row">
+            <div class="col-md-4 text-center border-end">
+                {% if profile.avatar %}
+                    <img src="{{ profile.avatar.url }}" class="rounded-circle img-thumbnail mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                {% else %}
+                    <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px;">
+                        <span class="fs-4">No Image</span>
+                    </div>
+                {% endif %}
+                
+                <h4 class="fw-bold">{{ user.username }}</h4>
+                <p class="text-muted mb-2">{{ profile.position|default:"役職未設定" }}</p>
+
+                <div class="mb-3">
+                    <span class="badge bg-warning text-dark fs-6 me-1">{{ profile.get_rank_display }}会員</span>
+                    {% if profile.is_verified %}
+                        <span class="badge bg-success fs-6">本人確認済</span>
+                    {% else %}
+                        <span class="badge bg-secondary fs-6">未確認</span>
+                    {% endif %}
+                </div>
+
+                <div class="d-grid gap-2 col-10 mx-auto">
+                    <a href="{% url 'profile_edit' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-pencil-square"></i> プロフィール編集
+                    </a>
+                    <a href="{% url 'upgrade_plan_page' %}" class="btn btn-primary btn-sm rounded-pill fw-bold">
+                        <i class="bi bi-arrow-up-circle"></i> ランクアップ
+                    </a>
+                </div>
             </div>
-            <div>
-                <a href="{% url 'upgrade_plan_page' %}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
-                    <i class="bi bi-arrow-up-circle me-1"></i>ランクアップする
-                </a>
+
+            <div class="col-md-8 ps-md-5">
+                <h5 class="fw-bold text-muted mb-3 border-bottom pb-2">評価ステータス</h5>
+                
+                <div class="row align-items-center">
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3 bg-white rounded shadow-sm border">
+                            <p class="mb-1 text-muted small">現在の総合評価スコア</p>
+                            {% if stats %}
+                                <div class="d-flex align-items-baseline">
+                                    <h1 class="text-warning fw-bold mb-0 display-4">{{ stats.average }}</h1>
+                                    <span class="text-muted fs-5 ms-2">/ 10</span>
+                                </div>
+                                <small class="text-muted">（評価件数: {{ stats.count }}件）</small>
+                            {% else %}
+                                <h2 class="text-muted fw-bold mb-0">-.-</h2>
+                                <small class="text-muted">まだ評価がありません</small>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mt-4">
+                            <p class="mb-1"><strong>今月の応募可能数:</strong></p>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                                    {{ profile.monthly_limit }} 件
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 text-center">
+                        <div style="max-width: 300px; margin: 0 auto;">
+                            <canvas id="myRadarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="row">
         <div class="col-md-6 mb-4">
-            <h5 class="fw-bold mb-3">投稿した募集</h5>
-            <div class="list-group shadow-sm">
-                {% for job in my_posted_jobs %}
-                    <a href="{% url 'job_detail' job.id %}" class="list-group-item list-group-item-action">
-                        {{ job.title }}
-                        <small class="text-muted d-block">{{ job.created_at|date:"Y/m/d" }}</small>
-                    </a>
-                {% empty %}
-                    <div class="list-group-item text-muted">投稿した募集はありません。</div>
-                {% endfor %}
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white fw-bold py-3">
+                    <i class="bi bi-megaphone me-2"></i>投稿した募集
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for job in my_posted_jobs %}
+                        <a href="{% url 'job_detail' job.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold">{{ job.title }}</div>
+                                <small class="text-muted">{{ job.created_at|date:"Y/m/d" }}</small>
+                            </div>
+                            <span class="badge bg-light text-dark border">{{ job.recruitment_status }}</span>
+                        </a>
+                    {% empty %}
+                        <div class="list-group-item text-center text-muted py-4">投稿した募集はありません</div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
 
         <div class="col-md-6 mb-4">
-            <h5 class="fw-bold mb-3">応募した履歴</h5>
-            <div class="list-group shadow-sm">
-                {% for app in my_applications %}
-                    <a href="{% url 'job_detail' app.job.id %}" class="list-group-item list-group-item-action">
-                        {{ app.job.title }}
-                        <span class="badge bg-info float-end">{{ app.get_status_display }}</span>
-                    </a>
-                {% empty %}
-                    <div class="list-group-item text-muted">応募した履歴はありません。</div>
-                {% endfor %}
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white fw-bold py-3">
+                    <i class="bi bi-briefcase me-2"></i>応募した履歴
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for app in my_applications %}
+                        <a href="{% url 'job_detail' app.job.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold">{{ app.job.title }}</div>
+                                <small class="text-muted">{{ app.applied_at|date:"Y/m/d" }}</small>
+                            </div>
+                            {% if app.status == 'accepted' %}
+                                <span class="badge bg-success">採用</span>
+                            {% elif app.status == 'rejected' %}
+                                <span class="badge bg-secondary">不採用</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">選考中</span>
+                            {% endif %}
+                        </a>
+                    {% empty %}
+                        <div class="list-group-item text-center text-muted py-4">応募した履歴はありません</div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // サーバーからのデータを受け取る（データがない時は全て0にする）
+        const chartData = {{ stats.chart_data|default:"[0, 0, 0, 0, 0]" }};
+        
+        const ctx = document.getElementById('myRadarChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['能力', '協調性', '勤勉性', '人間性', '有用性'],
+                datasets: [{
+                    label: '評価スコア',
+                    data: chartData,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)', // 薄い青
+                    borderColor: 'rgba(54, 162, 235, 1)',     // 青い線
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(54, 162, 235, 1)'
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 10,
+                        ticks: {
+                            stepSize: 2,
+                            backdropColor: 'transparent' // 目盛りの背景を透明に
+                        },
+                        pointLabels: {
+                            font: { size: 12 }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false } // 凡例を隠す
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}
