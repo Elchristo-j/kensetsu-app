@@ -17,167 +17,64 @@ PREFECTURES = [
 ]
 
 class Profile(models.Model):
-    # ランク定義
+    # ★ランク定義（大文字・小文字を厳密に区別）
     RANK_CHOICES = [
         ('iron', 'iron'), 
         ('bronze', 'bronze'), 
-        ('silver', 'silver'), 
-        ('gold', 'gold'), 
-        ('platinum', 'platinum'),
+        ('silver', 'SILVER'), 
+        ('gold', 'GOLD'), 
+        ('platinum', 'PLATINUM'),
+    ]
+
+    # ★年代の選択肢
+    AGE_GROUP_CHOICES = [
+        ('10s', '10代'), ('20s', '20代'), ('30s', '30代'), 
+        ('40s', '40代'), ('50s', '50代'), ('60s', '60代以上'),
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    
-    # 役職・部署
-    position = models.CharField(max_length=100, blank=True, null=True, verbose_name="役職・部署")
-    
     rank = models.CharField(max_length=20, choices=RANK_CHOICES, default='iron')
     is_verified = models.BooleanField(default=False, verbose_name="本人確認済み")
     
     # 基本情報
     company_name = models.CharField(max_length=100, blank=True, verbose_name="屋号・会社名")
+    position = models.CharField(max_length=100, blank=True, null=True, verbose_name="役職・部署")
+    age_group = models.CharField(max_length=5, choices=AGE_GROUP_CHOICES, blank=True, null=True, verbose_name="年代")
+    occupation = models.CharField(max_length=50, blank=True, null=True, verbose_name="職種")
     location = models.CharField(max_length=100, blank=True, choices=PREFECTURES, verbose_name="所在地")
     bio = models.TextField(blank=True, verbose_name="自己紹介")
     
-    # 画像関連
+    # 画像
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name="アバター画像")
-    image = models.ImageField(upload_to='profile_images/', blank=True, null=True, verbose_name="旧プロフィール画像")
     id_card_image = models.ImageField(upload_to='id_cards/', blank=True, null=True, verbose_name="本人確認書類")
 
-    # 詳細プロフィール項目
+    # 詳細プロフィール
     experience_years = models.IntegerField(default=0, verbose_name="経験年数")
     qualifications = models.CharField(max_length=255, blank=True, null=True, verbose_name="保有資格")
     skills = models.CharField(max_length=255, blank=True, null=True, verbose_name="得意な工事・スキル")
     invoice_num = models.CharField(max_length=50, blank=True, null=True, verbose_name="インボイス登録番号")
     
-    # 決済情報
-    stripe_customer_id = models.CharField(max_length=100, blank=True, null=True)
-    stripe_subscription_id = models.CharField(max_length=100, blank=True, null=True)
-    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # --- プロパティ・ロジック ---
-
-    @property
-    def display_rank(self):
-        """表示上のランクを返す（Ironでも本人確認済みならBronze扱い）"""
-        if self.is_verified and self.rank == 'iron':
-            return 'bronze'
-        return self.rank
-
-    @property
-    def rank_class(self):
-        """バッジ表示用のCSSクラス名を返す"""
-        return f"badge-{self.display_rank.lower()}"
-
-    @property
-    def unread_notifications_count(self):
-        """未読通知数"""
-        return self.user.notifications.filter(is_read=False).count()
-
     @property
     def monthly_limit(self):
-        """今月の応募可能数（Apply）"""
-        r = self.display_rank.lower()
+        """今月の応募可能数"""
+        r = self.rank
         if r == 'iron': return 3
         if r == 'bronze': return 10
-        # Silver, Gold, Platinum は無制限
-        return 999 
+        return 999 # Silver以上
 
     @property
     def posting_limit(self):
-        """今月の募集投稿可能数（Post Job）"""
-        r = self.display_rank.lower()
+        """今月の募集投稿可能数"""
+        r = self.rank
         if r in ['iron', 'bronze']: return 0
         if r == 'silver': return 3
-        # Gold, Platinum は無制限
-        return 999
+        return 999 # Gold以上
 
-    def can_apply(self):
-        """今月応募できるか判定"""
-        from jobs.models import Application
-        start_of_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        try:
-            cnt = Application.objects.filter(applicant=self.user, applied_at__gte=start_of_month).count()
-        except:
-            cnt = Application.objects.filter(applicant=self.user, created_at__gte=start_of_month).count()
-        return cnt < self.monthly_limit
-
-    def can_post_job(self):
-        """今月募集投稿できるか判定"""
-        from jobs.models import Job
-        if self.posting_limit == 0: return False
-        start_of_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        cnt = Job.objects.filter(created_by=self.user, created_at__gte=start_of_month).count()
-        return cnt < self.posting_limit
-
-    # --- ▼ ここから下が今回追加した評価・優先順位ロジック ▼ ---
-
-    @property
-    def rank_priority_points(self):
-        """
-        ランクごとの優先表示ポイント
-        Silver: 5P, Gold: 20P, Platinum: 50P
-        """
-        if self.rank == 'platinum': return 50
-        if self.rank == 'gold': return 20
-        if self.rank == 'silver': return 5
-        return 0 # Iron, Bronze
-
-    def get_worker_stats(self):
-        """
-        自分が「ワーカーとして」受け取った評価の集計
-        """
-        # revieweeが自分(self.user) で、タイプが employer_to_worker のものを取得
-        reviews = self.user.received_reviews.filter(review_type='employer_to_worker')
-        count = reviews.count()
-
-        if count == 0:
-            return None
-
-        # 各項目の平均
-        avgs = reviews.aggregate(
-            Avg('ability'), Avg('cooperation'), Avg('diligence'), 
-            Avg('humanity'), Avg('utility_score')
-        )
-        
-        # 数値の取り出し（Noneの場合は0）
-        data = {
-            'ability': avgs['ability__avg'] or 0,
-            'cooperation': avgs['cooperation__avg'] or 0,
-            'diligence': avgs['diligence__avg'] or 0,
-            'humanity': avgs['humanity__avg'] or 0,
-            'utility': avgs['utility_score__avg'] or 0,
-        }
-        
-        # 5項目の平均（総合評価）
-        total_score = sum(data.values()) / 5
-        
-        return {
-            'count': count,
-            'average': round(total_score, 1),
-            'chart_data': list(data.values()) # レーダーチャート用配列
-        }
-
-    @property
-    def display_priority_score(self):
-        """
-        検索結果の表示順を決めるスコア
-        基本ポイント(ランク) + 評価加点
-        """
-        score = self.rank_priority_points
-        
-        stats = self.get_worker_stats()
-        # 評価が3件以上ある場合のみ、評価点を加算（最大100P程度）
-        if stats and stats['count'] >= 3:
-            score += stats['average'] * 10
-            
-        return score
-    
     def __str__(self):
         return self.user.username
-
 
 class FavoriteArea(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_areas')
@@ -187,7 +84,6 @@ class FavoriteArea(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.prefecture}{self.city}"
 
-# ユーザー作成時に自動でProfileを作成するシグナル
 @receiver(post_save, sender=User)
 def handle_user_profile_sync(sender, instance, created, **kwargs):
     if created:

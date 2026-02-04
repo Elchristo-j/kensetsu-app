@@ -3,6 +3,7 @@
 
 {% block content %}
 <style>
+    /* ランク別バッジ色（小文字で定義） */
     .badge-rank-iron { background-color: #6c757d; color: white; }
     .badge-rank-bronze { background-color: #cd7f32; color: white; }
     .badge-rank-silver { background-color: #e0e0e0; color: #333; border: 1px solid #ccc; }
@@ -26,7 +27,7 @@
             <h3 class="fw-bold mb-1">{{ target_user.username }}</h3>
             
             <div class="mb-3">
-                <span class="badge rounded-pill fs-6 badge-rank-{{ target_user.profile.rank }}">
+                <span class="badge rounded-pill fs-6 badge-rank-{{ target_user.profile.rank|lower }}">
                     {{ target_user.profile.get_rank_display }}会員
                 </span>
                 {% if target_user.profile.is_verified %}
@@ -38,7 +39,12 @@
                 {% if target_user.profile.company_name %}
                     <span class="me-3 d-inline-block"><i class="bi bi-building"></i> {{ target_user.profile.company_name }}</span>
                 {% endif %}
-                <span class="me-3 d-inline-block"><i class="bi bi-calendar"></i> {{ target_user.profile.age_group|default:"年代未設定" }}</span>
+                
+                {% if target_user.profile.position %}
+                    <span class="me-3 d-inline-block badge bg-light text-dark border">{{ target_user.profile.position }}</span>
+                {% endif %}
+
+                <span class="me-3 d-inline-block"><i class="bi bi-calendar"></i> {{ target_user.profile.get_age_group_display|default:"年代未設定" }}</span>
                 <span class="d-inline-block"><i class="bi bi-person-gear"></i> {{ target_user.profile.occupation|default:"職種未設定" }}</span>
             </div>
             
@@ -111,12 +117,12 @@
         <h5 class="fw-bold mb-3 border-bottom pb-2">実績・評価</h5>
         
         <ul class="nav nav-tabs mb-4" id="profileTab" role="tablist">
-            <li class="nav-item" role="presentation">
+            <li class="nav-item">
                 <button class="nav-link active fw-bold text-dark" id="tab-worker" data-bs-toggle="tab" data-bs-target="#content-worker" type="button">
                     <i class="bi bi-hammer"></i> ワーカー実績
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
+            <li class="nav-item">
                 <button class="nav-link fw-bold text-dark" id="tab-employer" data-bs-toggle="tab" data-bs-target="#content-employer" type="button">
                     <i class="bi bi-building"></i> 発注者実績
                 </button>
