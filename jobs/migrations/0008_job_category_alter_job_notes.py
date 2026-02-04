@@ -10,14 +10,11 @@ class Migration(migrations.Migration):
     ]
 
     ooperations = [
-        # ▼ すでにDBにあるのでコメントアウトしてスキップさせる
-        # migrations.AddField(
-        #     model_name='job',
-        #     name='category',
-        #     field=models.CharField(choices=[('general', '多能工・手元')...], default='general', max_length=50, verbose_name='業種・職種'),
-        # ),
+         migrations.AddField(
+            model_name='job',
+             name='category',
+     ),
         
-        # ▼ 他の変更（notesなど）はそのまま生かしておく
         migrations.AlterField(
             model_name="job",
             name="notes",

@@ -17,7 +17,7 @@ PREFECTURES = [
 ]
 
 class Profile(models.Model):
-    # ★ランク定義（大文字・小文字を厳密に区別）
+    # ランク定義
     RANK_CHOICES = [
         ('iron', 'iron'), 
         ('bronze', 'bronze'), 
@@ -26,7 +26,7 @@ class Profile(models.Model):
         ('platinum', 'PLATINUM'),
     ]
 
-    # ★年代の選択肢
+    # 年代の選択肢
     AGE_GROUP_CHOICES = [
         ('10s', '10代'), ('20s', '20代'), ('30s', '30代'), 
         ('40s', '40代'), ('50s', '50代'), ('60s', '60代以上'),
@@ -44,7 +44,7 @@ class Profile(models.Model):
     location = models.CharField(max_length=100, blank=True, choices=PREFECTURES, verbose_name="所在地")
     bio = models.TextField(blank=True, verbose_name="自己紹介")
     
-    # 画像
+    # 画像（★ここに image は含めないでください！）
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name="アバター画像")
     id_card_image = models.ImageField(upload_to='id_cards/', blank=True, null=True, verbose_name="本人確認書類")
 
@@ -59,19 +59,17 @@ class Profile(models.Model):
 
     @property
     def monthly_limit(self):
-        """今月の応募可能数"""
         r = self.rank
         if r == 'iron': return 3
         if r == 'bronze': return 10
-        return 999 # Silver以上
+        return 999 
 
     @property
     def posting_limit(self):
-        """今月の募集投稿可能数"""
         r = self.rank
         if r in ['iron', 'bronze']: return 0
         if r == 'silver': return 3
-        return 999 # Gold以上
+        return 999 
 
     def __str__(self):
         return self.user.username
