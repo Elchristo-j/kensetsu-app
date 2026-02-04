@@ -4,8 +4,7 @@ from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-# ★修正点1：CustomUserを削除し、標準のUserを使う
-from django.contrib.auth.models import User 
+from django.contrib.auth.models import User
 from .models import Profile, FavoriteArea, PREFECTURES
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -13,31 +12,33 @@ from django.db.models import Avg
 
 # フォームとモデルのインポート
 from .forms import CustomUserCreationForm, ProfileForm
-# Reviewモデルが必要なのでjobsから読み込みます
 from jobs.models import Job, Application, Review
 
 # Stripe APIキーの設定
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
-# --- 共通で使う集計関数 ---
+# --- 共通で使う集計関数（修正版） ---
 def calculate_stats(user, review_type):
     """
-    指定されたユーザーと評価タイプ（ワーカー評価or発注者評価）に基づいて
-    チャート用データと平均スコアを計算する関数
+    指定されたユーザー(reviewee)と評価タイプに基づいて集計する
     """
-    reviews = Review.objects.filter(target=user, review_type=review_type)
+    # ★修正1: target ではなく reviewee を使用
+    reviews = Review.objects.filter(reviewee=user, review_type=review_type)
     
     if reviews.exists():
-        avg_score = reviews.aggregate(Avg('score'))['score__avg']
-        avg_score = round(avg_score, 1)
-        
+        # ★修正2: フィールド名をモデルに合わせる (character -> humanity)
         ability = reviews.aggregate(Avg('ability'))['ability__avg'] or 0
         cooperation = reviews.aggregate(Avg('cooperation'))['cooperation__avg'] or 0
         diligence = reviews.aggregate(Avg('diligence'))['diligence__avg'] or 0
-        character = reviews.aggregate(Avg('character'))['character__avg'] or 0
+        humanity = reviews.aggregate(Avg('humanity'))['humanity__avg'] or 0  # characterではなくhumanity
         utility = reviews.aggregate(Avg('utility_score'))['utility_score__avg'] or 0
         
-        chart_data = [ability, cooperation, diligence, character, utility]
+        # ★修正3: 'score'フィールドがないため、5項目の平均から算出する
+        avg_score = (ability + cooperation + diligence + humanity + utility) / 5
+        avg_score = round(avg_score, 1)
+        
+        # チャート用データ（人間性の部分は humanity を使う）
+        chart_data = [ability, cooperation, diligence, humanity, utility]
         
         utility_amount = reviews.aggregate(Avg('utility_amount'))['utility_amount__avg'] or 0
 
@@ -75,7 +76,6 @@ def signup(request):
 def profile_edit(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
     
-    # 【Render対策】画像消失時のリンク切れガード
     for attr in ['avatar', 'id_card_image']: 
         img_field = getattr(profile, attr, None)
         if img_field:
@@ -103,13 +103,9 @@ def mypage(request):
     user = request.user
     profile = getattr(user, 'profile', None)
 
-    # 1. ワーカーとしての評価を取得
     worker_stats = calculate_stats(user, 'employer_to_worker')
-    
-    # 2. 発注者としての評価を取得
     employer_stats = calculate_stats(user, 'worker_to_employer')
 
-    # 履歴データの取得
     my_posted_jobs = Job.objects.filter(created_by=user).order_by('-created_at')[:5]
     my_applications = Application.objects.filter(applicant=user).order_by('-applied_at')[:5]
 
@@ -123,10 +119,9 @@ def mypage(request):
     }
     return render(request, 'accounts/mypage.html', context)
 
-# --- プロフィール詳細（他人を見るページ） ---
+# --- プロフィール詳細 ---
 @login_required
 def profile_detail(request, user_id):
-    # ★修正点2：CustomUser -> User に変更
     target_user = get_object_or_404(User, id=user_id)
     profile, _ = Profile.objects.get_or_create(user=target_user)
 
@@ -217,7 +212,6 @@ def stripe_webhook(request):
 
         if user_id:
             try:
-                # ★修正点3：CustomUser -> User に変更
                 user = User.objects.get(id=user_id)
                 profile = user.profile
                 
