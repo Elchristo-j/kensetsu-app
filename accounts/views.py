@@ -4,17 +4,65 @@ from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+# CustomUserを使っているようなので、標準のUserではなくこちらをメインにします
+from .models import CustomUser, Profile, FavoriteArea, PREFECTURES
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Avg
 
 # フォームとモデルのインポート
 from .forms import CustomUserCreationForm, ProfileForm
-from .models import Profile, FavoriteArea, PREFECTURES
-from jobs.models import Job, Application
+# Reviewモデルが必要なのでjobsから読み込みます
+from jobs.models import Job, Application, Review
 
 # Stripe APIキーの設定
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
+# --- 共通で使う集計関数（新・評価システム対応） ---
+def calculate_stats(user, review_type):
+    """
+    指定されたユーザーと評価タイプ（ワーカー評価or発注者評価）に基づいて
+    チャート用データと平均スコアを計算する関数
+    """
+    # ターゲット(user) に対する、指定タイプ(review_type) のレビューを取得
+    reviews = Review.objects.filter(target=user, review_type=review_type)
+    
+    if reviews.exists():
+        # 総合平均（小数点1位まで）
+        avg_score = reviews.aggregate(Avg('score'))['score__avg']
+        avg_score = round(avg_score, 1)
+        
+        # レーダーチャート用データ（各項目）
+        # ※モデルのフィールド名に合わせています
+        ability = reviews.aggregate(Avg('ability'))['ability__avg'] or 0
+        cooperation = reviews.aggregate(Avg('cooperation'))['cooperation__avg'] or 0
+        diligence = reviews.aggregate(Avg('diligence'))['diligence__avg'] or 0
+        character = reviews.aggregate(Avg('character'))['character__avg'] or 0
+        utility = reviews.aggregate(Avg('utility_score'))['utility_score__avg'] or 0
+        
+        # チャート用リスト（順番: 能力, 協調, 勤勉, 人間, 有用）
+        chart_data = [ability, cooperation, diligence, character, utility]
+        
+        # 推定日当（金額）の平均
+        utility_amount = reviews.aggregate(Avg('utility_amount'))['utility_amount__avg'] or 0
+
+        return {
+            'exists': True,
+            'count': reviews.count(),
+            'average': avg_score,
+            'utility_amount': int(utility_amount),
+            'chart_data': chart_data
+        }
+    else:
+        # 評価がない場合
+        return {
+            'exists': False,
+            'count': 0,
+            'average': 0,
+            'utility_amount': 0,
+            'chart_data': [0, 0, 0, 0, 0]
+        }
+
 
 # --- 会員登録 ---
 def signup(request):
@@ -57,43 +105,52 @@ def profile_edit(request):
     
     return render(request, 'accounts/profile_edit.html', {'form': form})
 
-# --- マイページ（評価・ランク表示対応） ---
+# --- マイページ（新・評価チャート対応） ---
 @login_required
 def mypage(request):
-    # プロフィール取得
-    profile = request.user.profile
-    
-    # ★追加: 自分の評価スタッツを取得（レーダーチャート用）
-    stats = profile.get_worker_stats()
+    user = request.user
+    profile = getattr(user, 'profile', None)
 
-    my_applications = Application.objects.filter(applicant=request.user).order_by('-applied_at')
-    my_posted_jobs = Job.objects.filter(created_by=request.user).order_by('-created_at')
+    # 1. ワーカーとしての評価を取得
+    worker_stats = calculate_stats(user, 'employer_to_worker')
     
+    # 2. 発注者としての評価を取得
+    employer_stats = calculate_stats(user, 'worker_to_employer')
+
+    # 履歴データの取得
+    my_posted_jobs = Job.objects.filter(created_by=user).order_by('-created_at')[:5]
+    my_applications = Application.objects.filter(applicant=user).order_by('-applied_at')[:5]
+
     context = {
-        'user': request.user,
-        'profile': profile,   # ランク表示に必要
-        'stats': stats,       # 評価チャートに必要
-        'my_applications': my_applications,
+        'user': user,
+        'profile': profile,
+        'worker_stats': worker_stats,     # ★ワーカー用データ
+        'employer_stats': employer_stats, # ★発注者用データ
         'my_posted_jobs': my_posted_jobs,
+        'my_applications': my_applications,
     }
     return render(request, 'accounts/mypage.html', context)
 
-# --- プロフィール詳細（他人を見る時も評価を表示） ---
+# --- プロフィール詳細（他人を見るページ・新対応） ---
 @login_required
 def profile_detail(request, user_id):
-    target_user = get_object_or_404(User, pk=user_id)
-    # プロフィール取得（なければ自動作成）
+    target_user = get_object_or_404(CustomUser, id=user_id)
     profile, _ = Profile.objects.get_or_create(user=target_user)
+
+    # 1. ワーカーとしての評価
+    worker_stats = calculate_stats(target_user, 'employer_to_worker')
     
-    # ★追加: 対象ユーザーの評価スタッツを取得
-    stats = profile.get_worker_stats()
+    # 2. 発注者としての評価
+    employer_stats = calculate_stats(target_user, 'worker_to_employer')
     
+    # その人が投稿した仕事（既存機能の維持）
     jobs = Job.objects.filter(created_by=target_user).order_by('-created_at')
-    
+
     context = {
         'target_user': target_user,
-        'profile': profile,   # 追加
-        'stats': stats,       # 追加
+        'profile': profile,
+        'worker_stats': worker_stats,     # ★ワーカー用データ
+        'employer_stats': employer_stats, # ★発注者用データ
         'jobs': jobs,
         'prefectures': PREFECTURES,
     }
@@ -111,7 +168,6 @@ def add_favorite_area(request):
                 prefecture=prefecture,
                 city=city
             )
-    # マイページへ戻すのが自然かもしれません（適宜調整してください）
     return redirect('profile_detail', user_id=request.user.id)
 
 # --- お気に入りエリアの削除 ---
@@ -172,7 +228,7 @@ def stripe_webhook(request):
 
         if user_id:
             try:
-                user = User.objects.get(id=user_id)
+                user = CustomUser.objects.get(id=user_id)
                 profile = user.profile
                 
                 if plan_type:
@@ -185,7 +241,7 @@ def stripe_webhook(request):
                     profile.rank = 'platinum'
                 
                 profile.save()
-            except User.DoesNotExist:
+            except CustomUser.DoesNotExist:
                 pass
 
     return HttpResponse(status=200)

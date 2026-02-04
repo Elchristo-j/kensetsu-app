@@ -84,3 +84,39 @@ body {
     border-radius: 0; 
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
+
+/* ランク別バッジ色 */
+.badge-rank-iron {
+    background-color: #6c757d; /* グレー */
+    color: white;
+}
+.badge-rank-bronze {
+    background-color: #cd7f32; /* ブロンズ色 */
+    color: white;
+}
+.badge-rank-silver {
+    background-color: #e0e0e0; /* シルバー */
+    color: #333;
+    border: 1px solid #ccc;
+}
+.badge-rank-gold {
+    background-color: #ffc107; /* ゴールド */
+    color: #000;
+}
+.badge-rank-platinum {
+    /* マイページと同じ水色グラデーション */
+    background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%);
+    color: #006064;
+    border: 1px solid #4dd0e1;
+}
+
+/* 推定日当の演出 */
+.daily-wage-box {
+    border-left: 4px solid #28a745;
+    background-color: #f8fff9;
+    padding: 10px;
+}
+.wage-amount {
+    font-family: 'Arial', sans-serif;
+    letter-spacing: 1px;
+}
