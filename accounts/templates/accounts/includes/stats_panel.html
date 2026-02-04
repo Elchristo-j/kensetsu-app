@@ -1,4 +1,6 @@
-{% load humanize %}  <div class="row align-items-center">
+{% load humanize %}
+
+<div class="row align-items-center">
     <div class="col-md-6 mb-4 mb-md-0">
         {% if stats.exists %}
             <div class="mb-4">
@@ -21,9 +23,12 @@
                 </small>
             </div>
         {% else %}
-            <div class="text-center py-5 bg-light rounded">
-                <h4 class="text-muted fw-bold mb-0">-.-</h4>
-                <p class="text-muted small">まだ評価がありません</p>
+            <div class="mb-4 py-3">
+                <h6 class="text-muted small mb-1">総合スコア（{{ role_name }}）</h6>
+                <div class="d-flex align-items-baseline">
+                    <h1 class="text-muted fw-bold mb-0 display-4">-.-</h1>
+                </div>
+                <p class="text-muted small">まだ評価がありません<br>（チャートは空の状態です）</p>
             </div>
         {% endif %}
     </div>
@@ -38,7 +43,6 @@
     </div>
 </div>
 
-{% if stats.exists %}
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         var ctx = document.getElementById('{{ chart_id }}');
@@ -49,7 +53,8 @@
                     labels: ['能力', '協調性', '勤勉性', '人間性', '有用性'],
                     datasets: [{
                         label: '{{ role_name }}評価',
-                        data: {{ stats.chart_data|safe }},
+                        // データがない場合は [0,0,0,0,0] を使う
+                        data: {{ stats.chart_data|default:"[0,0,0,0,0]"|safe }},
                         backgroundColor: 'rgba(54, 162, 235, 0.2)',
                         borderColor: 'rgba(54, 162, 235, 1)',
                         borderWidth: 2,
@@ -70,4 +75,3 @@
         }
     });
 </script>
-{% endif %}

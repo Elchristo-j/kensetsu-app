@@ -2,6 +2,14 @@
 {% load humanize %}
 
 {% block content %}
+<style>
+    .badge-rank-iron { background-color: #6c757d; color: white; }
+    .badge-rank-bronze { background-color: #cd7f32; color: white; }
+    .badge-rank-silver { background-color: #e0e0e0; color: #333; border: 1px solid #ccc; }
+    .badge-rank-gold { background-color: #ffc107; color: #000; }
+    .badge-rank-platinum { background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%); color: #006064; border: 1px solid #4dd0e1; }
+</style>
+
 <div class="container mt-5 mb-5">
     
     <div class="card shadow-sm mb-4 border-0 rounded-4 bg-light">
@@ -35,14 +43,36 @@
             </div>
             
             {% if target_user.profile.bio %}
-                <div class="bg-white p-3 rounded text-start d-inline-block border shadow-sm" style="max-width: 600px; width: 100%;">
+                <div class="bg-white p-3 rounded text-start d-inline-block border shadow-sm mb-4" style="max-width: 600px; width: 100%;">
                     <small class="text-muted fw-bold d-block mb-1">自己紹介</small>
                     <p class="mb-0 small text-dark" style="white-space: pre-wrap;">{{ target_user.profile.bio }}</p>
                 </div>
             {% endif %}
 
             {% if request.user == target_user %}
-                <div class="mt-4 p-3 rounded bg-white border" style="max-width: 600px; margin: 0 auto;">
+                <div class="d-flex justify-content-center gap-2 mb-4 flex-wrap">
+                    <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark rounded-pill px-4 btn-sm fw-bold">
+                        <i class="bi bi-pencil-square"></i> プロフィール編集
+                    </a>
+                    
+                    {% if target_user.profile.rank == 'iron' and not target_user.profile.is_verified %}
+                        <a href="{% url 'profile_edit' %}" class="btn btn-success rounded-pill px-4 btn-sm fw-bold">
+                            <i class="bi bi-person-check"></i> 本人確認する
+                        </a>
+                    {% elif target_user.profile.rank == 'iron' or target_user.profile.rank == 'bronze' %}
+                        <a href="{% url 'upgrade_plan_page' %}" class="btn btn-primary rounded-pill px-4 btn-sm fw-bold shadow-sm">
+                            <i class="bi bi-arrow-up-circle"></i> ランクアップ
+                        </a>
+                    {% else %}
+                        <a href="{% url 'upgrade_plan_page' %}" class="btn btn-outline-secondary rounded-pill px-4 btn-sm fw-bold">
+                            <i class="bi bi-gear"></i> プラン変更
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% if request.user == target_user %}
+                <div class="p-3 rounded bg-white border mx-auto" style="max-width: 600px;">
                     <h6 class="fw-bold small mb-2 text-start"><i class="bi bi-geo-alt"></i> 活動エリア設定</h6>
                     <div class="d-flex flex-wrap gap-2 mb-2">
                         {% for area in target_user.favorite_areas.all %}
@@ -59,11 +89,7 @@
                         <select name="prefecture" class="form-select form-select-sm w-auto">
                             <option value="">都道府県</option>
                             {% for p in prefectures %}
-                                {% if p.0 %}
-                                    <option value="{{ p.0 }}">{{ p.1 }}</option>
-                                {% else %}
-                                    <option value="{{ p }}">{{ p }}</option>
-                                {% endif %}
+                                <option value="{{ p.0 }}">{{ p.1 }}</option>
                             {% endfor %}
                         </select>
                         <input type="text" name="city" class="form-control form-control-sm" placeholder="市区町村">
@@ -98,7 +124,6 @@
         </ul>
 
         <div class="tab-content" id="profileTabContent">
-            
             <div class="tab-pane fade show active" id="content-worker">
                 {% include 'accounts/includes/stats_panel.html' with stats=worker_stats chart_id="pChartWorker" role_name="ワーカー" %}
                 
@@ -122,4 +147,33 @@
             </div>
 
             <div class="tab-pane fade" id="content-employer">
-{% endblock %}            
+                {% include 'accounts/includes/stats_panel.html' with stats=employer_stats chart_id="pChartEmployer" role_name="発注者" %}
+                
+                <div class="mt-5 border-top pt-4">
+                    <h6 class="fw-bold mb-3">📢 現在募集中の案件</h6>
+                    {% if jobs %}
+                        <div class="list-group">
+                            {% for job in jobs %}
+                                <a href="{% url 'job_detail' job.id %}" class="list-group-item list-group-item-action border-0 shadow-sm mb-2 rounded-3">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <h6 class="mb-1 fw-bold text-primary">{{ job.title }}</h6>
+                                        <small class="text-muted">{{ job.created_at|date:"m/d" }}</small>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-end mt-2">
+                                        <small class="text-dark"><i class="bi bi-geo-alt"></i> {{ job.prefecture }}{{ job.city }}</small>
+                                        <span class="fw-bold">¥{{ job.price|intcomma }}</span>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-3 bg-light rounded">現在募集中の案件はありません。</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
