@@ -4,8 +4,9 @@ from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-# CustomUserを使っているようなので、標準のUserではなくこちらをメインにします
-from .models import CustomUser, Profile, FavoriteArea, PREFECTURES
+# ★修正点1：CustomUserを削除し、標準のUserを使う
+from django.contrib.auth.models import User 
+from .models import Profile, FavoriteArea, PREFECTURES
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Avg
@@ -18,32 +19,26 @@ from jobs.models import Job, Application, Review
 # Stripe APIキーの設定
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
-# --- 共通で使う集計関数（新・評価システム対応） ---
+# --- 共通で使う集計関数 ---
 def calculate_stats(user, review_type):
     """
     指定されたユーザーと評価タイプ（ワーカー評価or発注者評価）に基づいて
     チャート用データと平均スコアを計算する関数
     """
-    # ターゲット(user) に対する、指定タイプ(review_type) のレビューを取得
     reviews = Review.objects.filter(target=user, review_type=review_type)
     
     if reviews.exists():
-        # 総合平均（小数点1位まで）
         avg_score = reviews.aggregate(Avg('score'))['score__avg']
         avg_score = round(avg_score, 1)
         
-        # レーダーチャート用データ（各項目）
-        # ※モデルのフィールド名に合わせています
         ability = reviews.aggregate(Avg('ability'))['ability__avg'] or 0
         cooperation = reviews.aggregate(Avg('cooperation'))['cooperation__avg'] or 0
         diligence = reviews.aggregate(Avg('diligence'))['diligence__avg'] or 0
         character = reviews.aggregate(Avg('character'))['character__avg'] or 0
         utility = reviews.aggregate(Avg('utility_score'))['utility_score__avg'] or 0
         
-        # チャート用リスト（順番: 能力, 協調, 勤勉, 人間, 有用）
         chart_data = [ability, cooperation, diligence, character, utility]
         
-        # 推定日当（金額）の平均
         utility_amount = reviews.aggregate(Avg('utility_amount'))['utility_amount__avg'] or 0
 
         return {
@@ -54,7 +49,6 @@ def calculate_stats(user, review_type):
             'chart_data': chart_data
         }
     else:
-        # 評価がない場合
         return {
             'exists': False,
             'count': 0,
@@ -79,10 +73,9 @@ def signup(request):
 # --- プロフィールの編集 ---
 @login_required
 def profile_edit(request):
-    # プロフィールがなければ作成
     profile, created = Profile.objects.get_or_create(user=request.user)
     
-    # 【Render対策】サーバー再起動による画像消失時のリンク切れガード
+    # 【Render対策】画像消失時のリンク切れガード
     for attr in ['avatar', 'id_card_image']: 
         img_field = getattr(profile, attr, None)
         if img_field:
@@ -98,14 +91,13 @@ def profile_edit(request):
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
-            # 編集後はマイページへ戻る
             return redirect('mypage')
     else:
         form = ProfileForm(instance=profile)
     
     return render(request, 'accounts/profile_edit.html', {'form': form})
 
-# --- マイページ（新・評価チャート対応） ---
+# --- マイページ ---
 @login_required
 def mypage(request):
     user = request.user
@@ -124,33 +116,30 @@ def mypage(request):
     context = {
         'user': user,
         'profile': profile,
-        'worker_stats': worker_stats,     # ★ワーカー用データ
-        'employer_stats': employer_stats, # ★発注者用データ
+        'worker_stats': worker_stats,
+        'employer_stats': employer_stats,
         'my_posted_jobs': my_posted_jobs,
         'my_applications': my_applications,
     }
     return render(request, 'accounts/mypage.html', context)
 
-# --- プロフィール詳細（他人を見るページ・新対応） ---
+# --- プロフィール詳細（他人を見るページ） ---
 @login_required
 def profile_detail(request, user_id):
-    target_user = get_object_or_404(CustomUser, id=user_id)
+    # ★修正点2：CustomUser -> User に変更
+    target_user = get_object_or_404(User, id=user_id)
     profile, _ = Profile.objects.get_or_create(user=target_user)
 
-    # 1. ワーカーとしての評価
     worker_stats = calculate_stats(target_user, 'employer_to_worker')
-    
-    # 2. 発注者としての評価
     employer_stats = calculate_stats(target_user, 'worker_to_employer')
     
-    # その人が投稿した仕事（既存機能の維持）
     jobs = Job.objects.filter(created_by=target_user).order_by('-created_at')
 
     context = {
         'target_user': target_user,
         'profile': profile,
-        'worker_stats': worker_stats,     # ★ワーカー用データ
-        'employer_stats': employer_stats, # ★発注者用データ
+        'worker_stats': worker_stats,
+        'employer_stats': employer_stats,
         'jobs': jobs,
         'prefectures': PREFECTURES,
     }
@@ -228,7 +217,8 @@ def stripe_webhook(request):
 
         if user_id:
             try:
-                user = CustomUser.objects.get(id=user_id)
+                # ★修正点3：CustomUser -> User に変更
+                user = User.objects.get(id=user_id)
                 profile = user.profile
                 
                 if plan_type:
@@ -241,7 +231,7 @@ def stripe_webhook(request):
                     profile.rank = 'platinum'
                 
                 profile.save()
-            except CustomUser.DoesNotExist:
+            except User.DoesNotExist:
                 pass
 
     return HttpResponse(status=200)
