@@ -26,15 +26,12 @@ def is_staff_user(user):
 # --- 1. Home & Search ---
 
 def home(request):
-    # ▼ 【修正】募集終了していない(is_closed=False)案件だけを表示
-    jobs = Job.objects.filter(is_closed=False).order_by('-created_at')
-    return render(request, 'jobs/home.html', {'jobs': jobs})
-
-    """トップページ：31日以内の新着案件を表示"""
+    """トップページ：募集中 かつ 31日以内の新着案件を表示"""
     expiration_date = timezone.now() - timedelta(days=31)
     
-    # 31日以内 かつ 募集終了していない案件
+    # フィルター: 募集終了していない(False) かつ 31日以内
     jobs = Job.objects.filter(
+        is_closed=False,
         created_at__gte=expiration_date
     ).order_by('-created_at')
 
@@ -54,9 +51,10 @@ def job_list(request):
     """検索一覧ページ：31日以内の案件を検索・表示"""
     expiration_date = timezone.now() - timedelta(days=31)
     
-    # ベース：31日以内の案件
+    # ベース：31日以内 かつ 募集中の案件
     jobs = Job.objects.filter(
-        created_at__gte=expiration_date
+        created_at__gte=expiration_date,
+        is_closed=False
     ).order_by('-created_at')
     
     # --- 検索フィルター ---
@@ -95,8 +93,7 @@ def favorite_search_view(request):
         else:
             query |= Q(prefecture=area.prefecture)
             
-    # 期限切れも考慮する場合はここにも created_at フィルターを追加可能ですが、
-    # お気に入りは「通知」に近い意味合いもあるため、一旦全件表示としています
+    # お気に入りは募集中のものだけ表示
     jobs = Job.objects.filter(query).filter(is_closed=False).order_by('-id')
     
     return render(request, 'jobs/home.html', {
@@ -111,11 +108,7 @@ def favorite_search_view(request):
 
 def job_detail(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
-    is_applied = False
-    if request.user.is_authenticated:
-        is_applied = Application.objects.filter(job=job, applicant=request.user).exists()
-    return render(request, 'jobs/job_detail.html', {'job': job, 'is_applied': is_applied})
-
+    
     # 応募済みかチェック
     is_applied = False
     if request.user.is_authenticated:
@@ -151,14 +144,19 @@ def job_detail(request, job_id):
 @login_required
 def create_job(request):
     profile = request.user.profile
+    
+    # 投稿制限チェック
     if not profile.can_post_job():
         limit = profile.posting_limit
-        rank_display = profile.display_rank
+        # display_rankが存在しない場合の対策
+        rank_display = getattr(profile, 'get_rank_display', lambda: '不明')()
+        
         if limit == 0:
-            messages.error(request, f"現在のランク（{rank_display}）では募集投稿はできません。")
+            messages.error(request, f"現在のランクでは募集投稿はできません。")
         else:
-            messages.error(request, f"現在のランク（{rank_display}）の募集投稿上限（月{limit}件）を超えています。")
-        return redirect('profile_detail', user_id=request.user.id)
+            messages.error(request, f"募集投稿の上限（月{limit}件）を超えています。")
+        # 投稿できない場合はマイページへ戻す（詳細ではなく）
+        return redirect('mypage')
     
     if request.method == 'POST':
         form = JobForm(request.POST)
@@ -170,20 +168,6 @@ def create_job(request):
     else: 
         form = JobForm()
     return render(request, 'jobs/create_job.html', {'form': form, 'is_edit': False})
-
-    if not request.user.profile.can_post_job():
-        return render(request, 'jobs/limit_reached.html') # 制限画面へ（必要なら作成）
-
-    if request.method == 'POST':
-        form = JobForm(request.POST)
-        if form.is_valid():
-            job = form.save(commit=False)
-            job.created_by = request.user
-            job.save()
-            return redirect('job_detail', job_id=job.id)
-    else:
-        form = JobForm()
-    return render(request, 'jobs/create_job.html', {'form': form})
 
 @login_required
 def edit_job(request, job_id):
@@ -210,10 +194,10 @@ def delete_job(request, job_id):
 @login_required
 def apply_job(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
+    
     if not request.user.profile.can_apply():
-        r = request.user.profile.display_rank
         l = request.user.profile.monthly_limit
-        messages.error(request, f"応募上限です。現在のランク（{r}）の枠は月{l}件です。")
+        messages.error(request, f"応募上限です。現在のランクの枠は月{l}件です。")
         return redirect('job_detail', job_id=job.id)
     
     Application.objects.get_or_create(job=job, applicant=request.user)
@@ -280,6 +264,8 @@ def profile_detail(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
     jobs = Job.objects.filter(created_by=target_user).order_by('-id')
     
+    # 必要なデータをaccounts.viewsのロジックから拝借（本来は統合すべき）
+    # ※ここでは単純表示のみ
     context = {
         'target_user': target_user, 
         'jobs': jobs, 
@@ -289,16 +275,22 @@ def profile_detail(request, user_id):
 
 @login_required
 def profile_edit(request):
+    """
+    重要：accounts/views.py と重複する可能性がありますが、
+    URL設定がこちらを向いている場合のために修正版を置いておきます。
+    """
     profile, _ = Profile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid(): 
             form.save()
             messages.success(request, 'プロフィールを更新しました。')
-            return redirect('profile_detail', user_id=request.user.id)
+            # ★修正: 保存後はマイページへ
+            return redirect('mypage')
     else: 
         form = ProfileForm(instance=profile)
-    return render(request, 'jobs/profile_edit.html', {'form': form})
+    # テンプレートパスも accounts 側に統一推奨
+    return render(request, 'accounts/profile_edit.html', {'form': form})
 
 @login_required
 def add_favorite_area(request):
@@ -307,86 +299,3 @@ def add_favorite_area(request):
         c = request.POST.get('city', '')
         if p:
             FavoriteArea.objects.get_or_create(user=request.user, prefecture=p, city=c)
-    return redirect('profile_detail', user_id=request.user.id)
-
-@login_required
-def delete_favorite_area(request, area_id):
-    get_object_or_404(FavoriteArea, id=area_id, user=request.user).delete()
-    return redirect('profile_detail', user_id=request.user.id)
-
-# --- 5. Admin & Static & New Pages ---
-
-@user_passes_test(is_staff_user)
-def admin_dashboard(request):
-    p = Profile.objects.filter(is_verified=False, id_card_image__isnull=False).exclude(id_card_image='')
-    return render(request, 'jobs/admin_dashboard.html', {'pending_profiles': p})
-
-@user_passes_test(is_staff_user)
-def approve_profile(request, user_id):
-    p = get_object_or_404(User, pk=user_id).profile
-    p.is_verified = True
-    p.save()
-    return redirect('admin_dashboard')
-
-@user_passes_test(is_staff_user)
-def reject_profile(request, user_id):
-    p = get_object_or_404(User, pk=user_id).profile
-    p.id_card_image.delete()
-    p.save()
-    return redirect('admin_dashboard')
-
-def about_view(request): return render(request, 'jobs/about.html')
-def terms_view(request): return render(request, 'jobs/terms.html')
-def privacy_view(request): return render(request, 'jobs/privacy.html')
-def law_view(request): return render(request, 'jobs/law.html')
-def guide_view(request): return render(request, 'jobs/guide_qa.html')
-def subscription_plans(request): return render(request, 'jobs/subscription_plans.html')
-
-# --- 6. Stripe Payment ---
-
-@csrf_exempt
-def stripe_webhook(request):
-    """Stripeからの決済完了通知を受け取り、ランクを更新する"""
-    payload = request.body
-    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
-    event = None
-    webhook_secret = getattr(settings, 'STRIPE_WEBHOOK_SECRET', '')
-
-    try:
-        event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
-    except ValueError as e:
-        return HttpResponse(status=400)
-    except stripe.error.SignatureVerificationError as e:
-        return HttpResponse(status=400)
-
-    if event['type'] == 'checkout.session.completed':
-        session = event['data']['object']
-        client_reference_id = session.get('client_reference_id')
-        amount_total = session.get('amount_total')
-
-        if client_reference_id:
-            try:
-                user = User.objects.get(id=client_reference_id)
-                profile = user.profile
-                
-                if amount_total == 550:
-                    profile.rank = 'silver'
-                elif amount_total == 2200:
-                    profile.rank = 'gold'
-                elif amount_total == 5500:
-                    profile.rank = 'platinum'
-                
-                profile.save()
-                
-            except User.DoesNotExist:
-                pass
-            except Exception as e:
-                pass
-
-    return HttpResponse(status=200)
-
-@login_required
-def payment_success(request):
-    """決済完了後に戻ってくる場所"""
-    messages.success(request, 'お支払いが完了しました！ランク情報は間もなく更新されます。')
-    return redirect('profile_detail', user_id=request.user.id)

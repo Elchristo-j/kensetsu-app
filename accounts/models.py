@@ -40,13 +40,15 @@ class Profile(models.Model):
     company_name = models.CharField(max_length=100, blank=True, verbose_name="屋号・会社名")
     position = models.CharField(max_length=100, blank=True, null=True, verbose_name="役職・部署")
     age_group = models.CharField(max_length=5, choices=AGE_GROUP_CHOICES, blank=True, null=True, verbose_name="年代")
-    # ▼ 修正箇所: occupation を2つに分ける
+    
+    # 職種（メイン・サブ）
     occupation_main = models.CharField(max_length=50, blank=True, null=True, verbose_name="メイン職種")
     occupation_sub = models.CharField(max_length=50, blank=True, null=True, verbose_name="サブ職種")
+    
     location = models.CharField(max_length=100, blank=True, choices=PREFECTURES, verbose_name="所在地")
     bio = models.TextField(blank=True, verbose_name="自己紹介")
     
-    # 画像（★ここに image は含めないでください！）
+    # 画像
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name="アバター画像")
     id_card_image = models.ImageField(upload_to='id_cards/', blank=True, null=True, verbose_name="本人確認書類")
 
@@ -61,28 +63,21 @@ class Profile(models.Model):
 
     @property
     def monthly_limit(self):
-        r = self.rank
-        if r == 'iron': return 3
-        if r == 'bronze': return 10
-        return 999
-        """今月の応募可能数"""
-        # ★修正: ランクが不明(Noneや空白)の場合でもエラーにならないようにする
-        r = str(self.rank).lower() 
+        """今月の応募可能数（バグ修正版）"""
+        # ランク文字列を小文字に統一。Noneや空文字の場合は'iron'として扱う
+        r = str(self.rank).lower() if self.rank else 'iron'
         
         if r == 'iron': return 3
         if r == 'bronze': return 10
         if r in ['silver', 'gold', 'platinum']: return 999 
         
-        # もしランク設定がおかしくても、とりあえずIron扱い(3回)にして応募できるようにする
+        # 万が一不明な値が入っていてもIron扱い(3回)にして応募可能にする
         return 3
+
     @property
     def posting_limit(self):
-        r = self.rank
-        if r in ['iron', 'bronze']: return 0
-        if r == 'silver': return 3
-        return 999
-        """今月の募集投稿可能数"""
-        r = str(self.rank).lower()
+        """今月の募集投稿可能数（バグ修正版）"""
+        r = str(self.rank).lower() if self.rank else 'iron'
         
         if r in ['iron', 'bronze']: return 0
         if r == 'silver': return 3
@@ -94,14 +89,4 @@ class Profile(models.Model):
         return self.user.username
 
 class FavoriteArea(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_areas')
-    prefecture = models.CharField(max_length=20, choices=PREFECTURES)
-    city = models.CharField(max_length=50, blank=True, null=True, default='')
-
-    def __str__(self):
-        return f"{self.user.username} - {self.prefecture}{self.city}"
-
-@receiver(post_save, sender=User)
-def handle_user_profile_sync(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.get_or_create(user=instance)
+    user

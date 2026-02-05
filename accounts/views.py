@@ -37,7 +37,7 @@ def calculate_stats(user, review_type):
 
     if count > 0:
         if review_type == 'employer_to_worker':
-            # ワーカー評価項目 (能力, 協調性, 勤勉性, 人間性, 有用性)
+            # ワーカー評価項目
             p1 = reviews.aggregate(Avg('ability'))['ability__avg'] or 0
             p2 = reviews.aggregate(Avg('cooperation'))['cooperation__avg'] or 0
             p3 = reviews.aggregate(Avg('diligence'))['diligence__avg'] or 0
@@ -48,7 +48,7 @@ def calculate_stats(user, review_type):
             chart_data = [p1, p2, p3, p4, p5]
 
         else:
-            # 発注者評価項目 (作業時間, 報酬, 仕事内容, 段取り, 信用性)
+            # 発注者評価項目
             p1 = reviews.aggregate(Avg('working_hours'))['working_hours__avg'] or 0
             p2 = reviews.aggregate(Avg('reward'))['reward__avg'] or 0
             p3 = reviews.aggregate(Avg('job_content'))['job_content__avg'] or 0
@@ -80,12 +80,15 @@ def calculate_stats(user, review_type):
             'wage_range': None
         }
 
-# --- (既存のビュー群) ---
+# --- ビュー定義 ---
+
 def signup(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
+            # ログインさせる
+            from django.contrib.auth import login
             login(request, user)
             return redirect('home')
     else:
@@ -104,6 +107,7 @@ def profile_edit(request):
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
+            # ★修正: マイページへ戻る
             return redirect('mypage')
     else:
         form = ProfileForm(instance=profile)
@@ -158,7 +162,7 @@ def upgrade_plan_page(request):
 
 @login_required
 def create_checkout_session(request, plan_type):
-    # Stripeロジック（変更なし）
+    # Stripeロジック
     price_id = settings.STRIPE_PRICE_IDS.get(plan_type)
     if not price_id: return redirect('mypage')
     session = stripe.checkout.Session.create(
@@ -174,7 +178,7 @@ def create_checkout_session(request, plan_type):
 
 @csrf_exempt
 def stripe_webhook(request):
-    # Webhookロジック（変更なし）
+    # Webhookロジック
     payload = request.body
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
     try:
