@@ -79,6 +79,38 @@ class Profile(models.Model):
         if r in ['gold', 'platinum']: return 999
         return 0
 
+    # ▼▼▼ 復活させたメソッド（ここがないとエラーになります） ▼▼▼
+    def can_apply(self):
+        """今月応募できるか判定"""
+        # 循環参照避けるためここでインポート
+        from jobs.models import Application 
+        
+        # 月初の取得
+        now = timezone.now()
+        start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        # 今月の応募数
+        count = Application.objects.filter(applicant=self.user, applied_at__gte=start_of_month).count()
+        
+        return count < self.monthly_limit
+
+    def can_post_job(self):
+        """今月募集投稿できるか判定"""
+        from jobs.models import Job
+        
+        limit = self.posting_limit
+        if limit == 0: return False
+        
+        # 無制限の場合はカウント不要
+        if limit >= 999: return True
+
+        now = timezone.now()
+        start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        count = Job.objects.filter(created_by=self.user, created_at__gte=start_of_month).count()
+        return count < limit
+    # ▲▲▲ ここまで ▲▲▲
+
     def __str__(self):
         return self.user.username
 
