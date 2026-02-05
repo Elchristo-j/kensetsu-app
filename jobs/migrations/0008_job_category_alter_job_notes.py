@@ -10,10 +10,10 @@ class Migration(migrations.Migration):
     ]
 
     ooperations = [
-         migrations.AddField(
-            model_name='job',
-             name='category',
-     ),
+         #migrations.AddField(
+            #model_name='job',
+             #name='category',
+     #),
         
         migrations.AlterField(
             model_name="job",
