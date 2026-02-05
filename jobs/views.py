@@ -26,6 +26,10 @@ def is_staff_user(user):
 # --- 1. Home & Search ---
 
 def home(request):
+    # ▼ 【修正】募集終了していない(is_closed=False)案件だけを表示
+    jobs = Job.objects.filter(is_closed=False).order_by('-created_at')
+    return render(request, 'jobs/home.html', {'jobs': jobs})
+
     """トップページ：31日以内の新着案件を表示"""
     expiration_date = timezone.now() - timedelta(days=31)
     
@@ -112,6 +116,38 @@ def job_detail(request, job_id):
         is_applied = Application.objects.filter(job=job, applicant=request.user).exists()
     return render(request, 'jobs/job_detail.html', {'job': job, 'is_applied': is_applied})
 
+    # 応募済みかチェック
+    is_applied = False
+    if request.user.is_authenticated:
+        is_applied = Application.objects.filter(job=job, applicant=request.user).exists()
+    
+    # 応募可能かチェック (ログインしてない場合はFalse)
+    can_apply = False
+    limit_info = 0
+    if request.user.is_authenticated and hasattr(request.user, 'profile'):
+        can_apply = request.user.profile.can_apply()
+        limit_info = request.user.profile.monthly_limit
+    
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return redirect('login')
+            
+        # 応募処理
+        if not is_applied and can_apply and not job.is_closed:
+            Application.objects.create(job=job, applicant=request.user)
+            messages.success(request, '応募が完了しました！')
+            return redirect('job_detail', job_id=job.id)
+        else:
+            messages.error(request, '応募できませんでした（制限超過または応募済み）')
+
+    context = {
+        'job': job,
+        'is_applied': is_applied,
+        'can_apply': can_apply,
+        'limit_info': limit_info, # デバッグ表示用
+    }
+    return render(request, 'jobs/job_detail.html', context)
+
 @login_required
 def create_job(request):
     profile = request.user.profile
@@ -134,6 +170,20 @@ def create_job(request):
     else: 
         form = JobForm()
     return render(request, 'jobs/create_job.html', {'form': form, 'is_edit': False})
+
+    if not request.user.profile.can_post_job():
+        return render(request, 'jobs/limit_reached.html') # 制限画面へ（必要なら作成）
+
+    if request.method == 'POST':
+        form = JobForm(request.POST)
+        if form.is_valid():
+            job = form.save(commit=False)
+            job.created_by = request.user
+            job.save()
+            return redirect('job_detail', job_id=job.id)
+    else:
+        form = JobForm()
+    return render(request, 'jobs/create_job.html', {'form': form})
 
 @login_required
 def edit_job(request, job_id):

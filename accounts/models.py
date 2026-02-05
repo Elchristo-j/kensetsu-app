@@ -64,14 +64,31 @@ class Profile(models.Model):
         r = self.rank
         if r == 'iron': return 3
         if r == 'bronze': return 10
-        return 999 
-
+        return 999
+        """今月の応募可能数"""
+        # ★修正: ランクが不明(Noneや空白)の場合でもエラーにならないようにする
+        r = str(self.rank).lower() 
+        
+        if r == 'iron': return 3
+        if r == 'bronze': return 10
+        if r in ['silver', 'gold', 'platinum']: return 999 
+        
+        # もしランク設定がおかしくても、とりあえずIron扱い(3回)にして応募できるようにする
+        return 3
     @property
     def posting_limit(self):
         r = self.rank
         if r in ['iron', 'bronze']: return 0
         if r == 'silver': return 3
-        return 999 
+        return 999
+        """今月の募集投稿可能数"""
+        r = str(self.rank).lower()
+        
+        if r in ['iron', 'bronze']: return 0
+        if r == 'silver': return 3
+        if r in ['gold', 'platinum']: return 999
+        
+        return 0
 
     def __str__(self):
         return self.user.username
