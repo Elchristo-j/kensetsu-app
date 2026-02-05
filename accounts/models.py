@@ -1,103 +1,375 @@
-from django.db import models
+import stripe
+from datetime import timedelta
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+from django.db.models import Q
+from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
-from django.db.models import Avg
+from django.views.decorators.csrf import csrf_exempt
 
-# 都道府県リスト
-PREFECTURES = [
-    ('北海道', '北海道'), ('青森県', '青森県'), ('岩手県', '岩手県'), ('宮城県', '宮城県'), ('秋田県', '秋田県'), ('山形県', '山形県'), ('福島県', '福島県'),
-    ('茨城県', '茨城県'), ('栃木県', '栃木県'), ('群馬県', '群馬県'), ('埼玉県', '埼玉県'), ('千葉県', '千葉県'), ('東京都', '東京都'), ('神奈川県', '神奈川県'),
-    ('新潟県', '新潟県'), ('富山県', '富山県'), ('石川県', '石川県'), ('福井県', '福井県'), ('山梨県', '山梨県'), ('長野県', '長野県'), ('岐阜県', '岐阜県'),
-    ('静岡県', '静岡県'), ('愛知県', '愛知県'), ('三重県', '三重県'), ('滋賀県', '滋賀県'), ('大阪府', '大阪府'), ('兵庫県', '兵庫県'),
-    ('奈良県', '奈良県'), ('和歌山県', '和歌山県'), ('鳥取県', '鳥取県'), ('島根県', '島根県'), ('岡山県', '岡山県'), ('広島県', '広島県'), ('山口県', '山口県'),
-    ('徳島県', '徳島県'), ('香川県', '香川県'), ('愛媛県', '愛媛県'), ('高知県', '高知県'), ('福岡県', '福岡県'), ('佐賀県', '佐賀県'), ('長崎県', '長崎県'),
-    ('熊本県', '熊本県'), ('大分県', '大分県'), ('宮崎県', '宮崎県'), ('鹿児島県', '鹿児島県'), ('沖縄県', '沖縄県')
-]
+# モデル・フォームのインポート
+from accounts.models import Profile, FavoriteArea, PREFECTURES
+from accounts.forms import ProfileForm
+from .models import Job, Application, Message, Notification, JOB_CATEGORIES
+from .forms import JobForm, MessageForm
 
-class Profile(models.Model):
-    # ランク定義
-    RANK_CHOICES = [
-        ('iron', 'iron'), 
-        ('bronze', 'bronze'), 
-        ('silver', 'SILVER'), 
-        ('gold', 'GOLD'), 
-        ('platinum', 'PLATINUM'),
-    ]
+# --- ヘルパー関数 ---
+def create_notification(recipient, message, link=None):
+    Notification.objects.create(recipient=recipient, message=message, link=link)
 
-    # 年代の選択肢
-    AGE_GROUP_CHOICES = [
-        ('10s', '10代'), ('20s', '20代'), ('30s', '30代'), 
-        ('40s', '40代'), ('50s', '50代'), ('60s', '60代以上'),
-    ]
+def is_staff_user(user):
+    return user.is_authenticated and user.is_staff
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    rank = models.CharField(max_length=20, choices=RANK_CHOICES, default='iron')
-    is_verified = models.BooleanField(default=False, verbose_name="本人確認済み")
+# --- 1. Home & Search ---
+
+def home(request):
+    """トップページ：募集中 かつ 31日以内の新着案件を表示"""
+    expiration_date = timezone.now() - timedelta(days=31)
     
-    # 基本情報
-    company_name = models.CharField(max_length=100, blank=True, verbose_name="屋号・会社名")
-    position = models.CharField(max_length=100, blank=True, null=True, verbose_name="役職・部署")
-    age_group = models.CharField(max_length=5, choices=AGE_GROUP_CHOICES, blank=True, null=True, verbose_name="年代")
-    
-    # 職種（メイン・サブ）
-    occupation_main = models.CharField(max_length=50, blank=True, null=True, verbose_name="メイン職種")
-    occupation_sub = models.CharField(max_length=50, blank=True, null=True, verbose_name="サブ職種")
-    
-    location = models.CharField(max_length=100, blank=True, choices=PREFECTURES, verbose_name="所在地")
-    bio = models.TextField(blank=True, verbose_name="自己紹介")
-    
-    # 画像
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name="アバター画像")
-    id_card_image = models.ImageField(upload_to='id_cards/', blank=True, null=True, verbose_name="本人確認書類")
+    # フィルター: 募集終了していない(False) かつ 31日以内
+    jobs = Job.objects.filter(
+        is_closed=False,
+        created_at__gte=expiration_date
+    ).order_by('-created_at')
 
-    # 詳細プロフィール
-    experience_years = models.IntegerField(default=0, verbose_name="経験年数")
-    qualifications = models.CharField(max_length=255, blank=True, null=True, verbose_name="保有資格")
-    skills = models.CharField(max_length=255, blank=True, null=True, verbose_name="得意な工事・スキル")
-    invoice_num = models.CharField(max_length=50, blank=True, null=True, verbose_name="インボイス登録番号")
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    favorites = []
+    if request.user.is_authenticated:
+        favorites = request.user.favorite_areas.all()
 
-    @property
-    def monthly_limit(self):
-        """今月の応募可能数（バグ修正版）"""
-        # ランク文字列を小文字に統一。Noneや空文字の場合は'iron'として扱う
-        r = str(self.rank).lower() if self.rank else 'iron'
+    context = {
+        'jobs': jobs,
+        'prefectures': PREFECTURES,
+        'categories': JOB_CATEGORIES,
+        'favorites': favorites,
+    }
+    return render(request, 'jobs/home.html', context)
+
+def job_list(request):
+    """検索一覧ページ：31日以内の案件を検索・表示"""
+    expiration_date = timezone.now() - timedelta(days=31)
+    
+    # ベース：31日以内 かつ 募集中の案件
+    jobs = Job.objects.filter(
+        created_at__gte=expiration_date,
+        is_closed=False
+    ).order_by('-created_at')
+    
+    # --- 検索フィルター ---
+    query = request.GET.get('q')
+    prefecture = request.GET.get('prefecture')
+    category = request.GET.get('category')
+
+    if query:
+        jobs = jobs.filter(title__icontains=query)
+    
+    if prefecture:
+        jobs = jobs.filter(prefecture=prefecture)
         
-        if r == 'iron': return 3
-        if r == 'bronze': return 10
-        if r in ['silver', 'gold', 'platinum']: return 999 
+    if category:
+        jobs = jobs.filter(category=category)
+    
+    context = {
+        'jobs': jobs,
+        'categories': JOB_CATEGORIES,
+        'prefectures': PREFECTURES,
+    }
+    return render(request, 'jobs/job_list.html', context)
+
+@login_required
+def favorite_search_view(request):
+    """お気に入りエリアの案件検索"""
+    favorite_areas = request.user.favorite_areas.all()
+    if not favorite_areas.exists():
+        messages.info(request, "お気に入りエリアが登録されていません。")
+        return redirect('profile_detail', user_id=request.user.id)
+    
+    query = Q()
+    for area in favorite_areas:
+        if area.city:
+            query |= Q(prefecture=area.prefecture, city=area.city)
+        else:
+            query |= Q(prefecture=area.prefecture)
+            
+    # お気に入りは募集中のものだけ表示
+    jobs = Job.objects.filter(query).filter(is_closed=False).order_by('-id')
+    
+    return render(request, 'jobs/home.html', {
+        'jobs': jobs, 
+        'favorites': favorite_areas, 
+        'prefectures': PREFECTURES, 
+        'categories': JOB_CATEGORIES,
+        'page_title': 'お気に入りエリアの案件'
+    })
+
+# --- 2. Job Detail & Actions ---
+
+def job_detail(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    
+    # 応募済みかチェック
+    is_applied = False
+    if request.user.is_authenticated:
+        is_applied = Application.objects.filter(job=job, applicant=request.user).exists()
+    
+    # 応募可能かチェック (ログインしてない場合はFalse)
+    can_apply = False
+    limit_info = 0
+    if request.user.is_authenticated and hasattr(request.user, 'profile'):
+        can_apply = request.user.profile.can_apply()
+        limit_info = request.user.profile.monthly_limit
+    
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return redirect('login')
+            
+        # 応募処理
+        if not is_applied and can_apply and not job.is_closed:
+            Application.objects.create(job=job, applicant=request.user)
+            messages.success(request, '応募が完了しました！')
+            return redirect('job_detail', job_id=job.id)
+        else:
+            messages.error(request, '応募できませんでした（制限超過または応募済み）')
+
+    context = {
+        'job': job,
+        'is_applied': is_applied,
+        'can_apply': can_apply,
+        'limit_info': limit_info, # デバッグ表示用
+    }
+    return render(request, 'jobs/job_detail.html', context)
+
+@login_required
+def create_job(request):
+    profile = request.user.profile
+    
+    # 投稿制限チェック
+    if not profile.can_post_job():
+        limit = profile.posting_limit
+        # display_rankが存在しない場合の対策
+        rank_display = getattr(profile, 'get_rank_display', lambda: '不明')()
         
-        # 万が一不明な値が入っていてもIron扱い(3回)にして応募可能にする
-        return 3
+        if limit == 0:
+            messages.error(request, f"現在のランクでは募集投稿はできません。")
+        else:
+            messages.error(request, f"募集投稿の上限（月{limit}件）を超えています。")
+        # 投稿できない場合はマイページへ戻す
+        return redirect('mypage')
+    
+    if request.method == 'POST':
+        form = JobForm(request.POST)
+        if form.is_valid():
+            j = form.save(commit=False)
+            j.created_by = request.user
+            j.save()
+            return redirect('home')
+    else: 
+        form = JobForm()
+    return render(request, 'jobs/create_job.html', {'form': form, 'is_edit': False})
 
-    @property
-    def posting_limit(self):
-        """今月の募集投稿可能数（バグ修正版）"""
-        r = str(self.rank).lower() if self.rank else 'iron'
-        
-        if r in ['iron', 'bronze']: return 0
-        if r == 'silver': return 3
-        if r in ['gold', 'platinum']: return 999
-        
-        return 0
+@login_required
+def edit_job(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    if job.created_by != request.user:
+        return redirect('home')
+    
+    if request.method == 'POST':
+        form = JobForm(request.POST, instance=job)
+        if form.is_valid():
+            form.save()
+            return redirect('job_detail', job_id=job.id)
+    else:
+        form = JobForm(instance=job)
+    return render(request, 'jobs/create_job.html', {'form': form, 'is_edit': True})
 
-    def __str__(self):
-        return self.user.username
+@login_required
+def delete_job(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    if job.created_by == request.user:
+        job.delete()
+    return redirect('home')
 
-class FavoriteArea(models.Model):
-    # ★ここがエラーの原因でした。User（大文字）が正解です。
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_areas')
-    prefecture = models.CharField(max_length=20, choices=PREFECTURES)
-    city = models.CharField(max_length=50, blank=True, null=True, default='')
+@login_required
+def apply_job(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    
+    if not request.user.profile.can_apply():
+        l = request.user.profile.monthly_limit
+        messages.error(request, f"応募上限です。現在のランクの枠は月{l}件です。")
+        return redirect('job_detail', job_id=job.id)
+    
+    Application.objects.get_or_create(job=job, applicant=request.user)
+    create_notification(job.created_by, f"「{job.title}」に応募がありました。", f"/job/{job.id}/applicants/")
+    return redirect('job_detail', job_id=job.id)
 
-    def __str__(self):
-        return f"{self.user.username} - {self.prefecture}{self.city}"
+@login_required
+def cancel_application(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    Application.objects.filter(job=job, applicant=request.user).delete()
+    return redirect('job_detail', job_id=job.id)
 
-@receiver(post_save, sender=User)
-def handle_user_profile_sync(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.get_or_create(user=instance)
+# --- 3. Management ---
+
+@login_required
+def job_applicants(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    if job.created_by != request.user:
+        return redirect('home')
+    return render(request, 'jobs/job_applicants.html', {'job': job, 'applications': job.applications.all()})
+
+@login_required
+def adopt_applicant(request, application_id):
+    app = get_object_or_404(Application, pk=application_id)
+    if request.user == app.job.created_by:
+        app.status = 'accepted'
+        app.save()
+    return redirect('job_applicants', job_id=app.job.id)
+
+@login_required
+def reject_applicant(request, application_id):
+    app = get_object_or_404(Application, pk=application_id)
+    if request.user == app.job.created_by:
+        app.delete()
+    return redirect('job_applicants', job_id=app.job.id)
+
+@login_required
+def chat_room(request, application_id):
+    app = get_object_or_404(Application, pk=application_id)
+    
+    if request.method == 'POST':
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            m = form.save(commit=False)
+            m.application = app
+            m.sender = request.user
+            m.save()
+            receiver = app.job.created_by if request.user == app.applicant else app.applicant
+            create_notification(receiver, f"{request.user.username}様からのメッセージ", f"/application/{app.id}/chat/")
+            return redirect('chat_room', application_id=app.id)
+            
+    Message.objects.filter(application=app, is_read=False).exclude(sender=request.user).update(is_read=True)
+    return render(request, 'jobs/chat_room.html', {'application': app, 'form': MessageForm(), 'messages': app.messages.all()})
+
+@login_required
+def notifications(request):
+    request.user.notifications.filter(is_read=False).update(is_read=True)
+    return render(request, 'jobs/notifications.html', {'notifications': request.user.notifications.all().order_by('-created_at')})
+
+# --- 4. Profile & Settings ---
+
+@login_required
+def profile_detail(request, user_id):
+    target_user = get_object_or_404(User, pk=user_id)
+    jobs = Job.objects.filter(created_by=target_user).order_by('-id')
+    
+    context = {
+        'target_user': target_user, 
+        'jobs': jobs, 
+        'prefectures': PREFECTURES,
+    }
+    return render(request, 'accounts/profile_detail.html', context)
+
+@login_required
+def profile_edit(request):
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid(): 
+            form.save()
+            messages.success(request, 'プロフィールを更新しました。')
+            # ★修正: 保存後はマイページへ
+            return redirect('mypage')
+    else: 
+        form = ProfileForm(instance=profile)
+    return render(request, 'accounts/profile_edit.html', {'form': form})
+
+@login_required
+def add_favorite_area(request):
+    if request.method == 'POST':
+        p = request.POST.get('prefecture')
+        c = request.POST.get('city', '')
+        if p:
+            FavoriteArea.objects.get_or_create(user=request.user, prefecture=p, city=c)
+    return redirect('profile_detail', user_id=request.user.id)
+
+@login_required
+def delete_favorite_area(request, area_id):
+    get_object_or_404(FavoriteArea, id=area_id, user=request.user).delete()
+    return redirect('profile_detail', user_id=request.user.id)
+
+# --- 5. Admin & Static & New Pages ---
+
+@user_passes_test(is_staff_user)
+def admin_dashboard(request):
+    p = Profile.objects.filter(is_verified=False, id_card_image__isnull=False).exclude(id_card_image='')
+    return render(request, 'jobs/admin_dashboard.html', {'pending_profiles': p})
+
+@user_passes_test(is_staff_user)
+def approve_profile(request, user_id):
+    p = get_object_or_404(User, pk=user_id).profile
+    p.is_verified = True
+    p.save()
+    return redirect('admin_dashboard')
+
+@user_passes_test(is_staff_user)
+def reject_profile(request, user_id):
+    p = get_object_or_404(User, pk=user_id).profile
+    p.id_card_image.delete()
+    p.save()
+    return redirect('admin_dashboard')
+
+def about_view(request): return render(request, 'jobs/about.html')
+def terms_view(request): return render(request, 'jobs/terms.html')
+def privacy_view(request): return render(request, 'jobs/privacy.html')
+def law_view(request): return render(request, 'jobs/law.html')
+def guide_view(request): return render(request, 'jobs/guide_qa.html')
+def subscription_plans(request): return render(request, 'jobs/subscription_plans.html')
+
+# --- 6. Stripe Payment ---
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    event = None
+    webhook_secret = getattr(settings, 'STRIPE_WEBHOOK_SECRET', '')
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+    except ValueError as e:
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        return HttpResponse(status=400)
+
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        client_reference_id = session.get('client_reference_id')
+        amount_total = session.get('amount_total')
+
+        if client_reference_id:
+            try:
+                user = User.objects.get(id=client_reference_id)
+                profile = user.profile
+                
+                if amount_total == 550:
+                    profile.rank = 'silver'
+                elif amount_total == 2200:
+                    profile.rank = 'gold'
+                elif amount_total == 5500:
+                    profile.rank = 'platinum'
+                
+                profile.save()
+                
+            except User.DoesNotExist:
+                pass
+            except Exception as e:
+                pass
+
+    return HttpResponse(status=200)
+
+@login_required
+def payment_success(request):
+    messages.success(request, 'お支払いが完了しました！ランク情報は間もなく更新されます。')
+    return redirect('profile_detail', user_id=request.user.id)
