@@ -1,123 +1,151 @@
 {% extends 'base.html' %}
+{% load humanize %}
 
 {% block content %}
+<style>
+    /* ランク別バッジ色 */
+    .badge-rank-iron { background-color: #6c757d; color: white; }
+    .badge-rank-bronze { background-color: #cd7f32; color: white; }
+    .badge-rank-silver { background-color: #e0e0e0; color: #333; border: 1px solid #ccc; }
+    .badge-rank-gold { background-color: #ffc107; color: #000; }
+    .badge-rank-platinum { background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%); color: #006064; border: 1px solid #4dd0e1; }
+</style>
+
 <div class="container mt-5 mb-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow border-0 rounded-4">
-                <div class="card-header bg-white border-0 pt-4 pb-0 text-center">
-                    <h3 class="fw-bold">プロフィール編集</h3>
-                    <p class="text-muted small">充実したプロフィールは信頼に繋がります</p>
+    
+    <div class="card shadow-sm mb-4 border-0 rounded-4 bg-light">
+        <div class="card-body p-4 text-center">
+            
+            {% if target_user.profile.avatar %}
+                <img src="{{ target_user.profile.avatar.url }}" class="rounded-circle img-thumbnail mb-3" style="width: 130px; height: 130px; object-fit: cover;">
+            {% else %}
+                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 130px; height: 130px;">
+                    <span class="fs-3">No Img</span>
                 </div>
-                <div class="card-body p-4 p-md-5">
-                    
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
+            {% endif %}
+            
+            <h3 class="fw-bold mb-1">{{ target_user.username }}</h3>
+            
+            <div class="mb-3">
+                <span class="badge rounded-pill fs-6 badge-rank-{{ target_user.profile.rank|lower }}">
+                    {{ target_user.profile.get_rank_display }}会員
+                </span>
+                {% if target_user.profile.is_verified %}
+                    <span class="badge bg-success rounded-pill">本人確認済</span>
+                {% endif %}
+            </div>
 
-                        <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="bi bi-person-badge"></i> 基本情報</h5>
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">屋号・会社名</label>
-                            {{ form.company_name }}
-                        </div>
+            <div class="text-muted mb-3 small-md-base">
+                {% if target_user.profile.company_name %}
+                    <span class="me-3 d-inline-block"><i class="bi bi-building"></i> {{ target_user.profile.company_name }}</span>
+                {% endif %}
+                
+                {% if target_user.profile.position %}
+                    <span class="me-3 d-inline-block badge bg-light text-dark border">{{ target_user.profile.position }}</span>
+                {% endif %}
+            </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">役職・部署名</label>
-                            {{ form.position }}
-                            <div class="form-text">企業に所属している場合は、部署や役職を入力してください。（例：工事部 課長）</div>
-                        </div>
+            <div class="d-flex justify-content-center gap-3 flex-wrap mb-4">
+                <span class="badge bg-white text-dark border px-3 py-2">
+                    <i class="bi bi-calendar"></i> {{ target_user.profile.get_age_group_display|default:"年代未設定" }}
+                </span>
+                
+                {% if target_user.profile.occupation_main %}
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3 py-2">
+                        <i class="bi bi-hammer"></i> {{ target_user.profile.occupation_main }}
+                    </span>
+                {% endif %}
+                
+                {% if target_user.profile.occupation_sub %}
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary px-3 py-2">
+                        <i class="bi bi-plus-circle"></i> {{ target_user.profile.occupation_sub }}
+                    </span>
+                {% endif %}
+            </div>
+            
+            {% if target_user.profile.bio %}
+                <div class="bg-white p-3 rounded text-start d-inline-block border shadow-sm mb-4" style="max-width: 600px; width: 100%;">
+                    <small class="text-muted fw-bold d-block mb-1">自己紹介</small>
+                    <p class="mb-0 small text-dark" style="white-space: pre-wrap;">{{ target_user.profile.bio }}</p>
+                </div>
+            {% endif %}
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">{{ form.age_group.label }}</label>
-                                {{ form.age_group }}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">{{ form.experience_years.label }}</label>
-                                {{ form.experience_years }}
-                            </div>
-                        </div>
+            {% if target_user.favorite_areas.exists %}
+                <div class="mt-2">
+                    <small class="text-muted"><i class="bi bi-geo-alt-fill"></i> 主な活動エリア:</small>
+                    <span class="text-dark fw-bold">{{ target_user.favorite_areas.first.prefecture }}</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">{{ form.occupation_main.label }} <span class="badge bg-danger">必須</span></label>
-                                {{ form.occupation_main }}
-                                <div class="form-text">最も自信のある本業を入力してください。</div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">{{ form.occupation_sub.label }}</label>
-                                {{ form.occupation_sub }}
-                                <div class="form-text">対応可能な他の職種があれば入力してください。</div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">{{ form.location.label }}</label>
-                            {{ form.location }}
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">プロフィール画像</label>
-                                {{ form.avatar }}
-                            </div>
+    <div class="card shadow-sm border-0 rounded-4 p-4">
+        <h5 class="fw-bold mb-3 border-bottom pb-2">実績・評価</h5>
+        
+        <ul class="nav nav-tabs mb-4" id="profileTab" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active fw-bold text-dark" id="tab-worker" data-bs-toggle="tab" data-bs-target="#content-worker" type="button">
+                    <i class="bi bi-hammer"></i> ワーカー実績
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link fw-bold text-dark" id="tab-employer" data-bs-toggle="tab" data-bs-target="#content-employer" type="button">
+                    <i class="bi bi-building"></i> 発注者実績
+                </button>
+            </li>
+        </ul>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">活動エリア（拠点）</label>
-                            {{ form.location }}
-                        </div>
-
-                        <h5 class="fw-bold mb-3 border-bottom pb-2 mt-4"><i class="bi bi-tools"></i> 職人・事業情報</h5>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">自己紹介・経歴</label>
-                            {{ form.bio }}
-                            <div class="form-text">これまでの経験やアピールポイントを記入してください。</div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-6 mb-3">
-                                <label class="form-label fw-bold">経験年数 (年)</label>
-                                {{ form.experience_years }}
-                            </div>
-                            <div class="col-6 mb-3">
-                                <label class="form-label fw-bold">インボイス番号</label>
-                                {{ form.invoice_num }}
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">保有資格</label>
-                            {{ form.qualifications }}
-                            <div class="form-text">例: 第一種電気工事士, 高所作業車 (カンマ区切り推奨)</div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">得意なスキル・工事</label>
-                            {{ form.skills }}
-                            <div class="form-text">例: 屋内配線, エアコン設置, 盤結線</div>
-                        </div>
-
-                        <h5 class="fw-bold mb-3 border-bottom pb-2 mt-4" id="verify-section"><i class="bi bi-card-heading"></i> 本人確認</h5>
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">本人確認書類のアップロード</label>
-                            {{ form.id_card_image }}
-                            <div class="form-text text-danger small">
-                                ※運転免許証などの画像をアップロードしてください。<br>
-                                ※承認されるとバッジが付与されます。
+        <div class="tab-content" id="profileTabContent">
+            <div class="tab-pane fade show active" id="content-worker">
+                {% include 'accounts/includes/stats_panel.html' with stats=worker_stats chart_id="pChartWorker" role_name="ワーカー" %}
+                
+                <div class="mt-5 border-top pt-4">
+                    <h6 class="fw-bold mb-3">技能・資格</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded h-100">
+                                <small class="text-muted d-block mb-1">保有資格</small>
+                                <span class="fw-bold">{{ target_user.profile.qualifications|default:"--" }}</span>
                             </div>
                         </div>
-
-                        <div class="d-grid gap-2 mt-5">
-                            <button type="submit" class="btn btn-dark btn-lg rounded-pill fw-bold">
-                                変更を保存する
-                            </button>
-                            <a href="{% url 'profile_detail' user.id %}" class="btn btn-outline-secondary rounded-pill">
-                                キャンセルして戻る
-                            </a>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded h-100">
+                                <small class="text-muted d-block mb-1">得意な工事</small>
+                                <span class="fw-bold">{{ target_user.profile.skills|default:"--" }}</span>
+                            </div>
                         </div>
-                    </form>
+                    </div>
+                </div>
+            </div>
 
+            <div class="tab-pane fade" id="content-employer">
+                {% include 'accounts/includes/stats_panel.html' with stats=employer_stats chart_id="pChartEmployer" role_name="発注者" %}
+                
+                <div class="mt-5 border-top pt-4">
+                    <h6 class="fw-bold mb-3">📢 現在募集中の案件</h6>
+                    {% if jobs %}
+                        <div class="list-group">
+                            {% for job in jobs %}
+                                <a href="{% url 'job_detail' job.id %}" class="list-group-item list-group-item-action border-0 shadow-sm mb-2 rounded-3">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <h6 class="mb-1 fw-bold text-primary">{{ job.title }}</h6>
+                                        <small class="text-muted">{{ job.created_at|date:"m/d" }}</small>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-end mt-2">
+                                        <small class="text-dark"><i class="bi bi-geo-alt"></i> {{ job.prefecture }}{{ job.city }}</small>
+                                        <span class="fw-bold">¥{{ job.price|intcomma }}</span>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-3 bg-light rounded">現在募集中の案件はありません。</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
