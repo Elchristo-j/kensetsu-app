@@ -89,4 +89,15 @@ class Profile(models.Model):
         return self.user.username
 
 class FavoriteArea(models.Model):
-    user
+    # ★ここがエラーの原因でした。User（大文字）が正解です。
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_areas')
+    prefecture = models.CharField(max_length=20, choices=PREFECTURES)
+    city = models.CharField(max_length=50, blank=True, null=True, default='')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.prefecture}{self.city}"
+
+@receiver(post_save, sender=User)
+def handle_user_profile_sync(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.get_or_create(user=instance)
