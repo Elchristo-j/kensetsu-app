@@ -155,7 +155,7 @@ def create_job(request):
             messages.error(request, f"現在のランクでは募集投稿はできません。")
         else:
             messages.error(request, f"募集投稿の上限（月{limit}件）を超えています。")
-        # 投稿できない場合はマイページへ戻す（詳細ではなく）
+        # 投稿できない場合はマイページへ戻す
         return redirect('mypage')
     
     if request.method == 'POST':
@@ -264,8 +264,6 @@ def profile_detail(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
     jobs = Job.objects.filter(created_by=target_user).order_by('-id')
     
-    # 必要なデータをaccounts.viewsのロジックから拝借（本来は統合すべき）
-    # ※ここでは単純表示のみ
     context = {
         'target_user': target_user, 
         'jobs': jobs, 
@@ -276,7 +274,6 @@ def profile_detail(request, user_id):
 @login_required
 def profile_edit(request):
     """
-    重要：accounts/views.py と重複する可能性がありますが、
     URL設定がこちらを向いている場合のために修正版を置いておきます。
     """
     profile, _ = Profile.objects.get_or_create(user=request.user)
@@ -289,7 +286,6 @@ def profile_edit(request):
             return redirect('mypage')
     else: 
         form = ProfileForm(instance=profile)
-    # テンプレートパスも accounts 側に統一推奨
     return render(request, 'accounts/profile_edit.html', {'form': form})
 
 @login_required
@@ -299,3 +295,84 @@ def add_favorite_area(request):
         c = request.POST.get('city', '')
         if p:
             FavoriteArea.objects.get_or_create(user=request.user, prefecture=p, city=c)
+    return redirect('profile_detail', user_id=request.user.id)
+
+@login_required
+def delete_favorite_area(request, area_id):
+    get_object_or_404(FavoriteArea, id=area_id, user=request.user).delete()
+    return redirect('profile_detail', user_id=request.user.id)
+
+# --- 5. Admin & Static & New Pages ---
+
+@user_passes_test(is_staff_user)
+def admin_dashboard(request):
+    p = Profile.objects.filter(is_verified=False, id_card_image__isnull=False).exclude(id_card_image='')
+    return render(request, 'jobs/admin_dashboard.html', {'pending_profiles': p})
+
+@user_passes_test(is_staff_user)
+def approve_profile(request, user_id):
+    p = get_object_or_404(User, pk=user_id).profile
+    p.is_verified = True
+    p.save()
+    return redirect('admin_dashboard')
+
+@user_passes_test(is_staff_user)
+def reject_profile(request, user_id):
+    p = get_object_or_404(User, pk=user_id).profile
+    p.id_card_image.delete()
+    p.save()
+    return redirect('admin_dashboard')
+
+def about_view(request): return render(request, 'jobs/about.html')
+def terms_view(request): return render(request, 'jobs/terms.html')
+def privacy_view(request): return render(request, 'jobs/privacy.html')
+def law_view(request): return render(request, 'jobs/law.html')
+def guide_view(request): return render(request, 'jobs/guide_qa.html')
+def subscription_plans(request): return render(request, 'jobs/subscription_plans.html')
+
+# --- 6. Stripe Payment ---
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    event = None
+    webhook_secret = getattr(settings, 'STRIPE_WEBHOOK_SECRET', '')
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+    except ValueError as e:
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        return HttpResponse(status=400)
+
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        client_reference_id = session.get('client_reference_id')
+        amount_total = session.get('amount_total')
+
+        if client_reference_id:
+            try:
+                user = User.objects.get(id=client_reference_id)
+                profile = user.profile
+                
+                if amount_total == 550:
+                    profile.rank = 'silver'
+                elif amount_total == 2200:
+                    profile.rank = 'gold'
+                elif amount_total == 5500:
+                    profile.rank = 'platinum'
+                
+                profile.save()
+                
+            except User.DoesNotExist:
+                pass
+            except Exception as e:
+                pass
+
+    return HttpResponse(status=200)
+
+@login_required
+def payment_success(request):
+    messages.success(request, 'お支払いが完了しました！ランク情報は間もなく更新されます。')
+    return redirect('profile_detail', user_id=request.user.id)
