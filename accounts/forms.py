@@ -16,7 +16,8 @@ class ProfileForm(forms.ModelForm):
             'company_name', 
             'position',    # 役職
             'age_group',   # 年代
-            'occupation',  # 職種
+            'occupation_main', # ★変更
+            'occupation_sub',  # ★変更
             'location', 
             'bio',
             'avatar',
@@ -31,7 +32,12 @@ class ProfileForm(forms.ModelForm):
             'company_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '会社名または個人名'}),
             'position': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '役職・部署'}),
             'age_group': forms.Select(attrs={'class': 'form-select'}),
-            'occupation': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '職種 (例: 電気工事士)'}),
+            # (他のwidgetはそのまま...)
+            'age_group': forms.Select(attrs={'class': 'form-select'}),
+            # ★変更
+            'occupation_main': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例: 電気工事'}),
+            'occupation_sub': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例: 空調設備, 消防設備'}),
+            # (他はそのまま...)
             'location': forms.Select(attrs={'class': 'form-select'}),
             'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
             'avatar': forms.FileInput(attrs={'class': 'form-control'}),
@@ -40,4 +46,10 @@ class ProfileForm(forms.ModelForm):
             'qualifications': forms.TextInput(attrs={'class': 'form-control'}),
             'skills': forms.TextInput(attrs={'class': 'form-control'}),
             'invoice_num': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+        labels = {
+            # (他はそのまま...)
+            'occupation_main': 'メイン職種',
+            'occupation_sub': 'サブ職種',
         }

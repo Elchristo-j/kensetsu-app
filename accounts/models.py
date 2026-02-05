@@ -40,7 +40,9 @@ class Profile(models.Model):
     company_name = models.CharField(max_length=100, blank=True, verbose_name="屋号・会社名")
     position = models.CharField(max_length=100, blank=True, null=True, verbose_name="役職・部署")
     age_group = models.CharField(max_length=5, choices=AGE_GROUP_CHOICES, blank=True, null=True, verbose_name="年代")
-    occupation = models.CharField(max_length=50, blank=True, null=True, verbose_name="職種")
+    # ▼ 修正箇所: occupation を2つに分ける
+    occupation_main = models.CharField(max_length=50, blank=True, null=True, verbose_name="メイン職種")
+    occupation_sub = models.CharField(max_length=50, blank=True, null=True, verbose_name="サブ職種")
     location = models.CharField(max_length=100, blank=True, choices=PREFECTURES, verbose_name="所在地")
     bio = models.TextField(blank=True, verbose_name="自己紹介")
     

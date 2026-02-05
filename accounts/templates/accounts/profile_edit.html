@@ -27,10 +27,37 @@
                             <div class="form-text">企業に所属している場合は、部署や役職を入力してください。（例：工事部 課長）</div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">プロフィール画像</label>
-                            {{ form.avatar }}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ form.age_group.label }}</label>
+                                {{ form.age_group }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ form.experience_years.label }}</label>
+                                {{ form.experience_years }}
+                            </div>
                         </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ form.occupation_main.label }} <span class="badge bg-danger">必須</span></label>
+                                {{ form.occupation_main }}
+                                <div class="form-text">最も自信のある本業を入力してください。</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ form.occupation_sub.label }}</label>
+                                {{ form.occupation_sub }}
+                                <div class="form-text">対応可能な他の職種があれば入力してください。</div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">{{ form.location.label }}</label>
+                            {{ form.location }}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">プロフィール画像</label>
+                                {{ form.avatar }}
+                            </div>
 
                         <div class="mb-4">
                             <label class="form-label fw-bold">活動エリア（拠点）</label>
