@@ -3,27 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>建設マッチング ツナグ</title>
+    <title>建設マッチング エルクリスト</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
         :root { --sumi-color: #15151a; --rankup-blue: #0066ff; }
-        body { font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; background-color: #f4f5f7; color: var(--sumi-color); }
+        body { font-family: "Hiragino Sans", "Meiryo", sans-serif; background-color: #f4f5f7; color: var(--sumi-color); }
         .bg-sumi { background-color: var(--sumi-color) !important; }
         
-        .navbar-brand { font-weight: bold; letter-spacing: 1px; }
-        
-        /* ナビゲーションリンク */
-        .navbar-dark .navbar-nav .nav-link { color: rgba(255,255,255,0.9) !important; font-weight: 500; transition: color 0.2s; }
-        .navbar-dark .navbar-nav .nav-link:hover { color: #ffffff !important; }
-        
-        /* ランクバッジの共通スタイル */
-        .badge-rank-iron { background-color: #6c757d; color: white; }
-        .badge-rank-bronze { background-color: #cd7f32; color: white; }
-        .badge-rank-silver { background: linear-gradient(45deg, #bdc3c7, #95a5a6); color: #333; border: 1px solid #aaa; }
-        .badge-rank-gold { background: linear-gradient(45deg, #d4af37, #f1c40f); color: #000; }
-        .badge-rank-platinum { background: linear-gradient(45deg, #2c3e50, #00d2ff); color: white; border: 1px solid #00d2ff; }
+        .navbar-brand { line-height: 1.1; display: flex; flex-direction: column; }
+        .brand-title { font-weight: bold; font-size: 1.15rem; }
+        .brand-sub { font-size: 0.7rem; opacity: 0.7; font-weight: normal; margin-top: 1px; }
 
+        .navbar-dark .navbar-nav .nav-link { color: #ffffff !important; font-weight: 600; }
+        .nav-username { color: #ffffff; font-size: 0.8rem; margin-right: 15px; border-right: 1px solid rgba(255,255,255,0.3); padding-right: 15px; }
+        
+        .nav-link-cancel { font-size: 0.75rem !important; color: rgba(255,255,255,0.6) !important; font-weight: normal !important; }
+        .nav-link-cancel:hover { color: rgba(255,255,255,1.0) !important; text-decoration: underline; }
+
+        /* ランクバッジスタイル */
+        .rank-badge { font-size: 0.75rem; padding: 0.25em 0.6em; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
+        .badge-platinum { background: linear-gradient(45deg, #2c3e50, #00d2ff) !important; color: white !important; text-transform: uppercase; }
+        .badge-gold { background: linear-gradient(45deg, #d4af37, #f1c40f) !important; color: white !important; text-transform: uppercase; }
+        .badge-silver { background: linear-gradient(45deg, #bdc3c7, #95a5a6) !important; color: #333 !important; text-transform: uppercase; }
+        .badge-bronze { background-color: #cd7f32 !important; color: white !important; text-transform: lowercase; }
+        .badge-iron { background-color: #6c757d !important; color: white !important; text-transform: lowercase; }
+        .badge-free { background-color: #6c757d !important; color: white !important; text-transform: lowercase; }
+        
         /* 通知バッジ（赤点） */
         .notification-dot {
             position: absolute;
@@ -33,24 +39,34 @@
             height: 8px;
             background-color: #dc3545;
             border-radius: 50%;
-            border: 1px solid var(--sumi-color);
+            border: 1px solid #15151a;
+        }
+        .badge-notify-mobile {
+            position: absolute; top: 0; right: 0; transform: translate(50%, -50%);
+            font-size: 0.5rem;
         }
     </style>
 </head>
-<body class="d-flex flex-column min-vh-100">
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-sumi sticky-top shadow-sm">
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-sumi sticky-top shadow">
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">
-                <i class="bi bi-grid-3x3-gap-fill text-primary"></i> ツナグ
+                <span class="brand-title">建設マッチング</span>
+                <span class="brand-sub">~ エルクリスト ~</span>
             </a>
 
             {% if user.is_authenticated %}
                 <div class="d-flex align-items-center d-lg-none ms-auto me-3">
-                    <a class="position-relative text-white" href="{% url 'notifications' %}">
-                        <i class="bi bi-bell fs-5"></i>
+                    <span class="text-white small fw-bold me-1">{{ user.username }}</span>
+                    <span class="badge badge-{{ user.profile.rank|lower }}" style="font-size: 0.6rem;">
+                        {{ user.profile.get_rank_display }}
+                    </span>
+                    <a class="position-relative text-white ms-3" href="{% url 'notifications' %}">
+                        <i class="bi bi-bell-fill"></i>
                         {% if user.profile.has_unread_notifications %}
-                            <span class="notification-dot" style="border-color: var(--sumi-color);"></span>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem;">
+                                !
+                            </span>
                         {% endif %}
                     </a>
                 </div>
@@ -63,17 +79,18 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     {% if user.is_authenticated %}
-                        
-                        <li class="nav-item d-none d-lg-flex align-items-center me-3 text-white-50 small">
-                            <span class="me-2">{{ user.username }} 様</span>
-                            <span class="badge badge-rank-{{ user.profile.rank }}">
+                        <li class="nav-item d-none d-lg-flex align-items-center me-3">
+                            <span class="nav-username border-0 pe-0 me-0">
+                                お疲れ様です {{ user.username }} 様
+                            </span>
+                            <span class="badge rank-badge badge-{{ user.profile.rank|lower }}">
                                 {{ user.profile.get_rank_display }}
                             </span>
                         </li>
 
-                        <li class="nav-item me-2 d-none d-lg-block">
-                            <a class="nav-link position-relative" href="{% url 'notifications' %}">
-                                <i class="bi bi-bell"></i>
+                        <li class="nav-item me-3 d-none d-lg-block">
+                            <a class="nav-link position-relative p-1" href="{% url 'notifications' %}">
+                                <i class="bi bi-bell-fill fs-5"></i>
                                 {% if user.profile.has_unread_notifications %}
                                     <span class="notification-dot"></span>
                                 {% endif %}
@@ -87,36 +104,41 @@
                         {% endif %}
                         
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'create_job' %}"><i class="bi bi-plus-lg"></i> 募集する</a>
+                            <a class="nav-link" href="{% url 'job_list' %}"><i class="bi bi-search"></i> 案件を探す</a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'create_job' %}">募集する</a>
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'job_list' %}"><i class="bi bi-search"></i> さがす</a>
+                            <a class="nav-link" href="{% url 'guide_view' %}"><i class="bi bi-book"></i> ガイド</a>
                         </li>
 
                         <li class="nav-item ms-2">
-                            <a class="nav-link btn btn-outline-light btn-sm px-3 rounded-pill text-white" href="{% url 'mypage' %}">
-                                マイページ
-                            </a>
+                            <a class="nav-link btn btn-outline-light btn-sm px-3 rounded-pill" href="{% url 'mypage' %}">マイページ</a>
                         </li>
 
                         <li class="nav-item ms-2">
                             <form action="{% url 'logout' %}" method="post" class="d-inline">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-link nav-link" style="font-size: 0.9rem;">ログアウト</button>
+                                <button type="submit" class="btn btn-link nav-link">ログアウト</button>
                             </form>
+                        </li>
+                        
+                        <li class="nav-item ms-2 border-start border-secondary ps-2">
+                             <a class="nav-link nav-link-cancel" href="{% url 'subscription_plans' %}#cancel-info">解約について</a>
                         </li>
 
                     {% else %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'job_list' %}"><i class="bi bi-search"></i> 案件を探す</a>
                         </li>
+                        
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'guide_view' %}">ガイド</a>
-                        </li>
-                        <li class="nav-item ms-2">
                             <a class="nav-link" href="{% url 'login' %}">ログイン</a>
                         </li>
+                        
                         <li class="nav-item ms-2">
                             <a class="btn btn-warning text-dark fw-bold rounded-pill px-4" href="{% url 'signup' %}">新規登録</a>
                         </li>
@@ -126,7 +148,7 @@
         </div>
     </nav>
     
-    <div class="flex-grow-1">
+    <div class="main-content min-vh-100">
         {% if messages %}
             <div class="container mt-3">
                 {% for m in messages %}
@@ -141,20 +163,19 @@
         {% block content %}{% endblock %}
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <footer class="bg-light text-center py-4 mt-5 border-top">
         <div class="container">
-            <div class="row justify-content-center mb-3">
-                <div class="col-auto">
-                    <a href="{% url 'about' %}" class="text-decoration-none text-secondary small mx-2">ツナグについて</a>
-                    <a href="{% url 'terms' %}" class="text-decoration-none text-secondary small mx-2">利用規約</a>
-                    <a href="{% url 'privacy' %}" class="text-decoration-none text-secondary small mx-2">プライバシーポリシー</a>
-                    <a href="{% url 'law' %}" class="text-decoration-none text-secondary small mx-2">特定商取引法に基づく表記</a>
-                </div>
+            <p class="mb-2">© 2026 建設マッチング-エルクリスト-</p>
+            <div>
+                <a href="{% url 'terms' %}" class="text-decoration-none text-secondary mx-2" style="font-size: 0.9rem;">利用規約</a>
+                <span class="text-secondary">|</span>
+                <a href="{% url 'privacy' %}" class="text-decoration-none text-secondary mx-2" style="font-size: 0.9rem;">プライバシーポリシー</a>
+                <span class="text-secondary">|</span>
+                <a href="{% url 'law' %}" class="text-decoration-none text-secondary mx-2" style="font-size: 0.9rem;">特商法表記</a>
             </div>
-            <p class="text-muted small mb-0">&copy; 2026 建設マッチング ツナグ</p>
         </div>
     </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
