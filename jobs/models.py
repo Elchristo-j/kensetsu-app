@@ -62,7 +62,16 @@ class Application(models.Model):
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='applications')
     applicant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
     applied_at = models.DateTimeField(auto_now_add=True)
-    STATUS_CHOICES = [('applied', '選考中'), ('accepted', '採用'), ('rejected', '不採用')]
+    
+    # ★ステータスを追加しました
+    STATUS_CHOICES = [
+        ('applied', '選考中'),
+        ('accepted', '採用(契約待ち)'),
+        ('contracted', '契約成立'), # 追加
+        ('completed', '業務完了'), # 追加
+        ('reviewed', '評価済み'),   # 追加
+        ('rejected', '不採用')
+    ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='applied')
 
     def __str__(self):
@@ -75,6 +84,8 @@ class Message(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
+    # 必要なら画像フィールドも追加可能
+    image = models.ImageField(upload_to='chat_images/', blank=True, null=True)
 
 
 class Notification(models.Model):
@@ -96,17 +107,15 @@ class Review(models.Model):
     reviewee = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_reviews', verbose_name='被評価者')
     review_type = models.CharField('評価タイプ', max_length=20, choices=REVIEW_TYPE_CHOICES)
     
-    # --- 発注者 → ワーカーへの評価項目 (0-10) ---
+    # 発注者 → ワーカー
     ability = models.IntegerField('能力', validators=[MinValueValidator(0), MaxValueValidator(10)], null=True, blank=True)
     cooperation = models.IntegerField('協調性', validators=[MinValueValidator(0), MaxValueValidator(10)], null=True, blank=True)
     diligence = models.IntegerField('勤勉性', validators=[MinValueValidator(0), MaxValueValidator(10)], null=True, blank=True)
     humanity = models.IntegerField('人間性', validators=[MinValueValidator(0), MaxValueValidator(10)], null=True, blank=True)
-    
-    # 有用性は金額で入力 → スコアに自動変換
-    utility_amount = models.IntegerField('有用性(金額評価)', null=True, blank=True, help_text='日当換算での価値')
+    utility_amount = models.IntegerField('有用性(金額)', null=True, blank=True)
     utility_score = models.IntegerField('有用性スコア', validators=[MinValueValidator(0), MaxValueValidator(10)], null=True, blank=True)
 
-    # --- ワーカー → 発注者への評価項目 (0-10) ---
+    # ワーカー → 発注者
     working_hours = models.IntegerField('作業時間', validators=[MinValueValidator(0), MaxValueValidator(10)], null=True, blank=True)
     reward = models.IntegerField('報酬', validators=[MinValueValidator(0), MaxValueValidator(10)], null=True, blank=True)
     job_content = models.IntegerField('仕事内容', validators=[MinValueValidator(0), MaxValueValidator(10)], null=True, blank=True)
@@ -117,27 +126,23 @@ class Review(models.Model):
     created_at = models.DateTimeField('評価日時', auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        # ワーカー評価の場合のみ、金額からスコアを自動計算
         if self.review_type == 'employer_to_worker' and self.utility_amount is not None:
             self.utility_score = self.calculate_utility_score(self.utility_amount)
         super().save(*args, **kwargs)
 
     @staticmethod
     def calculate_utility_score(amount):
-        """
-        金額テーブルに基づいてスコア(0-10)を算出 (100の位は四捨五入的な区分け)
-        """
-        if amount <= 3499: return 0  # 3000以下
-        if amount <= 6499: return 1  # 4000-6000
-        if amount <= 9499: return 2  # 7000-9000
-        if amount <= 12499: return 3 # 10000-12000
-        if amount <= 15499: return 4 # 13000-15000
-        if amount <= 18499: return 5 # 16000-18000
-        if amount <= 21499: return 6 # 19000-21000
-        if amount <= 24499: return 7 # 22000-24000
-        if amount <= 27499: return 8 # 25000-27000
-        if amount <= 30499: return 9 # 28000-30000
-        return 10                    # 31000以上
+        if amount <= 3499: return 0
+        if amount <= 6499: return 1
+        if amount <= 9499: return 2
+        if amount <= 12499: return 3
+        if amount <= 15499: return 4
+        if amount <= 18499: return 5
+        if amount <= 21499: return 6
+        if amount <= 24499: return 7
+        if amount <= 27499: return 8
+        if amount <= 30499: return 9
+        return 10
 
     def __str__(self):
         return f"{self.reviewer} -> {self.reviewee} ({self.job})"

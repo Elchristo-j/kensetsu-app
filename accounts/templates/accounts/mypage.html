@@ -3,113 +3,126 @@
 
 {% block content %}
 <div class="container mt-5 mb-5">
-    
-    <div class="card shadow-sm border-0 mb-4 p-4 rounded-4 bg-light">
-        <div class="row">
-            <div class="col-md-4 text-center border-end">
-                {% if profile.avatar %}
-                    <img src="{{ profile.avatar.url }}" class="rounded-circle img-thumbnail mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4 bg-white">
+                {% if user.profile.avatar %}
+                    <img src="{{ user.profile.avatar.url }}" class="rounded-circle img-thumbnail mb-3 mx-auto" style="width: 120px; height: 120px; object-fit: cover;">
                 {% else %}
-                    <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px;">
-                        <span class="fs-4">No Image</span>
+                    <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 120px; height: 120px;">
+                        <span class="fs-3">No Img</span>
                     </div>
                 {% endif %}
                 
                 <h4 class="fw-bold">{{ user.username }}</h4>
                 <div class="mb-3">
-                    <span class="badge rounded-pill fs-6 me-1 badge-rank-{{ profile.rank }}">
-                        {{ profile.get_rank_display }}会員
-                    </span>
-                    {% if profile.is_verified %}
-                        <span class="badge bg-success rounded-pill">本人確認済</span>
-                    {% else %}
-                        <span class="badge bg-secondary rounded-pill">未確認</span>
-                    {% endif %}
+                    <span class="badge rounded-pill bg-dark">{{ user.profile.get_rank_display }}会員</span>
                 </div>
-                <p class="text-muted mb-2">{{ profile.company_name|default:"" }}</p>
-                <p class="text-muted small">{{ profile.position|default:"役職未設定" }}</p>
 
-                <div class="d-grid gap-2 col-10 mx-auto mt-4">
-                    {% if profile.rank == 'iron' and not profile.is_verified %}
-                        <a href="{% url 'profile_edit' %}" class="btn btn-success btn-sm rounded-pill fw-bold">
-                            <i class="bi bi-person-check"></i> 本人確認をする
-                        </a>
-                    {% elif profile.rank == 'iron' or profile.rank == 'bronze' %}
-                        <a href="{% url 'upgrade_plan_page' %}" class="btn btn-primary btn-sm rounded-pill fw-bold shadow-sm">
-                            <i class="bi bi-arrow-up-circle"></i> ランクアップする
-                        </a>
-                        <a href="{% url 'profile_edit' %}" class="btn btn-outline-secondary btn-sm rounded-pill">
-                            <i class="bi bi-pencil"></i> 編集
-                        </a>
-                    {% else %}
-                        <a href="{% url 'upgrade_plan_page' %}" class="btn btn-outline-secondary btn-sm rounded-pill">
-                            <i class="bi bi-gear"></i> プラン変更
-                        </a>
-                        <a href="{% url 'profile_edit' %}" class="btn btn-outline-secondary btn-sm rounded-pill">
-                            <i class="bi bi-pencil"></i> 編集
-                        </a>
-                    {% endif %}
+                <div class="d-grid gap-2 col-10 mx-auto">
+                    <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark rounded-pill fw-bold">
+                        <i class="bi bi-pencil-square"></i> プロフィール編集
+                    </a>
+                    <a href="{% url 'upgrade_plan_page' %}" class="btn btn-primary rounded-pill fw-bold shadow-sm">
+                        <i class="bi bi-arrow-up-circle"></i> プラン変更・確認
+                    </a>
+                </div>
+
+                <div class="mt-4 text-start bg-light p-3 rounded small">
+                    <p class="mb-2 fw-bold text-muted border-bottom pb-1"><i class="bi bi-ticket-perforated"></i> 今月の残枠状況</p>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>応募可能数:</span>
+                        <span class="fw-bold">
+                            {% if user.profile.monthly_limit >= 999 %}無制限{% else %}あと {{ remaining_apply }} 件{% endif %}
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>募集投稿数:</span>
+                        <span class="fw-bold">
+                            {% if user.profile.posting_limit >= 999 %}無制限{% else %}あと {{ remaining_post }} 件{% endif %}
+                        </span>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <div class="col-md-8 ps-md-4">
-                <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active fw-bold" id="pills-worker-tab" data-bs-toggle="pill" data-bs-target="#pills-worker" type="button" role="tab">
-                            <i class="bi bi-hammer"></i> ワーカー評価
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold mb-4 border-bottom pb-2"><i class="bi bi-briefcase"></i> 案件管理ダッシュボード</h5>
+
+                <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active fw-bold text-dark" id="applied-tab" data-bs-toggle="tab" data-bs-target="#applied" type="button">
+                            応募した案件
                         </button>
                     </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link fw-bold" id="pills-employer-tab" data-bs-toggle="pill" data-bs-target="#pills-employer" type="button" role="tab">
-                            <i class="bi bi-briefcase"></i> 発注者評価
+                    <li class="nav-item">
+                        <button class="nav-link fw-bold text-dark" id="posted-tab" data-bs-toggle="tab" data-bs-target="#posted" type="button">
+                            募集した案件
                         </button>
                     </li>
                 </ul>
 
-                <div class="tab-content" id="pills-tabContent">
-                    <div class="tab-pane fade show active" id="pills-worker" role="tabpanel">
-                        {% include 'accounts/includes/stats_panel.html' with stats=worker_stats chart_id="chartWorker" role_name="ワーカー" %}
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="applied">
+                        {% if my_applications %}
+                            <div class="list-group">
+                                {% for app in my_applications %}
+                                    <div class="list-group-item list-group-item-action border-0 bg-light mb-2 rounded-3">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1 fw-bold text-primary">
+                                                <a href="{% url 'job_detail' app.job.id %}" class="text-decoration-none">{{ app.job.title }}</a>
+                                            </h6>
+                                            <small class="text-muted">{{ app.created_at|date:"m/d" }}</small>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mt-2">
+                                            <span class="badge 
+                                                {% if app.status == 'applied' %}bg-secondary
+                                                {% elif app.status == 'contracted' %}bg-primary
+                                                {% elif app.status == 'completed' %}bg-success
+                                                {% elif app.status == 'reviewed' %}bg-info
+                                                {% else %}bg-dark{% endif %}">
+                                                {{ app.get_status_display }}
+                                            </span>
+                                            <a href="{% url 'chat_room' app.id %}" class="btn btn-sm btn-dark rounded-pill px-3">
+                                                <i class="bi bi-chat-dots"></i> チャット・詳細
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-4">応募した案件はありません。</p>
+                        {% endif %}
                     </div>
-                    
-                    <div class="tab-pane fade" id="pills-employer" role="tabpanel">
-                        {% include 'accounts/includes/stats_panel.html' with stats=employer_stats chart_id="chartEmployer" role_name="発注者" %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="row">
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-white fw-bold"><i class="bi bi-megaphone"></i> 投稿した募集</div>
-                <div class="list-group list-group-flush">
-                    {% for job in my_posted_jobs %}
-                        <a href="{% url 'job_detail' job.id %}" class="list-group-item list-group-item-action">
-                            {{ job.title }} <small class="text-muted float-end">{{ job.created_at|date:"m/d" }}</small>
-                        </a>
-                    {% empty %}
-                        <div class="list-group-item text-muted">履歴なし</div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-white fw-bold"><i class="bi bi-briefcase"></i> 応募した履歴</div>
-                <div class="list-group list-group-flush">
-                    {% for app in my_applications %}
-                        <a href="{% url 'job_detail' app.job.id %}" class="list-group-item list-group-item-action">
-                            {{ app.job.title }} <span class="badge bg-light text-dark float-end border">{{ app.get_status_display }}</span>
-                        </a>
-                    {% empty %}
-                        <div class="list-group-item text-muted">履歴なし</div>
-                    {% endfor %}
+                    <div class="tab-pane fade" id="posted">
+                        {% if my_posted_jobs %}
+                            <div class="list-group">
+                                {% for job in my_posted_jobs %}
+                                    <div class="list-group-item list-group-item-action border-0 bg-light mb-2 rounded-3">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1 fw-bold">
+                                                <a href="{% url 'job_detail' job.id %}" class="text-decoration-none text-dark">{{ job.title }}</a>
+                                            </h6>
+                                            <small class="text-muted">{{ job.created_at|date:"m/d" }}</small>
+                                        </div>
+                                        <div class="mt-2 text-end">
+                                            <a href="{% url 'job_applicants' job.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                                応募者管理 ({{ job.applications.count }})
+                                            </a>
+                                            <a href="{% url 'edit_job' job.id %}" class="btn btn-sm btn-outline-secondary rounded-pill ms-1">編集</a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-4">まだ募集していません。<br><a href="{% url 'create_job' %}">案件を作成する</a></p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
