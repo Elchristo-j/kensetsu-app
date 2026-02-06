@@ -63,19 +63,14 @@
                             {{ msg.sender.username }} • {{ msg.created_at|date:"m/d H:i" }}
                         </small>
                         {{ msg.content|linebreaksbr }}
-                        {% if msg.image %}
-                            <div class="mt-2">
-                                <img src="{{ msg.image.url }}" class="img-fluid rounded" style="max-height: 200px;">
-                            </div>
-                        {% endif %}
-                    </div>
+                        </div>
                 </div>
             {% empty %}
                 <p class="text-center text-muted my-5">メッセージはまだありません。やり取りを開始しましょう！</p>
             {% endfor %}
         </div>
         <div class="card-footer bg-white border-top p-3">
-            <form method="post" enctype="multipart/form-data" class="d-flex gap-2">
+            <form method="post" class="d-flex gap-2">
                 {% csrf_token %}
                 <textarea name="content" class="form-control rounded-4" rows="1" placeholder="メッセージを入力..." required style="resize: none;"></textarea>
                 <button type="submit" class="btn btn-dark rounded-pill px-4"><i class="bi bi-send"></i></button>

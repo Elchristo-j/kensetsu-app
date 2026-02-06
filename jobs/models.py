@@ -37,7 +37,7 @@ class Job(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deadline = models.DateTimeField(null=True, blank=True, verbose_name="募集期限")
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='jobs')
     is_closed = models.BooleanField(default=False, verbose_name="募集終了")
     headcount = models.IntegerField(default=1, verbose_name="募集人数")
 
@@ -63,13 +63,12 @@ class Application(models.Model):
     applicant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
     applied_at = models.DateTimeField(auto_now_add=True)
     
-    # ★ステータスを追加しました
     STATUS_CHOICES = [
         ('applied', '選考中'),
         ('accepted', '採用(契約待ち)'),
-        ('contracted', '契約成立'), # 追加
-        ('completed', '業務完了'), # 追加
-        ('reviewed', '評価済み'),   # 追加
+        ('contracted', '契約成立'),
+        ('completed', '業務完了'),
+        ('reviewed', '評価済み'),
         ('rejected', '不採用')
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='applied')
@@ -84,8 +83,7 @@ class Message(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
-    # 必要なら画像フィールドも追加可能
-    image = models.ImageField(upload_to='chat_images/', blank=True, null=True)
+    # ★重要：エラー回避のため image フィールドを削除しました
 
 
 class Notification(models.Model):
@@ -107,7 +105,6 @@ class Review(models.Model):
     reviewee = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_reviews', verbose_name='被評価者')
     review_type = models.CharField('評価タイプ', max_length=20, choices=REVIEW_TYPE_CHOICES)
     
-    # 発注者 → ワーカー
     ability = models.IntegerField('能力', validators=[MinValueValidator(0), MaxValueValidator(10)], null=True, blank=True)
     cooperation = models.IntegerField('協調性', validators=[MinValueValidator(0), MaxValueValidator(10)], null=True, blank=True)
     diligence = models.IntegerField('勤勉性', validators=[MinValueValidator(0), MaxValueValidator(10)], null=True, blank=True)
@@ -115,7 +112,6 @@ class Review(models.Model):
     utility_amount = models.IntegerField('有用性(金額)', null=True, blank=True)
     utility_score = models.IntegerField('有用性スコア', validators=[MinValueValidator(0), MaxValueValidator(10)], null=True, blank=True)
 
-    # ワーカー → 発注者
     working_hours = models.IntegerField('作業時間', validators=[MinValueValidator(0), MaxValueValidator(10)], null=True, blank=True)
     reward = models.IntegerField('報酬', validators=[MinValueValidator(0), MaxValueValidator(10)], null=True, blank=True)
     job_content = models.IntegerField('仕事内容', validators=[MinValueValidator(0), MaxValueValidator(10)], null=True, blank=True)

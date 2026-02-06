@@ -2,6 +2,15 @@
 {% load humanize %}
 
 {% block content %}
+<style>
+    /* ランクバッジの色定義（必ず反映させるためここに記述） */
+    .badge-rank-iron { background-color: #6c757d; color: white; }
+    .badge-rank-bronze { background-color: #cd7f32; color: white; }
+    .badge-rank-silver { background-color: #e0e0e0; color: #333; border: 1px solid #ccc; }
+    .badge-rank-gold { background-color: #ffc107; color: #000; }
+    .badge-rank-platinum { background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%); color: #006064; border: 1px solid #4dd0e1; }
+</style>
+
 <div class="container mt-5 mb-5">
     <div class="row">
         <div class="col-md-4 mb-4">
@@ -16,14 +25,19 @@
                 
                 <h4 class="fw-bold">{{ user.username }}</h4>
                 <div class="mb-3">
-                    <span class="badge rounded-pill bg-dark">{{ user.profile.get_rank_display }}会員</span>
+                    <span class="badge rounded-pill fs-6 badge-rank-{{ user.profile.rank|lower }}">
+                        {{ user.profile.get_rank_display }}会員
+                    </span>
+                    {% if user.profile.is_verified %}
+                        <span class="badge bg-success rounded-pill">本人確認済</span>
+                    {% endif %}
                 </div>
 
                 <div class="d-grid gap-2 col-10 mx-auto">
                     <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark rounded-pill fw-bold">
                         <i class="bi bi-pencil-square"></i> プロフィール編集
                     </a>
-                    <a href="{% url 'upgrade_plan_page' %}" class="btn btn-primary rounded-pill fw-bold shadow-sm">
+                    <a href="{% url 'subscription_plans' %}" class="btn btn-primary rounded-pill fw-bold shadow-sm">
                         <i class="bi bi-arrow-up-circle"></i> プラン変更・確認
                     </a>
                 </div>
