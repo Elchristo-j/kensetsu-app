@@ -111,6 +111,10 @@ class Profile(models.Model):
         return count < limit
     # ▲▲▲ ここまで ▲▲▲
 
+    # ▼▼▼ ★追加：通知バッジ用メソッド ★ ▼▼▼
+    def has_unread_notifications(self):
+        return self.user.notifications.filter(is_read=False).exists()
+
     def __str__(self):
         return self.user.username
 

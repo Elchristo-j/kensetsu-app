@@ -63,7 +63,7 @@
                             {{ msg.sender.username }} • {{ msg.created_at|date:"m/d H:i" }}
                         </small>
                         {{ msg.content|linebreaksbr }}
-                        </div>
+                    </div>
                 </div>
             {% empty %}
                 <p class="text-center text-muted my-5">メッセージはまだありません。やり取りを開始しましょう！</p>
@@ -89,29 +89,53 @@
             <form action="{% url 'submit_review' application.id %}" method="post">
                 {% csrf_token %}
                 <div class="modal-body">
-                    <p class="small text-muted mb-3">5段階（5が良い）で評価してください。</p>
+                    <p class="alert alert-info small mb-3"><i class="bi bi-info-circle"></i> 10段階（10が最高）で評価してください。</p>
                     
                     {% if request.user == application.job.created_by %}
-                        <div class="mb-2"><label>能力 (技術・知識)</label><select name="p1" class="form-select"><option value="5">5</option><option value="4">4</option><option value="3" selected>3</option><option value="2">2</option><option value="1">1</option></select></div>
-                        <div class="mb-2"><label>協調性 (チームワーク)</label><select name="p2" class="form-select"><option value="5">5</option><option value="4">4</option><option value="3" selected>3</option><option value="2">2</option><option value="1">1</option></select></div>
-                        <div class="mb-2"><label>勤勉性 (真面目さ)</label><select name="p3" class="form-select"><option value="5">5</option><option value="4">4</option><option value="3" selected>3</option><option value="2">2</option><option value="1">1</option></select></div>
-                        <div class="mb-2"><label>人間性 (マナー)</label><select name="p4" class="form-select"><option value="5">5</option><option value="4">4</option><option value="3" selected>3</option><option value="2">2</option><option value="1">1</option></select></div>
-                        <div class="mb-2"><label>有用性 (コスパ)</label><select name="p5" class="form-select"><option value="5">5</option><option value="4">4</option><option value="3" selected>3</option><option value="2">2</option><option value="1">1</option></select></div>
+                        {% for item in "能力,協調性,勤勉性,人間性,有用性"|make_list %}
+                        <div class="mb-3">
+                            <label class="fw-bold mb-1">{{ item }}</label>
+                            <select name="p{{ forloop.counter }}" class="form-select">
+                                <option value="10">10 (最高)</option>
+                                <option value="9">9</option>
+                                <option value="8">8</option>
+                                <option value="7">7</option>
+                                <option value="6">6</option>
+                                <option value="5" selected>5 (普通)</option>
+                                <option value="4">4</option>
+                                <option value="3">3</option>
+                                <option value="2">2</option>
+                                <option value="1">1 (最低)</option>
+                            </select>
+                        </div>
+                        {% endfor %}
                     {% else %}
-                        <div class="mb-2"><label>作業時間 (予定通りか)</label><select name="p1" class="form-select"><option value="5">5</option><option value="4">4</option><option value="3" selected>3</option><option value="2">2</option><option value="1">1</option></select></div>
-                        <div class="mb-2"><label>報酬 (適正・支払い)</label><select name="p2" class="form-select"><option value="5">5</option><option value="4">4</option><option value="3" selected>3</option><option value="2">2</option><option value="1">1</option></select></div>
-                        <div class="mb-2"><label>仕事内容 (説明通りか)</label><select name="p3" class="form-select"><option value="5">5</option><option value="4">4</option><option value="3" selected>3</option><option value="2">2</option><option value="1">1</option></select></div>
-                        <div class="mb-2"><label>段取り (準備・指示)</label><select name="p4" class="form-select"><option value="5">5</option><option value="4">4</option><option value="3" selected>3</option><option value="2">2</option><option value="1">1</option></select></div>
-                        <div class="mb-2"><label>信用性 (信頼・対応)</label><select name="p5" class="form-select"><option value="5">5</option><option value="4">4</option><option value="3" selected>3</option><option value="2">2</option><option value="1">1</option></select></div>
+                        {% for item in "作業時間,報酬,仕事内容,段取り,信用性"|make_list %}
+                        <div class="mb-3">
+                            <label class="fw-bold mb-1">{{ item }}</label>
+                            <select name="p{{ forloop.counter }}" class="form-select">
+                                <option value="10">10 (最高)</option>
+                                <option value="9">9</option>
+                                <option value="8">8</option>
+                                <option value="7">7</option>
+                                <option value="6">6</option>
+                                <option value="5" selected>5 (普通)</option>
+                                <option value="4">4</option>
+                                <option value="3">3</option>
+                                <option value="2">2</option>
+                                <option value="1">1 (最低)</option>
+                            </select>
+                        </div>
+                        {% endfor %}
                     {% endif %}
 
-                    <div class="mt-3">
-                        <label>コメント</label>
-                        <textarea name="comment" class="form-control" rows="3" placeholder="お礼や感想を一言（任意）"></textarea>
+                    <div class="mt-4">
+                        <label class="fw-bold mb-1">コメント（任意）</label>
+                        <textarea name="comment" class="form-control" rows="3" placeholder="お礼や感想を一言"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">評価を送信</button>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">評価を送信して完了</button>
                 </div>
             </form>
         </div>

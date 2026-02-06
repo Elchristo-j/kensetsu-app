@@ -3,6 +3,7 @@
 
 {% block content %}
 <style>
+    /* ランク別バッジ色 */
     .badge-rank-iron { background-color: #6c757d; color: white; }
     .badge-rank-bronze { background-color: #cd7f32; color: white; }
     .badge-rank-silver { background-color: #e0e0e0; color: #333; border: 1px solid #ccc; }
@@ -11,6 +12,7 @@
 </style>
 
 <div class="container mt-5 mb-5">
+    
     <div class="card shadow-sm mb-4 border-0 rounded-4 bg-light">
         <div class="card-body p-4 text-center">
             
@@ -94,6 +96,32 @@
             <div class="tab-pane fade show active" id="content-worker">
                 {% include 'accounts/includes/stats_panel.html' with stats=worker_stats chart_id="pChartWorker" role_name="ワーカー" %}
                 
+                <div class="mt-4 p-4 bg-white border rounded text-muted">
+                    <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-info-circle-fill text-primary"></i> 評価項目の基準について</h6>
+                    <div class="row g-3 small">
+                        <div class="col-md-6">
+                            <strong class="d-block text-dark">能力</strong>
+                            現場で通用する技術力、知識、作業のスピードや正確さ。
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="d-block text-dark">協調性</strong>
+                            チームワーク、報告・連絡・相談の徹底、指示への理解度。
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="d-block text-dark">勤勉性</strong>
+                            遅刻や欠席がないか、真面目に業務に取り組む姿勢。
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="d-block text-dark">人間性</strong>
+                            挨拶、マナー、現場の雰囲気を良くする人柄かどうか。
+                        </div>
+                        <div class="col-12">
+                            <strong class="d-block text-dark">有用性</strong>
+                            支払った報酬に対して、それ以上の価値（コストパフォーマンス）を感じられたか。
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="mt-5 border-top pt-4">
                     <h6 class="fw-bold mb-3">技能・資格</h6>
                     <div class="row g-3">
@@ -116,6 +144,32 @@
             <div class="tab-pane fade" id="content-employer">
                 {% include 'accounts/includes/stats_panel.html' with stats=employer_stats chart_id="pChartEmployer" role_name="発注者" %}
                 
+                <div class="mt-4 p-4 bg-white border rounded text-muted">
+                    <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-info-circle-fill text-success"></i> 評価項目の基準について</h6>
+                    <div class="row g-3 small">
+                        <div class="col-md-6">
+                            <strong class="d-block text-dark">作業時間</strong>
+                            事前に提示された時間通りに終わったか、無理な残業はなかったか。
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="d-block text-dark">報酬</strong>
+                            作業内容に見合った金額か、支払いはスムーズに行われたか。
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="d-block text-dark">仕事内容</strong>
+                            募集時の説明と実際の作業内容に相違はなかったか。
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="d-block text-dark">段取り</strong>
+                            資材や道具の準備、現場での指示出しは的確だったか。
+                        </div>
+                        <div class="col-12">
+                            <strong class="d-block text-dark">信用性</strong>
+                            トラブル時の対応や、またこの人の現場に行きたいと思える信頼感があるか。
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mt-5 border-top pt-4">
                     <h6 class="fw-bold mb-3">📢 現在募集中の案件</h6>
                     {% if jobs %}
