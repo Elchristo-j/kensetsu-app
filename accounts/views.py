@@ -98,10 +98,6 @@ def signup(request):
 @login_required
 def profile_edit(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
-    # Render画像消失対策
-    for attr in ['avatar', 'id_card_image']: 
-        img = getattr(profile, attr, None)
-        if img and not os.path.exists(img.path): setattr(profile, attr, None)
     
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
