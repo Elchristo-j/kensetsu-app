@@ -3,18 +3,25 @@
 
 {% block content %}
 <style>
-    /* ランクバッジの色定義（必ず反映させるためここに記述） */
+    /* ランクバッジの色定義 */
     .badge-rank-iron { background-color: #6c757d; color: white; }
     .badge-rank-bronze { background-color: #cd7f32; color: white; }
     .badge-rank-silver { background-color: #e0e0e0; color: #333; border: 1px solid #ccc; }
     .badge-rank-gold { background-color: #ffc107; color: #000; }
     .badge-rank-platinum { background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%); color: #006064; border: 1px solid #4dd0e1; }
+    
+    /* チャートエリアの高さ確保 */
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
 </style>
 
 <div class="container mt-5 mb-5">
     <div class="row">
         <div class="col-md-4 mb-4">
-            <div class="card border-0 shadow-sm rounded-4 text-center p-4 bg-white">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4 bg-white h-100">
                 {% if user.profile.avatar %}
                     <img src="{{ user.profile.avatar.url }}" class="rounded-circle img-thumbnail mb-3 mx-auto" style="width: 120px; height: 120px; object-fit: cover;">
                 {% else %}
@@ -33,36 +40,34 @@
                     {% endif %}
                 </div>
 
-                <div class="d-grid gap-2 col-10 mx-auto">
+                <div class="d-grid gap-2 col-10 mx-auto mb-4">
                     <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark rounded-pill fw-bold">
                         <i class="bi bi-pencil-square"></i> プロフィール編集
                     </a>
-                {% if user.profile.rank != 'iron' %}
-                    <a href="{% url 'subscription_plans' %}" class="btn btn-primary rounded-pill fw-bold shadow-sm">
-                        <i class="bi bi-arrow-up-circle"></i> プラン変更・確認
-                    </a>
-
-                 {% else %}   
-
-                     <p class="text-muted small">
-                         ※本人確認が完了すると、有料プランへの変更が可能になります。
-                     </p>
-
-                 {% endif %}
+                    
+                    {% if user.profile.rank != 'iron' %}
+                        <a href="{% url 'upgrade_plan_page' %}" class="btn btn-primary rounded-pill fw-bold shadow-sm">
+                            <i class="bi bi-arrow-up-circle"></i> プラン変更・確認
+                        </a>
+                    {% else %}   
+                        <p class="text-muted small mt-2 bg-light p-2 rounded">
+                            ※本人確認が完了すると、<br>有料プランへの変更が可能になります。
+                        </p>
+                    {% endif %}
                 </div>
 
-                <div class="mt-4 text-start bg-light p-3 rounded small">
-                    <p class="mb-2 fw-bold text-muted border-bottom pb-1"><i class="bi bi-ticket-perforated"></i> 今月の残枠状況</p>
-                    <div class="d-flex justify-content-between mb-1">
-                        <span>応募可能数:</span>
+                <div class="mt-auto text-start bg-light p-3 rounded small border">
+                    <p class="mb-2 fw-bold text-dark border-bottom pb-1"><i class="bi bi-ticket-perforated-fill text-primary"></i> 今月の残枠状況</p>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>募集投稿:</span>
                         <span class="fw-bold">
-                            {% if user.profile.monthly_limit >= 999 %}無制限{% else %}あと {{ remaining_apply }} 件{% endif %}
+                            {% if limit_jobs >= 999 %}無制限{% else %}あと <span class="text-danger">{{ remaining_jobs }}</span> / {{ limit_jobs }} 件{% endif %}
                         </span>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span>募集投稿数:</span>
+                        <span>案件応募:</span>
                         <span class="fw-bold">
-                            {% if user.profile.posting_limit >= 999 %}無制限{% else %}あと {{ remaining_post }} 件{% endif %}
+                            {% if limit_apps >= 999 %}無制限{% else %}あと <span class="text-danger">{{ remaining_apps }}</span> / {{ limit_apps }} 回{% endif %}
                         </span>
                     </div>
                 </div>
@@ -70,10 +75,11 @@
         </div>
 
         <div class="col-md-8">
-            <div class="card border-0 shadow-sm rounded-4 p-4">
+            
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
                 <h5 class="fw-bold mb-4 border-bottom pb-2"><i class="bi bi-briefcase"></i> 案件管理ダッシュボード</h5>
 
-                <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
+                <ul class="nav nav-tabs mb-3" id="jobTab" role="tablist">
                     <li class="nav-item">
                         <button class="nav-link active fw-bold text-dark" id="applied-tab" data-bs-toggle="tab" data-bs-target="#applied" type="button">
                             応募した案件
@@ -86,7 +92,7 @@
                     </li>
                 </ul>
 
-                <div class="tab-content" id="myTabContent">
+                <div class="tab-content" id="jobTabContent">
                     <div class="tab-pane fade show active" id="applied">
                         {% if my_applications %}
                             <div class="list-group">
@@ -99,18 +105,8 @@
                                             <small class="text-muted">{{ app.created_at|date:"m/d" }}</small>
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center mt-2">
-                                            <span class="badge 
-                                                {% if app.status == 'applied' %}bg-secondary
-                                                {% elif app.status == 'contracted' %}bg-primary
-                                                {% elif app.status == 'completed' %}bg-success
-                                                {% elif app.status == 'reviewed' %}bg-info
-                                                {% else %}bg-dark{% endif %}">
-                                                {{ app.get_status_display }}
-                                            </span>
-                                            <a href="{% url 'chat_room' app.id %}" class="btn btn-sm btn-dark rounded-pill px-3">
-                                                <i class="bi bi-chat-dots"></i> チャット・詳細
-                                            </a>
-                                        </div>
+                                            <span class="badge bg-secondary">{{ app.get_status_display }}</span>
+                                            </div>
                                     </div>
                                 {% endfor %}
                             </div>
@@ -132,7 +128,7 @@
                                         </div>
                                         <div class="mt-2 text-end">
                                             <a href="{% url 'job_applicants' job.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
-                                                応募者管理 ({{ job.applications.count }})
+                                                応募者管理
                                             </a>
                                             <a href="{% url 'edit_job' job.id %}" class="btn btn-sm btn-outline-secondary rounded-pill ms-1">編集</a>
                                         </div>
@@ -145,25 +141,70 @@
                     </div>
                 </div>
             </div>
+
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold mb-4 border-bottom pb-2"><i class="bi bi-bar-chart-fill"></i> あなたの評価ステータス</h5>
+                
+                <ul class="nav nav-tabs mb-3" id="statsTab" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active fw-bold text-dark" id="stats-worker-tab" data-bs-toggle="tab" data-bs-target="#stats-worker" type="button">
+                            ワーカー実績
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link fw-bold text-dark" id="stats-employer-tab" data-bs-toggle="tab" data-bs-target="#stats-employer" type="button">
+                            発注者実績
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="statsTabContent">
+                    <div class="tab-pane fade show active" id="stats-worker">
+                        {% if worker_stats.exists %}
+                            <div class="row align-items-center">
+                                <div class="col-md-5 text-center">
+                                    <h1 class="display-4 fw-bold text-primary">{{ worker_stats.average }}</h1>
+                                    <p class="text-muted">評価件数: {{ worker_stats.count }}件</p>
+                                </div>
+                                <div class="col-md-7 chart-container">
+                                    <canvas id="pChartWorker"></canvas>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-4">まだ十分な評価データがありません。</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="tab-pane fade" id="stats-employer">
+                        {% if employer_stats.exists %}
+                            <div class="row align-items-center">
+                                <div class="col-md-5 text-center">
+                                    <h1 class="display-4 fw-bold text-success">{{ employer_stats.average }}</h1>
+                                    <p class="text-muted">評価件数: {{ employer_stats.count }}件</p>
+                                </div>
+                                <div class="col-md-7 chart-container">
+                                    <canvas id="pChartEmployer"></canvas>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-4">まだ十分な評価データがありません。</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
-</div>
-{% endblock %}
-
-<div class="card p-3 mb-4">
-    <h6>今月の残り枠</h6>
-    <p>求人掲載: <strong>{{ remaining_jobs }}</strong> / {{ limit_jobs }} 件</p>
-    <p>案件応募: <strong>{{ remaining_apps }}</strong> / {{ limit_apps }} 回</p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     
-    // 共通チャート設定
+    // 共通チャート設定関数
     const createChart = (ctxId, data, labels, color) => {
         const ctx = document.getElementById(ctxId);
-        if (!ctx) return; // データがない場合はキャンバスがないので何もしない
+        if (!ctx) return; 
 
         new Chart(ctx, {
             type: 'radar',
@@ -180,21 +221,22 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false, // コンテナに合わせてサイズ調整
                 scales: {
                     r: {
                         min: 0,
-                        max: 10,
-                        ticks: { stepSize: 1, display: false },
+                        max: 10,  // ★10点満点設定に変更済み
+                        ticks: { stepSize: 2, display: false },
                         grid: { 
                             circular: true,
-                            color: 'rgba(0, 0, 0, 0.3)' // ★追加: 線の色を濃くする
+                            color: 'rgba(0, 0, 0, 0.3)' 
                         },
                         angleLines: {
-                            color: 'rgba(0, 0, 0, 0.3)' // ★追加: 中心から伸びる線の色
+                            color: 'rgba(0, 0, 0, 0.3)' 
                         },
                         pointLabels: {
                             font: { size: 12 },
-                            color: '#333' // ★追加: 文字色もハッキリさせる
+                            color: '#333' 
                         }
                     }
                 },
@@ -202,8 +244,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     legend: { display: false }
                 }
             }
+        });
+    };
 
-    // ワーカーチャート描画 (データがある場合のみ)
+    // ワーカーチャート描画
     {% if worker_stats.exists %}
         createChart(
             'pChartWorker', 
@@ -213,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
         );
     {% endif %}
 
-    // 発注者チャート描画 (データがある場合のみ)
+    // 発注者チャート描画
     {% if employer_stats.exists %}
         createChart(
             'pChartEmployer', 
