@@ -1,72 +1,248 @@
 {% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+
 {% block content %}
-<div class="container mt-5 mb-5">
-    <div class="text-center mb-5">
-        <h2 class="fw-bold text-dark">プランを選択してランクアップ</h2>
-        <p class="text-muted">あなたのビジネスを加速させる最適なプランをお選びください。</p>
+<style>
+    /* --- プラン別カラー定義 --- */
+    .plan-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        overflow: hidden;
+    }
+    .plan-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+    }
+
+    /* SILVER: シックなグレー */
+    .header-silver {
+        background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%);
+        color: #333;
+        border-bottom: 4px solid #9e9e9e;
+    }
+    /* GOLD: 豪華な金 */
+    .header-gold {
+        background: linear-gradient(135deg, #ffd700 0%, #ffc107 100%);
+        color: #000;
+        border-bottom: 4px solid #b8860b;
+    }
+    /* PLATINUM: 指定の水色グラデーション */
+    .header-platinum {
+        background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%);
+        color: #006064;
+        border-bottom: 4px solid #00bcd4;
+    }
+
+    /* バッジ画像のエフェクト */
+    .founding-badge {
+        width: 100px;
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+
+    /* 比較表のスタイル */
+    .table-check { color: #198754; font-size: 1.2rem; }
+    .table-cross { color: #adb5bd; }
+    .table-header-rotate {
+        vertical-align: middle;
+        text-align: center;
+    }
+</style>
+
+<div class="bg-dark text-white py-5 mb-5 position-relative overflow-hidden">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: radial-gradient(circle at center, #333 0%, #000 100%); opacity: 0.8; z-index: 0;"></div>
+    
+    <div class="container position-relative" style="z-index: 1;">
+        <div class="row align-items-center text-center text-md-start">
+            <div class="col-md-8">
+                <span class="badge bg-danger fs-6 mb-2 px-3 py-2 rounded-pill shadow">期間限定</span>
+                <h1 class="display-4 fw-bold mb-3">早期入会キャンペーン実施中！</h1>
+                <p class="lead mb-4">
+                    <span class="text-warning fw-bold">3月末まで</span>に有料プラン（SILVER以上）にご加入いただいた方全員に、<br>
+                    アプリ内での信頼の証<span class="text-warning fw-bold">「創設メンバー」バッジ</span>を永年付与いたします。
+                </p>
+                <p class="small text-white-50">※このバッジは、アプリの黎明期を支えた古参ユーザーとしての信頼性を将来にわたって保証するものです。</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="p-3 bg-white bg-opacity-10 rounded-circle d-inline-block">
+                    <img src="{% static 'images/founding_member_badge.png' %}" alt="創設メンバーバッジ" class="founding-badge">
+                    <p class="mt-3 fw-bold text-warning">創設メンバー</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    
+    <div class="row g-4 justify-content-center mb-5">
         
-        <div class="alert alert-warning d-inline-block rounded-pill px-4 shadow-sm">
-            <i class="bi bi-megaphone-fill me-2"></i>
-            <strong>早期入会キャンペーン！</strong> 3月末までにシルバー以上にご入会で、永年<strong>「創設メンバー」</strong>バッジを付与！
-        </div>
-    </div>
-
-    <div class="row g-4 justify-content-center">
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4">
-                <div class="card-body p-4 text-center">
-                    <span class="badge bg-light text-dark border mb-2 fw-bold" style="letter-spacing: 1px;">SILVER</span>
-                    <h3 class="fw-bold">シルバー</h3>
-                    <h4 class="text-primary fw-bold mb-3">¥550 <small class="text-muted">/月</small></h4>
-                    <p class="text-start small text-muted mb-4">
-                        <strong>【おすすめ：一般の施主様】</strong><br>
-                        「信頼できる職人さんに直接頼みたい」というエンドユーザー様向け。月3回までの募集が可能で、中間マージンなしの直接取引を実現します。
-                    </p>
-                    <a href="{% url 'create_checkout_session' 'silver' %}" class="btn btn-outline-dark w-100 rounded-pill fw-bold">SILVERを選択</a>
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 plan-card shadow-sm rounded-4">
+                <div class="card-header header-silver py-4 text-center">
+                    <h3 class="fw-bold m-0">SILVER</h3>
+                    <small>シルバープラン</small>
+                </div>
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="text-center mb-4">
+                        <span class="display-6 fw-bold">¥500</span><span class="text-muted">/月</span>
+                    </div>
+                    <ul class="list-unstyled mb-4 flex-grow-1">
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-secondary me-2"></i><strong>DIYユーザー・個人事業主</strong>向け</li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-secondary me-2"></i>募集投稿：<strong>月10件</strong>まで</li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-secondary me-2"></i>応募可能数：<strong>月20回</strong>まで</li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-secondary me-2"></i>「たまに人手が欲しい」時に最適</li>
+                    </ul>
+                    <div class="d-grid">
+                        <form action="{% url 'create_checkout_session' 'silver' %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-secondary w-100 py-3 rounded-pill fw-bold shadow-sm">
+                                SILVER を選択
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card h-100 shadow border-primary rounded-4" style="border-width: 2px; border-color: #ffc107 !important;">
-                <div class="card-body p-4 text-center">
-                    <span class="badge bg-warning text-dark mb-2 fw-bold" style="letter-spacing: 1px;">GOLD</span>
-                    <h3 class="fw-bold">ゴールド</h3>
-                    <h4 class="text-primary fw-bold mb-3">¥2,200 <small class="text-muted">/月</small></h4>
-                    <p class="text-start small text-muted mb-4">
-                        <strong>【おすすめ：一人親方・工務店様】</strong><br>
-                        「現場を回しながら次の案件も確保したい」プロ向け。月10回までの募集が可能で、エリアを絞った効率的な職人探し・仕事探しに最適です。
-                    </p>
-                    <a href="{% url 'create_checkout_session' 'gold' %}" class="btn btn-warning w-100 rounded-pill fw-bold shadow">GOLDを選択</a>
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 plan-card shadow rounded-4 border-warning position-relative">
+                <div class="position-absolute top-0 start-50 translate-middle">
+                    <span class="badge bg-danger px-3 py-2 rounded-pill shadow">人気No.1</span>
+                </div>
+                <div class="card-header header-gold py-4 text-center">
+                    <h3 class="fw-bold m-0">GOLD</h3>
+                    <small>ビジネススタンダード</small>
+                </div>
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="text-center mb-4">
+                        <span class="display-6 fw-bold">¥1,980</span><span class="text-muted">/月</span>
+                    </div>
+                    <ul class="list-unstyled mb-4 flex-grow-1">
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-warning me-2"></i><strong>本格的な事業者・法人</strong>向け</li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-warning me-2"></i>募集投稿：<span class="fw-bold text-danger fs-5">無制限</span></li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-warning me-2"></i>応募可能数：<strong>月50回</strong>まで</li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-warning me-2"></i><span class="fw-bold text-dark">創設メンバーバッジ付与</span></li>
+                    </ul>
+                    <div class="d-grid">
+                        <form action="{% url 'create_checkout_session' 'gold' %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning w-100 py-3 rounded-pill fw-bold shadow-sm text-dark">
+                                GOLD を選択
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm border-0 rounded-4" style="background-color: #15151a; color: white;">
-                <div class="card-body p-4 text-center">
-                    <span class="badge bg-light text-dark mb-2 fw-bold" style="letter-spacing: 1px;">PLATINA</span>
-                    <h3 class="fw-bold">プラチナ</h3>
-                    <h4 class="text-primary fw-bold mb-3 text-info">¥5,500 <small class="text-white-50">/月</small></h4>
-                    <p class="text-start small text-light mb-4 opacity-75">
-                        <strong>【おすすめ：多忙な元請け・会社様】</strong><br>
-                        「常に人手が欲しい、大量の案件を動かしたい」企業様向け。募集回数は無制限。圧倒的なスピード感で現場の穴を埋め、事業拡大を加速させます。
-                    </p>
-                    <a href="{% url 'create_checkout_session' 'platinum' %}" class="btn btn-light w-100 rounded-pill fw-bold">PLATINAを選択</a>
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 plan-card shadow-sm rounded-4">
+                <div class="card-header header-platinum py-4 text-center">
+                    <h3 class="fw-bold m-0">PLATINUM</h3>
+                    <small>ビジネス・エグゼクティブ</small>
+                </div>
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="text-center mb-4">
+                        <span class="display-6 fw-bold">¥4,980</span><span class="text-muted">/月</span>
+                    </div>
+                    <ul class="list-unstyled mb-4 flex-grow-1">
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-info me-2"></i><strong>大規模事業者・多頻度利用</strong>向け</li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-info me-2"></i>募集も応募も：<span class="fw-bold text-primary fs-5">全て無制限</span></li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-info me-2"></i>検索上位表示ブースト機能</li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-info me-2"></i>優先サポート対応</li>
+                    </ul>
+                    <div class="d-grid">
+                        <form action="{% url 'create_checkout_session' 'platinum' %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-info w-100 py-3 rounded-pill fw-bold shadow-sm text-white" style="background: #00bcd4; border:none;">
+                                PLATINUM を選択
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="mt-5 p-4 bg-light rounded-4 text-center">
-        <h6 class="fw-bold mb-3">プランの変更・解約について</h6>
-        <div class="row text-start justify-content-center">
-            <div class="col-md-8 small text-muted">
-                <p class="mb-1">・プランの変更（アップグレード・ダウングレード）はマイページからいつでも可能です。</p>
-                <p class="mb-1">・解約に違約金は一切かかりません。解約後も有効期限内は現在のランク機能をご利用いただけます。</p>
-                <p class="mb-0">・決済は世界標準のセキュリティを誇る <strong>Stripe</strong> を採用しており、当アプリでカード情報を保持することはありません。</p>
-            </div>
-        </div>
+    <h3 class="fw-bold text-center mb-4"><i class="bi bi-table"></i> 機能・特典比較表</h3>
+    <div class="table-responsive shadow-sm rounded-4 mb-5">
+        <table class="table table-hover table-striped mb-0 text-center align-middle bg-white">
+            <thead class="bg-dark text-white">
+                <tr>
+                    <th class="py-3" style="width: 25%;">機能 / プラン</th>
+                    <th class="py-3 bg-secondary">IRON<br><small>(未確認)</small></th>
+                    <th class="py-3" style="background:#cd7f32;">BRONZE<br><small>(無料会員)</small></th>
+                    <th class="py-3 bg-light text-dark">SILVER</th>
+                    <th class="py-3 text-dark" style="background:#ffd700;">GOLD</th>
+                    <th class="py-3 text-dark" style="background:#80deea;">PLATINUM</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-start ps-4 fw-bold">月額料金</td>
+                    <td>無料</td>
+                    <td>無料</td>
+                    <td>¥500</td>
+                    <td>¥1,980</td>
+                    <td>¥4,980</td>
+                </tr>
+                <tr>
+                    <td class="text-start ps-4">本人確認バッジ</td>
+                    <td><i class="bi bi-x-lg table-cross"></i></td>
+                    <td><i class="bi bi-check-lg table-check"></i></td>
+                    <td><i class="bi bi-check-lg table-check"></i></td>
+                    <td><i class="bi bi-check-lg table-check"></i></td>
+                    <td><i class="bi bi-check-lg table-check"></i></td>
+                </tr>
+                <tr>
+                    <td class="text-start ps-4">求人募集 (月間)</td>
+                    <td>1件</td>
+                    <td>5件</td>
+                    <td>10件</td>
+                    <td class="fw-bold text-danger">無制限</td>
+                    <td class="fw-bold text-primary">無制限</td>
+                </tr>
+                <tr>
+                    <td class="text-start ps-4">案件応募 (月間)</td>
+                    <td>3回</td>
+                    <td>10回</td>
+                    <td>20回</td>
+                    <td>50回</td>
+                    <td class="fw-bold text-primary">無制限</td>
+                </tr>
+                <tr>
+                    <td class="text-start ps-4">創設メンバーバッジ</td>
+                    <td><i class="bi bi-x-lg table-cross"></i></td>
+                    <td><i class="bi bi-x-lg table-cross"></i></td>
+                    <td><i class="bi bi-check-circle-fill text-warning"></i> 対象</td>
+                    <td><i class="bi bi-check-circle-fill text-warning"></i> 対象</td>
+                    <td><i class="bi bi-check-circle-fill text-warning"></i> 対象</td>
+                </tr>
+                <tr>
+                    <td class="text-start ps-4">スカウト機能</td>
+                    <td><i class="bi bi-x-lg table-cross"></i></td>
+                    <td><i class="bi bi-x-lg table-cross"></i></td>
+                    <td><i class="bi bi-check-lg table-check"></i></td>
+                    <td><i class="bi bi-check-lg table-check"></i></td>
+                    <td><i class="bi bi-check-lg table-check"></i></td>
+                </tr>
+            </tbody>
+        </table>
     </div>
+
+    <div class="text-center text-muted mt-5">
+        <small>
+            <i class="bi bi-info-circle"></i> 契約の変更・解約はいつでもマイページから行えます。<br>
+            月の途中でプラン変更された場合、差額は日割り計算されます。
+        </small>
+    </div>
+
 </div>
 {% endblock %}
