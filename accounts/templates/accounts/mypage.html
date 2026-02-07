@@ -41,7 +41,7 @@
                     <a href="{% url 'subscription_plans' %}" class="btn btn-primary rounded-pill fw-bold shadow-sm">
                         <i class="bi bi-arrow-up-circle"></i> プラン変更・確認
                     </a>
-                    
+
                  {% else %}   
 
                      <p class="text-muted small">
@@ -148,4 +148,81 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+<div class="card p-3 mb-4">
+    <h6>今月の残り枠</h6>
+    <p>求人掲載: <strong>{{ remaining_jobs }}</strong> / {{ limit_jobs }} 件</p>
+    <p>案件応募: <strong>{{ remaining_apps }}</strong> / {{ limit_apps }} 回</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // 共通チャート設定
+    const createChart = (ctxId, data, labels, color) => {
+        const ctx = document.getElementById(ctxId);
+        if (!ctx) return; // データがない場合はキャンバスがないので何もしない
+
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '評価スコア',
+                    data: data,
+                    backgroundColor: color + '33', // 透明度20%
+                    borderColor: color,
+                    borderWidth: 2,
+                    pointBackgroundColor: color
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 10,
+                        ticks: { stepSize: 1, display: false },
+                        grid: { 
+                            circular: true,
+                            color: 'rgba(0, 0, 0, 0.3)' // ★追加: 線の色を濃くする
+                        },
+                        angleLines: {
+                            color: 'rgba(0, 0, 0, 0.3)' // ★追加: 中心から伸びる線の色
+                        },
+                        pointLabels: {
+                            font: { size: 12 },
+                            color: '#333' // ★追加: 文字色もハッキリさせる
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+
+    // ワーカーチャート描画 (データがある場合のみ)
+    {% if worker_stats.exists %}
+        createChart(
+            'pChartWorker', 
+            {{ worker_stats.chart_data|safe }}, 
+            {{ worker_stats.labels|safe }}, 
+            '#0d6efd' // 青色
+        );
+    {% endif %}
+
+    // 発注者チャート描画 (データがある場合のみ)
+    {% if employer_stats.exists %}
+        createChart(
+            'pChartEmployer', 
+            {{ employer_stats.chart_data|safe }}, 
+            {{ employer_stats.labels|safe }}, 
+            '#198754' // 緑色
+        );
+    {% endif %}
+});
+</script>
+
 {% endblock %}

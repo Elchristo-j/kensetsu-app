@@ -1,3 +1,4 @@
+from django.utils import timezone # ★ファイルの先頭に追加
 import os
 import stripe
 from django.conf import settings
@@ -127,6 +128,44 @@ def mypage(request):
     employer_stats = calculate_stats(request.user, 'worker_to_employer')
     my_posted = Job.objects.filter(created_by=request.user).order_by('-created_at')[:5]
     my_applied = Application.objects.filter(applicant=request.user).order_by('-applied_at')[:5]
+
+    # ▼▼▼ 【追加】今月の利用状況の集計 ▼▼▼
+    now = timezone.now()
+    start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    # 今月の使用数をカウント
+    used_jobs = Job.objects.filter(created_by=request.user, created_at__gte=start_of_month).count()
+    used_apps = Application.objects.filter(applicant=request.user, applied_at__gte=start_of_month).count()
+
+    # ランクごとの上限設定（※仕様に合わせて書き換えてください！）
+    LIMITS = {
+        'iron':     {'job': 1,  'app': 3},
+        'bronze':   {'job': 5,  'app': 10},
+        'silver':   {'job': 10, 'app': 20},
+        'gold':     {'job': 20, 'app': 50},
+        'platinum': {'job': 999,'app': 999}, # 無制限
+    }
+    
+    # 自分のランクの上限を取得（なければIron扱い）
+    my_limits = LIMITS.get(profile.rank, LIMITS['iron'])
+    
+    # 残り回数を計算（マイナスにならないようにmax使用）
+    remaining_jobs = max(0, my_limits['job'] - used_jobs)
+    remaining_apps = max(0, my_limits['app'] - used_apps)
+    # ▲▲▲ 【追加終わり】 ▲▲▲
+
+    context = {
+        'user': request.user, 'profile': profile,
+        'worker_stats': worker_stats, 'employer_stats': employer_stats,
+        'my_posted_jobs': my_posted, 'my_applications': my_applied,
+        
+        # HTMLで使えるように渡す
+        'remaining_jobs': remaining_jobs,
+        'remaining_apps': remaining_apps,
+        'limit_jobs': my_limits['job'],
+        'limit_apps': my_limits['app'],
+    }
+    return render(request, 'accounts/mypage.html', context)
 
     context = {
         'user': request.user, 'profile': profile,
