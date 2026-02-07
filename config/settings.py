@@ -33,7 +33,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     # ... 既存のアプリ ...
-    'django.contrib.staticfiles',
     'cloudinary_storage',  # 追加
     'cloudinary',          # 追加
     # ...
