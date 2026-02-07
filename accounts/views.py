@@ -135,7 +135,6 @@ def mypage(request):
     }
     return render(request, 'accounts/mypage.html', context)
 
-@login_required
 def profile_detail(request, user_id):
     target = get_object_or_404(User, id=user_id)
     profile, _ = Profile.objects.get_or_create(user=target)

@@ -37,9 +37,18 @@
                     <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark rounded-pill fw-bold">
                         <i class="bi bi-pencil-square"></i> プロフィール編集
                     </a>
+                {% if user.profile.rank != 'iron' %}
                     <a href="{% url 'subscription_plans' %}" class="btn btn-primary rounded-pill fw-bold shadow-sm">
                         <i class="bi bi-arrow-up-circle"></i> プラン変更・確認
                     </a>
+                    
+                 {% else %}   
+
+                     <p class="text-muted small">
+                         ※本人確認が完了すると、有料プランへの変更が可能になります。
+                     </p>
+
+                 {% endif %}
                 </div>
 
                 <div class="mt-4 text-start bg-light p-3 rounded small">

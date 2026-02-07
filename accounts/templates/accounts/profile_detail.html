@@ -304,15 +304,23 @@ document.addEventListener('DOMContentLoaded', function() {
                         min: 0,
                         max: 5,
                         ticks: { stepSize: 1, display: false },
-                        grid: { circular: true }
+                        grid: { 
+                            circular: true,
+                            color: 'rgba(0, 0, 0, 0.3)' // ★追加: 線の色を濃くする
+                        },
+                        angleLines: {
+                            color: 'rgba(0, 0, 0, 0.3)' // ★追加: 中心から伸びる線の色
+                        },
+                        pointLabels: {
+                            font: { size: 12 },
+                            color: '#333' // ★追加: 文字色もハッキリさせる
+                        }
                     }
                 },
                 plugins: {
                     legend: { display: false }
                 }
             }
-        });
-    };
 
     // ワーカーチャート描画 (データがある場合のみ)
     {% if worker_stats.exists %}
@@ -335,4 +343,5 @@ document.addEventListener('DOMContentLoaded', function() {
     {% endif %}
 });
 </script>
+
 {% endblock %}
