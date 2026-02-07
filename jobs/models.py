@@ -6,17 +6,32 @@ from datetime import timedelta
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-# 業種・職種のリスト定義
+# ★職種リストを修正しました
+# ジャンルごとにコメントで区切っています
 JOB_CATEGORIES = [
+    # --- 多能工 ---
     ('general', '多能工・手元'),
-    ('carpenter', '大工・造作'),
-    ('electric', '電気・通信'),
-    ('plumbing', '設備・水道'),
-    ('interior', '内装・クロス・床'),
-    ('exterior', '外装・塗装・防水'),
-    ('scaffold', '足場・鳶・土工'),
+
+    # --- 建築・躯体 ---
+    ('carpenter', '大工（造作・建具）'),
+    ('formwork', '型枠大工・鉄筋工'),
+    ('plasterer', '左官・タイル'),       # 追加
+    ('sheet_metal', '板金・外壁・屋根'), # 追加
+    ('lgs', '軽天・ボード貼り'),         # 追加
+
+    # --- 設備 ---
+    ('electric', '電気工・通信・消防'),
+    ('plumbing', '配管工・設備・水道'),
     ('hvac', '空調・ダクト'),
-    ('cleaning', 'クリーニング・雑工'),
+
+    # --- 内装・仕上げ ---
+    ('interior', '内装（クロス・床）'),
+    ('painting', '塗装・防水'),
+    ('scaffold', '鳶・足場'),
+    ('cleaning', '美装'),
+
+    # --- 管理・その他 ---
+    ('supervisor', '現場監督・現場代理人'), # 追加
     ('other', 'その他'),
 ]
 
