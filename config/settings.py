@@ -32,6 +32,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    # ... 既存のアプリ ...
+    'django.contrib.staticfiles',
+    'cloudinary_storage',  # 追加
+    'cloudinary',          # 追加
+    # ...
     'jobs',
     'accounts',
 ]
@@ -178,3 +183,15 @@ STRIPE_PRICE_IDS = {
     'gold': 'price_1SoEJMDADu8qJkAG1kNZbtM9',
     'platinum': 'price_1SoEJyDADu8qJkAGapSq3ize',
 }
+
+# 2. Cloudinaryの設定を追加（ファイルの一番下あたりでOK）
+import os
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'), # Renderの環境変数で設定
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),       # Renderの環境変数で設定
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'), # Renderの環境変数で設定
+}
+
+# 3. 画像の保存先をCloudinaryに変更
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
