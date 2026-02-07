@@ -32,10 +32,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    # ... 既存のアプリ ...
-    'cloudinary_storage',  # 追加
-    'cloudinary',          # 追加
-    # ...
+    # ... 拡張ライブラリ ...
+    'cloudinary_storage',
+    'cloudinary',
+    # ... 自作アプリ ...
     'jobs',
     'accounts',
 ]
@@ -53,11 +53,10 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
-# --- ここを修正しました！ ---
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'], # プロジェクトルートのtemplatesフォルダを探す設定
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -65,8 +64,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                # 承認待ち件数のカウント
-                'jobs.context_processors.pending_verification_count',
+                # ★修正: 存在しないファイルを読み込まないよう削除しました
+                # 'jobs.context_processors.pending_verification_count', 
             ],
         },
     },
@@ -112,8 +111,18 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # ==========================================
-# 画像ファイル (Media) 設定
+# 画像ファイル (Media) 設定 (Cloudinary)
 # ==========================================
+
+# 1. Cloudinaryの設定
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+}
+
+# 2. 画像の保存先をCloudinaryに変更
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -128,7 +137,7 @@ LOGOUT_REDIRECT_URL = 'home'
 
 
 # ==========================================
-# メール送信設定（SSL/465ポート版）
+# メール送信設定
 # ==========================================
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -182,15 +191,3 @@ STRIPE_PRICE_IDS = {
     'gold': 'price_1SoEJMDADu8qJkAG1kNZbtM9',
     'platinum': 'price_1SoEJyDADu8qJkAGapSq3ize',
 }
-
-# 2. Cloudinaryの設定を追加（ファイルの一番下あたりでOK）
-import os
-
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'), # Renderの環境変数で設定
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),       # Renderの環境変数で設定
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'), # Renderの環境変数で設定
-}
-
-# 3. 画像の保存先をCloudinaryに変更
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
