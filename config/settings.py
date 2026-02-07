@@ -110,6 +110,7 @@ STATICFILES_DIRS = [
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
+
 # ==========================================
 # 画像ファイル (Media) 設定 (Cloudinary)
 # ==========================================
