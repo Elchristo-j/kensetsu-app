@@ -120,3 +120,11 @@ body {
     font-family: 'Arial', sans-serif;
     letter-spacing: 1px;
 }
+
+/* ボカシ効果 */
+.blur-content {
+    filter: blur(8px); /* ぼかしの強さ */
+    pointer-events: none; /* クリックなどを無効化 */
+    user-select: none; /* 選択不可 */
+    opacity: 0.6;
+}

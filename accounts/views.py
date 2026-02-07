@@ -31,54 +31,65 @@ def calculate_utility_wage_text(score):
 
 # --- 集計関数 ---
 def calculate_stats(user, review_type):
-    reviews = Review.objects.filter(reviewee=user, review_type=review_type)
-    count = reviews.count()
-    is_hidden = count < 3 # 3件未満は隠す
 
-    if count > 0:
-        if review_type == 'employer_to_worker':
-            # ワーカー評価項目
-            p1 = reviews.aggregate(Avg('ability'))['ability__avg'] or 0
-            p2 = reviews.aggregate(Avg('cooperation'))['cooperation__avg'] or 0
-            p3 = reviews.aggregate(Avg('diligence'))['diligence__avg'] or 0
-            p4 = reviews.aggregate(Avg('humanity'))['humanity__avg'] or 0
-            p5 = reviews.aggregate(Avg('utility_score'))['utility_score__avg'] or 0
-            labels = ['能力', '協調性', '勤勉性', '人間性', '有用性']
-            wage_range = calculate_utility_wage_text(p5)
-            chart_data = [p1, p2, p3, p4, p5]
+    all_reviews = Review.objects.filter(reviewee=user, review_type=review_type)
+    total_count = all_reviews.count()
 
-        else:
-            # 発注者評価項目
-            p1 = reviews.aggregate(Avg('working_hours'))['working_hours__avg'] or 0
-            p2 = reviews.aggregate(Avg('reward'))['reward__avg'] or 0
-            p3 = reviews.aggregate(Avg('job_content'))['job_content__avg'] or 0
-            p4 = reviews.aggregate(Avg('preparation'))['preparation__avg'] or 0
-            p5 = reviews.aggregate(Avg('credibility'))['credibility__avg'] or 0
-            labels = ['作業時間', '報酬', '仕事内容', '段取り', '信用性']
-            wage_range = None # 発注者には日当なし
-            chart_data = [p1, p2, p3, p4, p5]
-
-        avg_score = sum(chart_data) / 5
-
-        return {
-            'exists': True,
-            'is_hidden': is_hidden,
-            'count': count,
-            'average': round(avg_score, 1),
-            'chart_data': chart_data,
-            'labels': labels,
-            'wage_range': wage_range,
-        }
-    else:
+    # ▼ 変更点: 3件未満は問答無用で「データなし」扱い
+    if total_count < 3:
         return {
             'exists': False,
             'is_hidden': True,
             'count': 0,
             'average': 0,
-            'chart_data': [0,0,0,0,0],
+            'chart_data': [0, 0, 0, 0, 0],
             'labels': [],
             'wage_range': None
         }
+    
+    # ▼ 変更点: 3の倍数で切り捨てる計算 (例: 5 // 3 * 3 = 3,  8 // 3 * 3 = 6)
+    visible_count = (total_count // 3) * 3
+
+    # ▼ 変更点: 「古い順」に visible_count 件だけを取得して計算対象にする
+    # これにより、最新の1,2件（端数）は計算から除外されるため、誰が何点をつけたかバレません。
+    target_ids = all_reviews.order_by('created_at').values_list('id', flat=True)[:visible_count]
+    target_reviews = Review.objects.filter(id__in=target_ids)
+
+    # --- 以下、集計ロジックは target_reviews に対して行う ---
+
+    
+    if review_type == 'employer_to_worker':
+        p1 = target_reviews.aggregate(Avg('ability'))['ability__avg'] or 0
+        p2 = target_reviews.aggregate(Avg('cooperation'))['cooperation__avg'] or 0
+        p3 = target_reviews.aggregate(Avg('diligence'))['diligence__avg'] or 0
+        p4 = target_reviews.aggregate(Avg('humanity'))['humanity__avg'] or 0
+        p5 = target_reviews.aggregate(Avg('utility_score'))['utility_score__avg'] or 0
+        labels = ['能力', '協調性', '勤勉性', '人間性', '有用性']
+        wage_range = calculate_utility_wage_text(p5)
+        chart_data = [p1, p2, p3, p4, p5]
+    else:
+        p1 = target_reviews.aggregate(Avg('working_hours'))['working_hours__avg'] or 0
+        p2 = target_reviews.aggregate(Avg('reward'))['reward__avg'] or 0
+        p3 = target_reviews.aggregate(Avg('job_content'))['job_content__avg'] or 0
+        p4 = target_reviews.aggregate(Avg('preparation'))['preparation__avg'] or 0
+        p5 = target_reviews.aggregate(Avg('credibility'))['credibility__avg'] or 0
+        labels = ['作業時間', '報酬', '仕事内容', '段取り', '信用性']
+        wage_range = None
+        chart_data = [p1, p2, p3, p4, p5]
+
+    avg_score = sum(chart_data) / 5
+
+    return {
+        'exists': True,
+        'is_hidden': False, # 3件以上あるので必ず表示
+        'count': total_count, # 表示上の件数は「全件」でOK（計算だけ3の倍数）
+        'average': round(avg_score, 1),
+        'chart_data': chart_data,
+        'labels': labels,
+        'wage_range': wage_range,
+    }
+    
+   
 
 # --- ビュー定義 ---
 

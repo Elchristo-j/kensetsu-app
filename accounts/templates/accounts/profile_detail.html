@@ -3,12 +3,33 @@
 
 {% block content %}
 <style>
-    /* ランク別バッジ色 */
+    /* --- ランク別バッジ色 --- */
     .badge-rank-iron { background-color: #6c757d; color: white; }
     .badge-rank-bronze { background-color: #cd7f32; color: white; }
     .badge-rank-silver { background-color: #e0e0e0; color: #333; border: 1px solid #ccc; }
     .badge-rank-gold { background-color: #ffc107; color: #000; }
     .badge-rank-platinum { background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%); color: #006064; border: 1px solid #4dd0e1; }
+
+    /* --- ボカシ（非会員用）のエフェクト --- */
+    .blur-content {
+        filter: blur(6px);      /* ボカシの強さ */
+        opacity: 0.6;           /* 少し透明にする */
+        pointer-events: none;   /* クリックなどを無効化 */
+        user-select: none;      /* 選択不可 */
+    }
+    .lock-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        width: 100%;
+        text-align: center;
+    }
+    .chart-wrapper {
+        position: relative;
+        min-height: 300px; /* グラフエリアの高さ確保 */
+    }
 </style>
 
 <div class="container mt-5 mb-5">
@@ -93,32 +114,65 @@
         </ul>
 
         <div class="tab-content" id="profileTabContent">
+            
             <div class="tab-pane fade show active" id="content-worker">
-                {% include 'accounts/includes/stats_panel.html' with stats=worker_stats chart_id="pChartWorker" role_name="ワーカー" %}
                 
+                {% if worker_stats.exists %}
+                    <div class="chart-wrapper">
+                        <div class="{% if not user.is_authenticated %}blur-content{% endif %}">
+                            <div class="row align-items-center">
+                                <div class="col-md-5 text-center mb-3 mb-md-0">
+                                    <h1 class="display-4 fw-bold text-primary">{{ worker_stats.average }}</h1>
+                                    <div class="text-warning fs-4">
+                                        {% if worker_stats.average >= 4.5 %}★★★★★
+                                        {% elif worker_stats.average >= 3.5 %}★★★★☆
+                                        {% elif worker_stats.average >= 2.5 %}★★★☆☆
+                                        {% elif worker_stats.average >= 1.5 %}★★☆☆☆
+                                        {% else %}★☆☆☆☆{% endif %}
+                                    </div>
+                                    <p class="text-muted small mt-2">
+                                        評価件数: {{ worker_stats.count }}件<br>
+                                        (直近の確定評価に基づく)
+                                    </p>
+                                    {% if worker_stats.wage_range %}
+                                    <div class="mt-3 p-2 bg-light rounded border">
+                                        <small class="text-muted d-block">推定日当ランク</small>
+                                        <strong class="fs-5 text-dark">¥{{ worker_stats.wage_range }}</strong>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-7">
+                                    <canvas id="pChartWorker"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if not user.is_authenticated %}
+                        <div class="lock-overlay">
+                            <div class="badge bg-dark fs-6 p-3 shadow rounded-pill">
+                                <i class="bi bi-lock-fill"></i> 詳細な評価は会員限定です
+                            </div>
+                            <div class="mt-2">
+                                <a href="{% url 'signup' %}" class="btn btn-sm btn-primary rounded-pill">会員登録する</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5 bg-light rounded text-muted">
+                        <i class="bi bi-chat-square-dots fs-1 d-block mb-3"></i>
+                        <p>まだ十分な評価データがありません（3件以上で表示）</p>
+                    </div>
+                {% endif %}
+
                 <div class="mt-4 p-4 bg-white border rounded text-muted">
                     <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-info-circle-fill text-primary"></i> 評価項目の基準について</h6>
                     <div class="row g-3 small">
-                        <div class="col-md-6">
-                            <strong class="d-block text-dark">能力</strong>
-                            現場で通用する技術力、知識、作業のスピードや正確さ。
-                        </div>
-                        <div class="col-md-6">
-                            <strong class="d-block text-dark">協調性</strong>
-                            チームワーク、報告・連絡・相談の徹底、指示への理解度。
-                        </div>
-                        <div class="col-md-6">
-                            <strong class="d-block text-dark">勤勉性</strong>
-                            遅刻や欠席がないか、真面目に業務に取り組む姿勢。
-                        </div>
-                        <div class="col-md-6">
-                            <strong class="d-block text-dark">人間性</strong>
-                            挨拶、マナー、現場の雰囲気を良くする人柄かどうか。
-                        </div>
-                        <div class="col-12">
-                            <strong class="d-block text-dark">有用性</strong>
-                            支払った報酬に対して、それ以上の価値（コストパフォーマンス）を感じられたか。
-                        </div>
+                        <div class="col-md-6"><strong class="d-block text-dark">能力</strong>現場で通用する技術力、知識、スピード。</div>
+                        <div class="col-md-6"><strong class="d-block text-dark">協調性</strong>チームワーク、報連相の徹底。</div>
+                        <div class="col-md-6"><strong class="d-block text-dark">勤勉性</strong>遅刻欠席なし、真面目な勤務態度。</div>
+                        <div class="col-md-6"><strong class="d-block text-dark">人間性</strong>挨拶、マナー、現場の雰囲気作り。</div>
+                        <div class="col-12"><strong class="d-block text-dark">有用性</strong>支払った報酬以上の価値を感じたか。</div>
                     </div>
                 </div>
                 
@@ -142,31 +196,56 @@
             </div>
 
             <div class="tab-pane fade" id="content-employer">
-                {% include 'accounts/includes/stats_panel.html' with stats=employer_stats chart_id="pChartEmployer" role_name="発注者" %}
                 
+                {% if employer_stats.exists %}
+                    <div class="chart-wrapper">
+                         <div class="{% if not user.is_authenticated %}blur-content{% endif %}">
+                            <div class="row align-items-center">
+                                <div class="col-md-5 text-center mb-3 mb-md-0">
+                                    <h1 class="display-4 fw-bold text-success">{{ employer_stats.average }}</h1>
+                                    <div class="text-warning fs-4">
+                                        {% if employer_stats.average >= 4.5 %}★★★★★
+                                        {% elif employer_stats.average >= 3.5 %}★★★★☆
+                                        {% elif employer_stats.average >= 2.5 %}★★★☆☆
+                                        {% else %}★★☆☆☆{% endif %}
+                                    </div>
+                                    <p class="text-muted small mt-2">
+                                        評価件数: {{ employer_stats.count }}件<br>
+                                        (直近の確定評価に基づく)
+                                    </p>
+                                </div>
+                                <div class="col-md-7">
+                                    <canvas id="pChartEmployer"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                         {% if not user.is_authenticated %}
+                         <div class="lock-overlay">
+                             <div class="badge bg-dark fs-6 p-3 shadow rounded-pill">
+                                 <i class="bi bi-lock-fill"></i> 詳細な評価は会員限定です
+                             </div>
+                             <div class="mt-2">
+                                 <a href="{% url 'signup' %}" class="btn btn-sm btn-primary rounded-pill">会員登録する</a>
+                             </div>
+                         </div>
+                         {% endif %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5 bg-light rounded text-muted">
+                        <i class="bi bi-building fs-1 d-block mb-3"></i>
+                        <p>まだ十分な評価データがありません（3件以上で表示）</p>
+                    </div>
+                {% endif %}
+
                 <div class="mt-4 p-4 bg-white border rounded text-muted">
                     <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-info-circle-fill text-success"></i> 評価項目の基準について</h6>
                     <div class="row g-3 small">
-                        <div class="col-md-6">
-                            <strong class="d-block text-dark">作業時間</strong>
-                            事前に提示された時間通りに終わったか、無理な残業はなかったか。
-                        </div>
-                        <div class="col-md-6">
-                            <strong class="d-block text-dark">報酬</strong>
-                            作業内容に見合った金額か、支払いはスムーズに行われたか。
-                        </div>
-                        <div class="col-md-6">
-                            <strong class="d-block text-dark">仕事内容</strong>
-                            募集時の説明と実際の作業内容に相違はなかったか。
-                        </div>
-                        <div class="col-md-6">
-                            <strong class="d-block text-dark">段取り</strong>
-                            資材や道具の準備、現場での指示出しは的確だったか。
-                        </div>
-                        <div class="col-12">
-                            <strong class="d-block text-dark">信用性</strong>
-                            トラブル時の対応や、またこの人の現場に行きたいと思える信頼感があるか。
-                        </div>
+                        <div class="col-md-6"><strong class="d-block text-dark">作業時間</strong>時間厳守、無理な残業なし。</div>
+                        <div class="col-md-6"><strong class="d-block text-dark">報酬</strong>見合った金額、スムーズな支払い。</div>
+                        <div class="col-md-6"><strong class="d-block text-dark">仕事内容</strong>募集内容との相違なし。</div>
+                        <div class="col-md-6"><strong class="d-block text-dark">段取り</strong>資材準備、的確な指示出し。</div>
+                        <div class="col-12"><strong class="d-block text-dark">信用性</strong>トラブル対応、信頼感。</div>
                     </div>
                 </div>
 
@@ -197,4 +276,63 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // 共通チャート設定
+    const createChart = (ctxId, data, labels, color) => {
+        const ctx = document.getElementById(ctxId);
+        if (!ctx) return; // データがない場合はキャンバスがないので何もしない
+
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '評価スコア',
+                    data: data,
+                    backgroundColor: color + '33', // 透明度20%
+                    borderColor: color,
+                    borderWidth: 2,
+                    pointBackgroundColor: color
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 5,
+                        ticks: { stepSize: 1, display: false },
+                        grid: { circular: true }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    };
+
+    // ワーカーチャート描画 (データがある場合のみ)
+    {% if worker_stats.exists %}
+        createChart(
+            'pChartWorker', 
+            {{ worker_stats.chart_data|safe }}, 
+            {{ worker_stats.labels|safe }}, 
+            '#0d6efd' // 青色
+        );
+    {% endif %}
+
+    // 発注者チャート描画 (データがある場合のみ)
+    {% if employer_stats.exists %}
+        createChart(
+            'pChartEmployer', 
+            {{ employer_stats.chart_data|safe }}, 
+            {{ employer_stats.labels|safe }}, 
+            '#198754' // 緑色
+        );
+    {% endif %}
+});
+</script>
 {% endblock %}
