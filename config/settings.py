@@ -107,7 +107,7 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+#STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 
@@ -123,7 +123,7 @@ CLOUDINARY_STORAGE = {
 }
 
 # 2. 画像の保存先をCloudinaryに変更
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+#DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -191,4 +191,18 @@ STRIPE_PRICE_IDS = {
     'silver': 'price_1SoEIGDADu8qJkAGq7P5azgd',
     'gold': 'price_1SoEJMDADu8qJkAG1kNZbtM9',
     'platinum': 'price_1SoEJyDADu8qJkAGapSq3ize',
+}
+
+# ==========================================
+# ストレージ設定 (Django 5.0+ 対応版)
+# ==========================================
+STORAGES = {
+    # 静的ファイル (CSS/JS) -> WhiteNoiseを使う
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+    # メディアファイル (画像) -> Cloudinaryを使う
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
 }
