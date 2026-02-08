@@ -48,7 +48,7 @@ def calculate_stats_for_user(user, review_type):
             'count': reviews.count()
         }
     
-    def contact(request):
+def contact(request):
     if request.method == 'POST':
         form = ContactForm(request.POST)
         if form.is_valid():
