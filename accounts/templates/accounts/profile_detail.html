@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load humanize %}
+{% load static %}  ```
 
 {% block content %}
 <style>
@@ -55,6 +56,16 @@
                     <span class="badge bg-success rounded-pill">本人確認済</span>
                 {% endif %}
             </div>
+
+            {% if target_user.profile.is_founding_member %}
+                <div class="mb-4 mt-2 d-flex justify-content-center"></div>
+                    <img src="{% static 'images/founding_member_badge.png' %}"
+                    alt="創設メンバー"
+                    class="img-fluid"
+                    style="max-width: 150px; height: auto; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2));"
+                    title="創設メンバー">
+                </div>
+            {% endif %}     
 
             <div class="text-muted mb-3 small-md-base">
                 {% if target_user.profile.company_name %}
