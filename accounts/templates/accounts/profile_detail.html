@@ -285,8 +285,16 @@
                             <div class="mt-2">
                                 {% if not user.is_authenticated %}
                                     <a href="{% url 'signup' %}" class="btn btn-sm btn-primary rounded-pill">会員登録する</a>
+
+                                    {% elif user.profile.rank == 'iron' %}
+                                        <a href="{% url 'profile_edit' %}" class="btn btn-sm btn-info fw-bold rounded-pill text-white">
+                                            <i class="bi bi-person-badge"></i> 本人確認へ
+                                        </a>
+
                                 {% else %}
-                                    <a href="{% url 'subscription_plans' %}" class="btn btn-sm btn-warning fw-bold rounded-pill text-dark">プラン変更する</a>
+                                    <a href="{% url 'subscription_plans' %}" class="btn btn-sm btn-warning fw-bold rounded-pill text-dark">
+                                        <i class="bi bi-arrow-up-circle"></i> ランクアップ
+                                    </a>
                                 {% endif %}
                             </div>
                         </div>

@@ -456,7 +456,21 @@ def terms_view(request): return render(request, 'jobs/static_pages/terms.html')
 def privacy_view(request): return render(request, 'jobs/static_pages/privacy.html')
 def law_view(request): return render(request, 'jobs/static_pages/law.html')
 def guide_view(request): return render(request, 'jobs/guide_qa.html')
-def subscription_plans(request): return render(request, 'jobs/subscription_plans.html')
+def subscription_plans(request): 
+    # jobs/views.py の subscription_plans を修正
+
+def subscription_plans(request):
+    # 1. 未ログインの場合 -> ログイン画面へ
+    if not request.user.is_authenticated:
+        messages.warning(request, "プランの確認・変更にはログインが必要です。")
+        return redirect('login')
+
+    # 2. Ironランク（未確認）の場合 -> さっき作った案内ページへ強制移動
+    if request.user.profile.rank == 'iron':
+        return render(request, 'accounts/verification_required.html')
+
+    # 3. それ以外（Bronze以上） -> 正常にプランページを表示
+    return render(request, 'jobs/subscription_plans.html')
 
 # --- 6. Stripe Payment ---
 
