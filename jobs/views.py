@@ -11,10 +11,10 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 # モデル・フォームのインポート
-from accounts.models import Profile, FavoriteArea, PREFECTURES
+from accounts.models import Profile, FavoriteArea, PREFECTURES, Block
 from accounts.forms import ProfileForm
 from .models import Job, Application, Message, Notification, JOB_CATEGORIES, Review
-from .forms import JobForm, MessageForm,ContactForm
+from .forms import JobForm, MessageForm, ContactForm
 
 # --- ヘルパー関数 ---
 def create_notification(recipient, message, link=None):
@@ -82,15 +82,40 @@ def home(request):
     return render(request, 'jobs/home.html', context)
 
 def job_list(request):
+    # 1. 基本フィルタ（期限内 & 未完了）
     expiration_date = timezone.now() - timedelta(days=31)
     jobs = Job.objects.filter(created_at__gte=expiration_date, is_closed=False).order_by('-created_at')
+
+    # 2. ブロック機能（ログイン中なら除外）
+    if request.user.is_authenticated:
+        # 自分がブロックしている相手
+        blocked_ids = Block.objects.filter(blocker=request.user).values_list('blocked_id', flat=True)
+        # 自分をブロックしている相手
+        blocker_ids = Block.objects.filter(blocked=request.user).values_list('blocker_id', flat=True)
+        
+        # created_by (投稿者) がリストに含まれる場合を除外
+        if blocked_ids:
+            jobs = jobs.exclude(created_by__id__in=blocked_ids)
+        if blocker_ids:
+            jobs = jobs.exclude(created_by__id__in=blocker_ids)
+
+    # 3. 検索機能
     query = request.GET.get('q')
     prefecture = request.GET.get('prefecture')
     category = request.GET.get('category')
-    if query: jobs = jobs.filter(title__icontains=query)
-    if prefecture: jobs = jobs.filter(prefecture=prefecture)
-    if category: jobs = jobs.filter(category=category)
-    return render(request, 'jobs/job_list.html', {'jobs': jobs, 'categories': JOB_CATEGORIES, 'prefectures': PREFECTURES})
+
+    if query:
+        jobs = jobs.filter(title__icontains=query)
+    if prefecture:
+        jobs = jobs.filter(prefecture=prefecture)
+    if category:
+        jobs = jobs.filter(category=category)
+
+    return render(request, 'jobs/job_list.html', {
+        'jobs': jobs, 
+        'categories': JOB_CATEGORIES, 
+        'prefectures': PREFECTURES
+    })
 
 @login_required
 def favorite_search_view(request):
@@ -258,18 +283,16 @@ def submit_review(request, application_id):
         p2 = int(request.POST.get('p2', 3))
         p3 = int(request.POST.get('p3', 3))
         p4 = int(request.POST.get('p4', 3))
-        p5 = int(request.POST.get('p5', 3)) # ワーカーへの評価の場合は金額(utility_amount)が入ることもあるが、ここでは簡易的にスコアとして扱う
+        p5 = int(request.POST.get('p5', 3)) 
         comment = request.POST.get('comment', '')
 
-        # ワーカーへの評価の場合、p5は本来「金額」だが、簡易UIではスコアとして扱う
-        # 本格的にするにはフォームを分ける必要があるが、一旦スコアとして保存
         Review.objects.create(
             reviewer=request.user,
             reviewee=reviewee,
             job=app.job,
             review_type=review_type,
-            ability=p1, cooperation=p2, diligence=p3, humanity=p4, utility_score=p5, # 共通フィールドにマッピング
-            working_hours=p1, reward=p2, job_content=p3, preparation=p4, credibility=p5, # こちらも念のため埋める
+            ability=p1, cooperation=p2, diligence=p3, humanity=p4, utility_score=p5,
+            working_hours=p1, reward=p2, job_content=p3, preparation=p4, credibility=p5,
             comment=comment
         )
         messages.success(request, "評価を送信しました！")
@@ -295,7 +318,6 @@ def chat_room(request, application_id):
             
     Message.objects.filter(application=app, is_read=False).exclude(sender=request.user).update(is_read=True)
     
-    # 評価済みかチェック
     target_user = app.job.created_by if request.user == app.applicant else app.applicant
     has_reviewed = Review.objects.filter(job=app.job, reviewer=request.user, reviewee=target_user).exists()
     
@@ -321,15 +343,12 @@ def mypage(request):
     my_applications = request.user.applications.all().order_by('-applied_at')
     my_posted_jobs = Job.objects.filter(created_by=request.user).order_by('-created_at')
     
-    # 残り枠の計算 (簡易版)
     now = timezone.now()
     start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
-    # 応募数
     current_apply = request.user.applications.filter(applied_at__gte=start_of_month).count()
     remaining_apply = max(0, profile.monthly_limit - current_apply)
     
-    # 投稿数
     current_post = Job.objects.filter(created_by=request.user, created_at__gte=start_of_month).count()
     remaining_post = max(0, profile.posting_limit - current_post)
 
@@ -347,7 +366,6 @@ def profile_detail(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
     jobs = Job.objects.filter(created_by=target_user).order_by('-id')
     
-    # 統計情報の取得
     worker_stats = calculate_stats_for_user(target_user, 'employer_to_worker')
     employer_stats = calculate_stats_for_user(target_user, 'worker_to_employer')
     
@@ -368,7 +386,7 @@ def profile_edit(request):
         if form.is_valid(): 
             form.save()
             messages.success(request, 'プロフィールを更新しました。')
-            return redirect('mypage') # マイページへ戻る
+            return redirect('mypage')
     else: 
         form = ProfileForm(instance=profile)
     return render(request, 'accounts/profile_edit.html', {'form': form})
@@ -408,10 +426,10 @@ def reject_profile(request, user_id):
     p.save()
     return redirect('admin_dashboard')
 
-def about_view(request): return render(request, 'jobs/about.html')
-def terms_view(request): return render(request, 'jobs/terms.html')
-def privacy_view(request): return render(request, 'jobs/privacy.html')
-def law_view(request): return render(request, 'jobs/law.html')
+def about_view(request): return render(request, 'jobs/static_pages/about.html')
+def terms_view(request): return render(request, 'jobs/static_pages/terms.html')
+def privacy_view(request): return render(request, 'jobs/static_pages/privacy.html')
+def law_view(request): return render(request, 'jobs/static_pages/law.html')
 def guide_view(request): return render(request, 'jobs/guide_qa.html')
 def subscription_plans(request): return render(request, 'jobs/subscription_plans.html')
 
@@ -453,4 +471,3 @@ def stripe_webhook(request):
 def payment_success(request):
     messages.success(request, 'お支払いが完了しました！ランク情報は間もなく更新されます。')
     return redirect('mypage')
-

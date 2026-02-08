@@ -1,7 +1,21 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
-from .models import Profile, FavoriteArea
+from .models import Profile, FavoriteArea,Block, Report
+
+admin.site.register(Profile)
+
+# ▼▼▼ 通報リストを管理画面で見やすくする設定 ▼▼▼
+@admin.register(Report)
+class ReportAdmin(admin.ModelAdmin):
+    list_display = ('reporter', 'target', 'reason', 'created_at') # 一覧に表示する項目
+    list_filter = ('created_at',) # 日付で絞り込み
+    search_fields = ('reason', 'reporter__username', 'target__username') # 検索機能
+
+# ▼▼▼ ブロックリストも一応見えるようにしておく ▼▼▼
+@admin.register(Block)
+class BlockAdmin(admin.ModelAdmin):
+    list_display = ('blocker', 'blocked', 'created_at')
 
 # ユーザー編集画面の中にプロフィール（ランクなど）を埋め込む設定
 class ProfileInline(admin.StackedInline):
