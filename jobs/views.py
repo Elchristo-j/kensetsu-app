@@ -17,6 +17,17 @@ from .models import Job, Application, Message, Notification, JOB_CATEGORIES, Rev
 from .forms import JobForm, MessageForm, ContactForm
 
 # --- ヘルパー関数 ---
+
+def get_blocked_user_ids(user):
+    """ブロックしている・されているユーザーIDのリストを返す"""
+    if not user.is_authenticated:
+        return []
+    # 自分がブロックしている相手
+    blocking = Block.objects.filter(blocker=user).values_list('blocked_id', flat=True)
+    # 自分をブロックしている相手
+    blocked_by = Block.objects.filter(blocked=user).values_list('blocker_id', flat=True)
+    return list(blocking) + list(blocked_by)
+
 def create_notification(recipient, message, link=None):
     Notification.objects.create(recipient=recipient, message=message, link=link)
 
@@ -59,7 +70,6 @@ def contact(request):
             messages.success(request, 'お問い合わせを受け付けました。確認後ご連絡いたします。')
             return redirect('home')
     else:
-        # ログイン中なら名前とメアドを自動入力
         initial_data = {}
         if request.user.is_authenticated:
             initial_data = {
@@ -75,6 +85,13 @@ def contact(request):
 def home(request):
     expiration_date = timezone.now() - timedelta(days=31)
     jobs = Job.objects.filter(is_closed=False, created_at__gte=expiration_date).order_by('-created_at')
+    
+    # ★ブロック判定（トップページ）
+    if request.user.is_authenticated:
+        ignore_ids = get_blocked_user_ids(request.user)
+        if ignore_ids:
+            jobs = jobs.exclude(created_by__id__in=ignore_ids)
+
     favorites = []
     if request.user.is_authenticated:
         favorites = request.user.favorite_areas.all()
@@ -82,24 +99,16 @@ def home(request):
     return render(request, 'jobs/home.html', context)
 
 def job_list(request):
-    # 1. 基本フィルタ（期限内 & 未完了）
     expiration_date = timezone.now() - timedelta(days=31)
     jobs = Job.objects.filter(created_at__gte=expiration_date, is_closed=False).order_by('-created_at')
 
-    # 2. ブロック機能（ログイン中なら除外）
+    # ★ブロック判定（検索一覧）
     if request.user.is_authenticated:
-        # 自分がブロックしている相手
-        blocked_ids = Block.objects.filter(blocker=request.user).values_list('blocked_id', flat=True)
-        # 自分をブロックしている相手
-        blocker_ids = Block.objects.filter(blocked=request.user).values_list('blocker_id', flat=True)
-        
-        # created_by (投稿者) がリストに含まれる場合を除外
-        if blocked_ids:
-            jobs = jobs.exclude(created_by__id__in=blocked_ids)
-        if blocker_ids:
-            jobs = jobs.exclude(created_by__id__in=blocker_ids)
+        ignore_ids = get_blocked_user_ids(request.user)
+        if ignore_ids:
+            jobs = jobs.exclude(created_by__id__in=ignore_ids)
 
-    # 3. 検索機能
+    # 検索機能
     query = request.GET.get('q')
     prefecture = request.GET.get('prefecture')
     category = request.GET.get('category')
@@ -123,17 +132,33 @@ def favorite_search_view(request):
     if not favorite_areas.exists():
         messages.info(request, "お気に入りエリアが登録されていません。")
         return redirect('profile_detail', user_id=request.user.id)
+    
     query = Q()
     for area in favorite_areas:
         if area.city: query |= Q(prefecture=area.prefecture, city=area.city)
         else: query |= Q(prefecture=area.prefecture)
+    
     jobs = Job.objects.filter(query).filter(is_closed=False).order_by('-id')
+
+    # ★ブロック判定（お気に入り検索）
+    ignore_ids = get_blocked_user_ids(request.user)
+    if ignore_ids:
+        jobs = jobs.exclude(created_by__id__in=ignore_ids)
+
     return render(request, 'jobs/home.html', {'jobs': jobs, 'favorites': favorite_areas, 'prefectures': PREFECTURES, 'categories': JOB_CATEGORIES, 'page_title': 'お気に入りエリアの案件'})
 
 # --- 2. Job Detail & Actions ---
 
 def job_detail(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
+    
+    # ★ブロック判定（詳細ページ直接アクセス対策）
+    if request.user.is_authenticated:
+        if Block.objects.filter(blocker=request.user, blocked=job.created_by).exists() or \
+           Block.objects.filter(blocker=job.created_by, blocked=request.user).exists():
+            messages.warning(request, "この案件は表示できません。")
+            return redirect('home')
+
     is_applied = False
     if request.user.is_authenticated:
         is_applied = Application.objects.filter(job=job, applicant=request.user).exists()
@@ -221,7 +246,6 @@ def job_applicants(request, job_id):
 
 @login_required
 def adopt_applicant(request, application_id):
-    """採用ボタン（契約待ち状態にする）"""
     app = get_object_or_404(Application, pk=application_id)
     if request.user == app.job.created_by:
         app.status = 'accepted'
@@ -237,9 +261,8 @@ def reject_applicant(request, application_id):
 
 @login_required
 def contract_application(request, application_id):
-    """契約成立"""
     app = get_object_or_404(Application, pk=application_id)
-    if request.user == app.job.created_by: # 発注者が押す
+    if request.user == app.job.created_by: 
         app.status = 'contracted'
         app.save()
         create_notification(app.applicant, f"案件「{app.job.title}」の契約が成立しました！", f"/application/{app.id}/chat/")
@@ -248,9 +271,7 @@ def contract_application(request, application_id):
 
 @login_required
 def complete_job_work(request, application_id):
-    """業務完了"""
     app = get_object_or_404(Application, pk=application_id)
-    # 契約中の場合のみ完了可能
     if app.status == 'contracted':
         app.status = 'completed'
         app.save()
@@ -261,11 +282,9 @@ def complete_job_work(request, application_id):
 
 @login_required
 def submit_review(request, application_id):
-    """評価送信"""
     app = get_object_or_404(Application, pk=application_id)
     
     if request.method == 'POST':
-        # 自分が発注者なら相手はワーカー、逆も然り
         if request.user == app.job.created_by:
             review_type = 'employer_to_worker'
             reviewee = app.applicant
@@ -273,12 +292,10 @@ def submit_review(request, application_id):
             review_type = 'worker_to_employer'
             reviewee = app.job.created_by
         
-        # すでに評価済みかチェック
         if Review.objects.filter(job=app.job, reviewer=request.user, reviewee=reviewee).exists():
             messages.error(request, "すでに評価済みです。")
             return redirect('chat_room', application_id=app.id)
         
-        # フォーム値取得
         p1 = int(request.POST.get('p1', 3))
         p2 = int(request.POST.get('p2', 3))
         p3 = int(request.POST.get('p3', 3))
@@ -364,6 +381,14 @@ def mypage(request):
 def profile_detail(request, user_id):
     """他人から見たプロフィール"""
     target_user = get_object_or_404(User, pk=user_id)
+    
+    # ★ブロック判定（プロフィール閲覧ブロック）
+    if request.user.is_authenticated:
+        if Block.objects.filter(blocker=request.user, blocked=target_user).exists() or \
+           Block.objects.filter(blocker=target_user, blocked=request.user).exists():
+            messages.warning(request, "このユーザーのプロフィールは表示できません。")
+            return redirect('home')
+
     jobs = Job.objects.filter(created_by=target_user).order_by('-id')
     
     worker_stats = calculate_stats_for_user(target_user, 'employer_to_worker')
