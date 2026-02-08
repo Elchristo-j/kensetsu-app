@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    
+    <div class="text-center mb-5">
+        <h1 class="fw-bold display-5 mb-3">建設マッチング<br class="d-md-none"><span class="text-primary">〜エルクリスト〜</span> とは</h1>
+        <p class="lead text-muted">現場の「困った」と「助けたい」を、<br class="d-md-none">シンプルに繋ぐ。</p>
+    </div>
+
+    <div class="row align-items-center mb-5">
+        <div class="col-md-6 order-md-2">
+            <div class="bg-light rounded-4 d-flex align-items-center justify-content-center" style="height: 300px;">
+                <i class="bi bi-people-fill text-secondary" style="font-size: 5rem;"></i>
+            </div>
+        </div>
+        <div class="col-md-6 order-md-1">
+            <h3 class="fw-bold mb-3"><i class="bi bi-lightbulb-fill text-warning"></i> 開発の想い</h3>
+            <p>
+                「明日の現場、どうしても人手が足りない…」<br>
+                「急な空きが出たから、近くの現場を手伝いたい」
+            </p>
+            <p>
+                建設業界では、そんなニーズが日常的に発生します。しかし、これまでのマッチングは電話や知り合いの紹介が中心で、タイミングが合わないことも多くありました。
+            </p>
+            <p>
+                <strong>エルクリスト（Elchristo）</strong>は、現役の電気工事士が開発した、建設業特化型のマッチングアプリです。<br>
+                現場を知っているからこそ分かる「本当に必要な機能」に絞り、職人さん同士が助け合えるプラットフォームを目指しています。
+            </p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm text-center p-4 rounded-4">
+                <div class="mb-3 text-primary"><i class="bi bi-lightning-charge-fill fs-1"></i></div>
+                <h5 class="fw-bold">スピーディーな募集</h5>
+                <p class="text-muted small">
+                    募集から採用までがスマホ一つで完結。<br>
+                    急な欠員や、突発的な応援要請にも即座に対応できます。
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm text-center p-4 rounded-4">
+                <div class="mb-3 text-success"><i class="bi bi-shield-check fs-1"></i></div>
+                <h5 class="fw-bold">安心の評価システム</h5>
+                <p class="text-muted small">
+                    ワーカー・発注者双方の評価が見える化されているため、<br>
+                    初めての相手でも安心して取引ができます。
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm text-center p-4 rounded-4">
+                <div class="mb-3 text-warning"><i class="bi bi-coin fs-1"></i></div>
+                <h5 class="fw-bold">適正な報酬</h5>
+                <p class="text-muted small">
+                    中抜きのない直接契約スタイル。<br>
+                    頑張った分だけ、適正な報酬を受け取ることができます。
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card bg-light border-0 rounded-4 p-4 p-md-5">
+        <h3 class="fw-bold text-center mb-4"><i class="bi bi-building"></i> 運営者情報</h3>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr class="border-bottom">
+                            <th scope="row" class="py-3" style="width: 30%;">サービス名</th>
+                            <td class="py-3">建設マッチング 〜エルクリスト〜</td>
+                        </tr>
+                        <tr class="border-bottom">
+                            <th scope="row" class="py-3">運営代表</th>
+                            <td class="py-3">吉川 普</td>
+                        </tr>
+                        <tr class="border-bottom">
+                            <th scope="row" class="py-3">所在地</th>
+                            <td class="py-3">徳島県徳島市<br><small class="text-muted">※詳細は特定商取引法に基づく表記をご覧ください</small></td>
+                        </tr>
+                        <tr class="border-bottom">
+                            <th scope="row" class="py-3">事業内容</th>
+                            <td class="py-3">
+                                ・建設業向けマッチングアプリの企画・開発・運営<br>
+                                ・電気工事請負
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="py-3">お問い合わせ</th>
+                            <td class="py-3">
+                                アプリ内のお問い合わせフォームよりご連絡ください。
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
