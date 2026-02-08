@@ -14,7 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from accounts.models import Profile, FavoriteArea, PREFECTURES
 from accounts.forms import ProfileForm
 from .models import Job, Application, Message, Notification, JOB_CATEGORIES, Review
-from .forms import JobForm, MessageForm
+from .forms import JobForm, MessageForm,ContactForm
 
 # --- ヘルパー関数 ---
 def create_notification(recipient, message, link=None):
@@ -47,6 +47,28 @@ def calculate_stats_for_user(user, review_type):
             'credibility': reviews.aggregate(Avg('credibility'))['credibility__avg'],
             'count': reviews.count()
         }
+    
+    def contact(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            contact = form.save(commit=False)
+            if request.user.is_authenticated:
+                contact.user = request.user
+            contact.save()
+            messages.success(request, 'お問い合わせを受け付けました。確認後ご連絡いたします。')
+            return redirect('home')
+    else:
+        # ログイン中なら名前とメアドを自動入力
+        initial_data = {}
+        if request.user.is_authenticated:
+            initial_data = {
+                'name': request.user.profile.company_name or request.user.username,
+                'email': request.user.email
+            }
+        form = ContactForm(initial=initial_data)
+    
+    return render(request, 'jobs/contact.html', {'form': form})
 
 # --- 1. Home & Search ---
 
@@ -431,3 +453,4 @@ def stripe_webhook(request):
 def payment_success(request):
     messages.success(request, 'お支払いが完了しました！ランク情報は間もなく更新されます。')
     return redirect('mypage')
+

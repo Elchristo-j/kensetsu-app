@@ -50,6 +50,51 @@
             {% endif %}
             
             <h3 class="fw-bold mb-1">{{ target_user.username }}</h3>
+
+            {% if user.is_authenticated and user != target_user %}
+    <div class="dropdown mt-2">
+        <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill" type="button" data-bs-toggle="dropdown">
+            <i class="bi bi-three-dots"></i> メニュー
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#reportModal">
+                    <i class="bi bi-flag"></i> このユーザーを通報する
+                </button>
+            </li>
+            <li>
+                <form action="{% url 'block_user' target_user.id %}" method="post" onsubmit="return confirm('本当にブロックしますか？\n今後このユーザーの投稿が表示されなくなります。');">
+                    {% csrf_token %}
+                    <button type="submit" class="dropdown-item text-secondary">
+                        <i class="bi bi-slash-circle"></i> ブロックする
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </div>
+
+    <div class="modal fade" id="reportModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{% url 'report_user' target_user.id %}" method="post">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold">通報のご協力をお願いします</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-start">
+                        <p class="small text-muted">不適切な投稿や行為について詳細をお知らせください。</p>
+                        <textarea name="reason" class="form-control" rows="4" placeholder="（例）暴言を吐かれた、架空の募集をしている、など" required></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                        <button type="submit" class="btn btn-danger">通報する</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endif %}
             
             <div class="mb-3">
                 <span class="badge rounded-pill fs-6 badge-rank-{{ target_user.profile.rank|lower }}">

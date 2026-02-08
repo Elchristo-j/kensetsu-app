@@ -20,4 +20,8 @@ urlpatterns = [
     # --- Stripe Webhook ---
     # 重要：Stripeダッシュボードに登録したURLが「.../accounts/stripe-webhook/」なら以下にします
     path('stripe-webhook/', views.stripe_webhook, name='stripe_webhook'),
+
+    # --- ブロック機能　ーーー
+    path('block/<int:user_id>/', views.block_user, name='block_user'),
+    path('report/<int:user_id>/', views.report_user, name='report_user'),
 ]

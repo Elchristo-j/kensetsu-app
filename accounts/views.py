@@ -6,7 +6,7 @@ from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from .models import Profile, FavoriteArea, PREFECTURES
+from .models import Profile, FavoriteArea, PREFECTURES, Block, Report
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Avg
@@ -221,6 +221,23 @@ def create_checkout_session(request, plan_type):
         metadata={'user_id': request.user.id, 'plan_type': plan_type}
     )
     return redirect(session.url, code=303)
+
+@login_required
+def block_user(request, user_id):
+    target = get_object_or_404(User, id=user_id)
+    if request.method == 'POST':
+        Block.objects.get_or_create(blocker=request.user, blocked=target)
+        messages.warning(request, f'{target.username}さんをブロックしました。')
+    return redirect('home') # 本当は前のページに戻るのが良いですが一旦ホームへ
+
+@login_required
+def report_user(request, user_id):
+    target = get_object_or_404(User, id=user_id)
+    if request.method == 'POST':
+        reason = request.POST.get('reason')
+        Report.objects.create(reporter=request.user, target=target, reason=reason)
+        messages.warning(request, f'{target.username}さんを通報しました。運営が確認します。')
+    return redirect('home')
 
 @csrf_exempt
 def stripe_webhook(request):

@@ -157,3 +157,16 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.reviewer} -> {self.reviewee} ({self.job})"
+    
+# jobs/models.py (一番下に追加)
+
+class Contact(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    name = models.CharField("お名前", max_length=100)
+    email = models.EmailField("メールアドレス")
+    subject = models.CharField("件名", max_length=200)
+    message = models.TextField("お問い合わせ内容")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.subject

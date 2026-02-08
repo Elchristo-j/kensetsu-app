@@ -28,6 +28,9 @@ urlpatterns = [
     path('application/<int:application_id>/chat/', views.chat_room, name='chat_room'),
     path('notifications/', views.notifications, name='notifications'),
     
+    #コンタクトフォーム
+    path('contact/', views.contact, name='contact'),
+    
     # プロフィール・マイページ
     path('profile/<int:user_id>/', views.profile_detail, name='profile_detail'),
     path('profile/edit/', views.profile_edit, name='profile_edit'),

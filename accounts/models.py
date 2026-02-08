@@ -136,3 +136,21 @@ class FavoriteArea(models.Model):
 def handle_user_profile_sync(sender, instance, created, **kwargs):
     if created:
         Profile.objects.get_or_create(user=instance)
+
+   # accounts/models.py (一番下に追加)
+
+# ブロック機能
+class Block(models.Model):
+    blocker = models.ForeignKey(User, related_name='blocking', on_delete=models.CASCADE) # ブロックした人
+    blocked = models.ForeignKey(User, related_name='blocked_by', on_delete=models.CASCADE) # ブロックされた人
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('blocker', 'blocked') # 重複ブロック防止
+
+# 通報機能
+class Report(models.Model):
+    reporter = models.ForeignKey(User, related_name='reports_made', on_delete=models.CASCADE) # 通報した人
+    target = models.ForeignKey(User, related_name='reports_received', on_delete=models.CASCADE) # 通報された人
+    reason = models.TextField("通報理由")
+    created_at = models.DateTimeField(auto_now_add=True)   

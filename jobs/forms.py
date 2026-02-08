@@ -1,5 +1,6 @@
 from django import forms
 from .models import Job, Message
+from .models import Contact
 
 class JobForm(forms.ModelForm):
     class Meta:
@@ -48,3 +49,14 @@ class MessageForm(forms.ModelForm):
         model = Message
         fields = ['content']
         widgets = {'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 3})}
+
+class ContactForm(forms.ModelForm):
+    class Meta:
+        model = Contact
+        fields = ['name', 'email', 'subject', 'message']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'お名前'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'example@email.com'}),
+            'subject': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '件名'}),
+            'message': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'お問い合わせ内容を入力してください'}),
+        }
