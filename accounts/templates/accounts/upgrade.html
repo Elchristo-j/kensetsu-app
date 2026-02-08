@@ -3,13 +3,13 @@
 {% load static %}
 
 {% block content %}
+
 <style>
     /* --- プラン別カラー定義 --- */
     .plan-card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         border: none;
         border-radius: 1rem;
-        /* バッジがはみ出しても見切れないように visible に変更 */
         overflow: visible; 
         background-color: #fff;
     }
@@ -18,42 +18,41 @@
         box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
     }
 
-    /* ヘッダーの角丸をカードに合わせる */
+    /* ヘッダーの角丸 */
     .card-header {
         border-top-left-radius: 1rem !important;
         border-top-right-radius: 1rem !important;
     }
 
-    /* iron: 濃いグレー */
+    /* iron: 濃いグレー (ご希望通り濃い色にしました) */
     .header-iron {
-        background: #495057; /* 濃い目のグレー */
-        color: #fff;
+        background: #495057 !important; 
+        color: #fff !important;
     }
-    /* bronze: ブロンズ色 */
+    /* bronze: ブロンズ色 (茶色に戻しました) */
     .header-bronze {
-        background: #cd7f32;
-        color: #fff;
+        background: #cd7f32 !important;
+        color: #fff !important;
     }
-    /* SILVER: シックなグレー */
+    /* SILVER */
     .header-silver {
         background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%);
         color: #333;
         border-bottom: 4px solid #9e9e9e;
     }
-    /* GOLD: 豪華な金 */
+    /* GOLD */
     .header-gold {
         background: linear-gradient(135deg, #ffd700 0%, #ffc107 100%);
         color: #000;
         border-bottom: 4px solid #b8860b;
     }
-    /* PLATINUM: 指定の水色グラデーション */
+    /* PLATINUM */
     .header-platinum {
         background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%);
         color: #006064;
         border-bottom: 4px solid #00bcd4;
     }
 
-    /* バッジ画像のエフェクト */
     .founding-badge {
         width: 100px;
         filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
@@ -65,10 +64,9 @@
         100% { transform: translateY(0px); }
     }
 
-    /* 比較表のスタイル */
     .table-check { color: #198754; font-size: 1.2rem; }
     .table-cross { color: #adb5bd; }
-    .text-paid { color: #0d6efd; font-weight: bold; } /* 有料会員の青文字 */
+    .text-paid { color: #0d6efd; font-weight: bold; }
 </style>
 
 <div class="bg-dark text-white py-5 mb-5 position-relative overflow-hidden">
@@ -145,7 +143,6 @@
                         <li class="mb-3"><i class="bi bi-check-circle-fill text-warning me-2"></i>募集投稿：<span class="fw-bold text-danger fs-5">無制限</span></li>
                         <li class="mb-3"><i class="bi bi-check-circle-fill text-warning me-2"></i>応募可能数：<span class="fw-bold text-primary fs-5">無制限</span></li>
                         <li class="mb-3"><i class="bi bi-check-circle-fill text-warning me-2"></i><span class="fw-bold text-dark">事業者向け広告機能</span> (予定)</li>
-                        <li class="mb-3"><i class="bi bi-check-circle-fill text-warning me-2"></i><span class="fw-bold text-dark">創設メンバーバッジ付与</span></li>
                     </ul>
                     <div class="d-grid">
                         <form action="{% url 'create_checkout_session' 'gold' %}" method="POST">

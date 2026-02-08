@@ -117,6 +117,12 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
+    
+    # ▼▼▼ 追加 ▼▼▼
+    is_founding_member = models.BooleanField(default=False, verbose_name="創設メンバー")
+    
+    def __str__(self):
+        return self.user.username
 
 class FavoriteArea(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_areas')

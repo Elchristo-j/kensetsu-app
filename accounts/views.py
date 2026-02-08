@@ -1,6 +1,7 @@
 from django.utils import timezone # ★ファイルの先頭に追加
 import os
 import stripe
+import datetime
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -234,10 +235,26 @@ def stripe_webhook(request):
         session = event['data']['object']
         uid = session['metadata'].get('user_id')
         ptype = session['metadata'].get('plan_type')
+        
         if uid:
             try:
-                p = User.objects.get(id=uid).profile
-                if ptype: p.rank = ptype
+                # User経由でProfileを取得するように変更
+                user = User.objects.get(id=uid)
+                p = user.profile
+                
+                # ランク更新
+                if ptype: 
+                    p.rank = ptype
+                
+                # ▼▼▼ キャンペーン自動適用ロジック ▼▼▼
+                # 「有料プラン」かつ「2026年3月31日まで」なら創設メンバーにする
+                today = datetime.date.today()
+                campaign_end = datetime.date(2026, 3, 31)
+                
+                if ptype in ['silver', 'gold', 'platinum'] and today <= campaign_end:
+                    p.is_founding_member = True
+                
                 p.save()
             except: pass
+            
     return HttpResponse(status=200)
