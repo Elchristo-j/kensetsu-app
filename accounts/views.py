@@ -4,6 +4,7 @@ import stripe
 import datetime
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages  # ★これを追加！
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .models import Profile, FavoriteArea, PREFECTURES, Block, Report
