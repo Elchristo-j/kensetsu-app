@@ -8,13 +8,32 @@
     .plan-card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         border: none;
-        overflow: hidden;
+        border-radius: 1rem;
+        /* バッジがはみ出しても見切れないように visible に変更 */
+        overflow: visible; 
+        background-color: #fff;
     }
     .plan-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
     }
 
+    /* ヘッダーの角丸をカードに合わせる */
+    .card-header {
+        border-top-left-radius: 1rem !important;
+        border-top-right-radius: 1rem !important;
+    }
+
+    /* iron: 濃いグレー */
+    .header-iron {
+        background: #495057; /* 濃い目のグレー */
+        color: #fff;
+    }
+    /* bronze: ブロンズ色 */
+    .header-bronze {
+        background: #cd7f32;
+        color: #fff;
+    }
     /* SILVER: シックなグレー */
     .header-silver {
         background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%);
@@ -49,10 +68,7 @@
     /* 比較表のスタイル */
     .table-check { color: #198754; font-size: 1.2rem; }
     .table-cross { color: #adb5bd; }
-    .table-header-rotate {
-        vertical-align: middle;
-        text-align: center;
-    }
+    .text-paid { color: #0d6efd; font-weight: bold; } /* 有料会員の青文字 */
 </style>
 
 <div class="bg-dark text-white py-5 mb-5 position-relative overflow-hidden">
@@ -70,7 +86,7 @@
                 <p class="small text-white-50">※このバッジは、アプリの黎明期を支えた古参ユーザーとしての信頼性を将来にわたって保証するものです。</p>
             </div>
             <div class="col-md-4 text-center">
-                <div class="p-3 bg-white bg-opacity-10 rounded-circle d-inline-block">
+                <div class="d-inline-block">
                     <img src="{% static 'images/founding_member_badge.png' %}" alt="創設メンバーバッジ" class="founding-badge">
                     <p class="mt-3 fw-bold text-warning">創設メンバー</p>
                 </div>
@@ -84,20 +100,20 @@
     <div class="row g-4 justify-content-center mb-5">
         
         <div class="col-lg-4 col-md-6">
-            <div class="card h-100 plan-card shadow-sm rounded-4">
+            <div class="card h-100 plan-card shadow-sm">
                 <div class="card-header header-silver py-4 text-center">
                     <h3 class="fw-bold m-0">SILVER</h3>
                     <small>シルバープラン</small>
                 </div>
                 <div class="card-body p-4 d-flex flex-column">
                     <div class="text-center mb-4">
-                        <span class="display-6 fw-bold">¥500</span><span class="text-muted">/月</span>
+                        <span class="display-6 fw-bold">¥550</span><span class="text-muted">/月</span>
                     </div>
                     <ul class="list-unstyled mb-4 flex-grow-1">
-                        <li class="mb-3"><i class="bi bi-check-circle-fill text-secondary me-2"></i><strong>DIYユーザー・個人事業主</strong>向け</li>
-                        <li class="mb-3"><i class="bi bi-check-circle-fill text-secondary me-2"></i>募集投稿：<strong>月10件</strong>まで</li>
-                        <li class="mb-3"><i class="bi bi-check-circle-fill text-secondary me-2"></i>応募可能数：<strong>月20回</strong>まで</li>
-                        <li class="mb-3"><i class="bi bi-check-circle-fill text-secondary me-2"></i>「たまに人手が欲しい」時に最適</li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-secondary me-2"></i><strong>DIY・個人事業主</strong>向け</li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-secondary me-2"></i>募集投稿：<strong>月3件</strong>まで</li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-secondary me-2"></i>応募可能数：<span class="fw-bold text-primary">無制限</span></li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-secondary me-2"></i>検索上位表示ポイント付与</li>
                     </ul>
                     <div class="d-grid">
                         <form action="{% url 'create_checkout_session' 'silver' %}" method="POST">
@@ -112,22 +128,23 @@
         </div>
 
         <div class="col-lg-4 col-md-6">
-            <div class="card h-100 plan-card shadow rounded-4 border-warning position-relative">
-                <div class="position-absolute top-0 start-50 translate-middle">
-                    <span class="badge bg-danger px-3 py-2 rounded-pill shadow">人気No.1</span>
+            <div class="card h-100 plan-card shadow border-warning position-relative mt-2 mt-lg-0">
+                <div class="position-absolute top-0 start-50 translate-middle" style="z-index: 10;">
+                    <span class="badge bg-danger px-3 py-2 rounded-pill shadow fs-6">人気No.1</span>
                 </div>
                 <div class="card-header header-gold py-4 text-center">
                     <h3 class="fw-bold m-0">GOLD</h3>
-                    <small>ビジネススタンダード</small>
+                    <small>ゴールドプラン</small>
                 </div>
                 <div class="card-body p-4 d-flex flex-column">
                     <div class="text-center mb-4">
-                        <span class="display-6 fw-bold">¥1,980</span><span class="text-muted">/月</span>
+                        <span class="display-6 fw-bold">¥2,200</span><span class="text-muted">/月</span>
                     </div>
                     <ul class="list-unstyled mb-4 flex-grow-1">
                         <li class="mb-3"><i class="bi bi-check-circle-fill text-warning me-2"></i><strong>本格的な事業者・法人</strong>向け</li>
                         <li class="mb-3"><i class="bi bi-check-circle-fill text-warning me-2"></i>募集投稿：<span class="fw-bold text-danger fs-5">無制限</span></li>
-                        <li class="mb-3"><i class="bi bi-check-circle-fill text-warning me-2"></i>応募可能数：<strong>月50回</strong>まで</li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-warning me-2"></i>応募可能数：<span class="fw-bold text-primary fs-5">無制限</span></li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-warning me-2"></i><span class="fw-bold text-dark">事業者向け広告機能</span> (予定)</li>
                         <li class="mb-3"><i class="bi bi-check-circle-fill text-warning me-2"></i><span class="fw-bold text-dark">創設メンバーバッジ付与</span></li>
                     </ul>
                     <div class="d-grid">
@@ -143,20 +160,20 @@
         </div>
 
         <div class="col-lg-4 col-md-6">
-            <div class="card h-100 plan-card shadow-sm rounded-4">
+            <div class="card h-100 plan-card shadow-sm">
                 <div class="card-header header-platinum py-4 text-center">
                     <h3 class="fw-bold m-0">PLATINUM</h3>
-                    <small>ビジネス・エグゼクティブ</small>
+                    <small>プラチナプラン</small>
                 </div>
                 <div class="card-body p-4 d-flex flex-column">
                     <div class="text-center mb-4">
-                        <span class="display-6 fw-bold">¥4,980</span><span class="text-muted">/月</span>
+                        <span class="display-6 fw-bold">¥5,500</span><span class="text-muted">/月</span>
                     </div>
                     <ul class="list-unstyled mb-4 flex-grow-1">
                         <li class="mb-3"><i class="bi bi-check-circle-fill text-info me-2"></i><strong>大規模事業者・多頻度利用</strong>向け</li>
                         <li class="mb-3"><i class="bi bi-check-circle-fill text-info me-2"></i>募集も応募も：<span class="fw-bold text-primary fs-5">全て無制限</span></li>
-                        <li class="mb-3"><i class="bi bi-check-circle-fill text-info me-2"></i>検索上位表示ブースト機能</li>
-                        <li class="mb-3"><i class="bi bi-check-circle-fill text-info me-2"></i>優先サポート対応</li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-info me-2"></i>検索上位表示ブースト (50P)</li>
+                        <li class="mb-3"><i class="bi bi-check-circle-fill text-info me-2"></i>エリア限定広告配信機能 (予定)</li>
                     </ul>
                     <div class="d-grid">
                         <form action="{% url 'create_checkout_session' 'platinum' %}" method="POST">
@@ -173,28 +190,38 @@
 
     <h3 class="fw-bold text-center mb-4"><i class="bi bi-table"></i> 機能・特典比較表</h3>
     <div class="table-responsive shadow-sm rounded-4 mb-5">
-        <table class="table table-hover table-striped mb-0 text-center align-middle bg-white">
-            <thead class="bg-dark text-white">
+        <table class="table table-hover table-bordered mb-0 text-center align-middle bg-white">
+            <thead>
                 <tr>
-                    <th class="py-3" style="width: 25%;">機能 / プラン</th>
-                    <th class="py-3 bg-secondary">IRON<br><small>(未確認)</small></th>
-                    <th class="py-3" style="background:#cd7f32;">BRONZE<br><small>(無料会員)</small></th>
-                    <th class="py-3 bg-light text-dark">SILVER</th>
-                    <th class="py-3 text-dark" style="background:#ffd700;">GOLD</th>
-                    <th class="py-3 text-dark" style="background:#80deea;">PLATINUM</th>
+                    <th class="py-3 bg-light" style="width: 20%;">機能 / プラン</th>
+                    <th class="py-3 header-iron">
+                        iron<br><small class="fw-normal">(無料会員)</small>
+                    </th>
+                    <th class="py-3 header-bronze">
+                        bronze<br><small class="fw-normal">(無料会員)</small>
+                    </th>
+                    <th class="py-3 header-silver">
+                        SILVER<br><small class="text-paid">(有料会員)</small>
+                    </th>
+                    <th class="py-3 header-gold">
+                        GOLD<br><small class="text-paid">(有料会員)</small>
+                    </th>
+                    <th class="py-3 header-platinum">
+                        PLATINUM<br><small class="text-paid">(有料会員)</small>
+                    </th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td class="text-start ps-4 fw-bold">月額料金</td>
+                    <td class="text-start ps-3 fw-bold bg-light">月額料金 (税込)</td>
                     <td>無料</td>
                     <td>無料</td>
-                    <td>¥500</td>
-                    <td>¥1,980</td>
-                    <td>¥4,980</td>
+                    <td>¥550</td>
+                    <td>¥2,200</td>
+                    <td>¥5,500</td>
                 </tr>
                 <tr>
-                    <td class="text-start ps-4">本人確認バッジ</td>
+                    <td class="text-start ps-3 bg-light">本人確認バッジ</td>
                     <td><i class="bi bi-x-lg table-cross"></i></td>
                     <td><i class="bi bi-check-lg table-check"></i></td>
                     <td><i class="bi bi-check-lg table-check"></i></td>
@@ -202,47 +229,32 @@
                     <td><i class="bi bi-check-lg table-check"></i></td>
                 </tr>
                 <tr>
-                    <td class="text-start ps-4">求人募集 (月間)</td>
-                    <td>1件</td>
-                    <td>5件</td>
-                    <td>10件</td>
+                    <td class="text-start ps-3 bg-light">求人募集 (月間)</td>
+                    <td><i class="bi bi-x-lg table-cross"></i></td>
+                    <td><i class="bi bi-x-lg table-cross"></i></td>
+                    <td>3件</td>
                     <td class="fw-bold text-danger">無制限</td>
-                    <td class="fw-bold text-primary">無制限</td>
+                    <td class="fw-bold text-danger">無制限</td>
                 </tr>
                 <tr>
-                    <td class="text-start ps-4">案件応募 (月間)</td>
+                    <td class="text-start ps-3 bg-light">案件応募 (月間)</td>
                     <td>3回</td>
                     <td>10回</td>
-                    <td>20回</td>
-                    <td>50回</td>
+                    <td class="fw-bold text-primary">無制限</td>
+                    <td class="fw-bold text-primary">無制限</td>
                     <td class="fw-bold text-primary">無制限</td>
                 </tr>
                 <tr>
-                    <td class="text-start ps-4">創設メンバーバッジ</td>
-                    <td><i class="bi bi-x-lg table-cross"></i></td>
-                    <td><i class="bi bi-x-lg table-cross"></i></td>
-                    <td><i class="bi bi-check-circle-fill text-warning"></i> 対象</td>
-                    <td><i class="bi bi-check-circle-fill text-warning"></i> 対象</td>
-                    <td><i class="bi bi-check-circle-fill text-warning"></i> 対象</td>
+                    <td class="text-start ps-3 bg-light">検索上位表示</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>5pt /月</td>
+                    <td>10pt /月</td>
+                    <td class="fw-bold text-primary">50pt /月</td>
                 </tr>
                 <tr>
-                    <td class="text-start ps-4">スカウト機能</td>
-                    <td><i class="bi bi-x-lg table-cross"></i></td>
-                    <td><i class="bi bi-x-lg table-cross"></i></td>
-                    <td><i class="bi bi-check-lg table-check"></i></td>
-                    <td><i class="bi bi-check-lg table-check"></i></td>
-                    <td><i class="bi bi-check-lg table-check"></i></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <div class="text-center text-muted mt-5">
-        <small>
-            <i class="bi bi-info-circle"></i> 契約の変更・解約はいつでもマイページから行えます。<br>
-            月の途中でプラン変更された場合、差額は日割り計算されます。
-        </small>
-    </div>
-
-</div>
-{% endblock %}
+                    <td class="text-start ps-3 bg-light">広告配信機能<br><small class="text-muted">(将来実装予定)</small></td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td><i class="bi bi-check-circle-fill text-warning"></i> 対象</td>
