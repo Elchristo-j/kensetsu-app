@@ -441,6 +441,12 @@ def admin_dashboard(request):
 def approve_profile(request, user_id):
     p = get_object_or_404(User, pk=user_id).profile
     p.is_verified = True
+
+    # ▼▼▼ 追加：IronランクならBronzeへ昇格させる ▼▼▼
+    if p.rank == 'iron':
+        p.rank = 'bronze'
+    # ▲▲▲ 追加ここまで ▲▲▲
+
     p.save()
     return redirect('admin_dashboard')
 
