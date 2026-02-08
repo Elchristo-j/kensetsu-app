@@ -41,13 +41,14 @@
                     {% endif %}
                 </div>
                 {% if user.profile.is_founding_member %}
-                    <div class="mb-3">
-                        <img src="{% static 'images/founding_member_badge.png' %}" 
-                             alt="創設メンバー" 
-                             style="width: 120px; height: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));"
+                    <div class="mb-4 mt-2 d-flex justify-content-center">
+                        <img src="{% static 'images/founding_member_badge.png' %}"
+                             alt="創設メンバーバッジ"
+                             class="img-fluid"
+                             style="max-width: 220px; height: auto; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2));"
                              title="創設メンバー">
                     </div>
-               {% endif %}
+                {% endif %}
                 <div class="d-grid gap-2 col-10 mx-auto mb-4">
                     <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark rounded-pill fw-bold">
                         <i class="bi bi-pencil-square"></i> プロフィール編集
