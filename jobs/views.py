@@ -86,7 +86,7 @@ def home(request):
     expiration_date = timezone.now() - timedelta(days=31)
     jobs = Job.objects.filter(is_closed=False, created_at__gte=expiration_date).order_by('-created_at')
     
-    # ★ブロック判定（トップページ）
+    # ブロック判定
     if request.user.is_authenticated:
         ignore_ids = get_blocked_user_ids(request.user)
         if ignore_ids:
@@ -102,7 +102,7 @@ def job_list(request):
     expiration_date = timezone.now() - timedelta(days=31)
     jobs = Job.objects.filter(created_at__gte=expiration_date, is_closed=False).order_by('-created_at')
 
-    # ★ブロック判定（検索一覧）
+    # ブロック判定
     if request.user.is_authenticated:
         ignore_ids = get_blocked_user_ids(request.user)
         if ignore_ids:
@@ -140,7 +140,7 @@ def favorite_search_view(request):
     
     jobs = Job.objects.filter(query).filter(is_closed=False).order_by('-id')
 
-    # ★ブロック判定（お気に入り検索）
+    # ブロック判定
     ignore_ids = get_blocked_user_ids(request.user)
     if ignore_ids:
         jobs = jobs.exclude(created_by__id__in=ignore_ids)
@@ -152,7 +152,7 @@ def favorite_search_view(request):
 def job_detail(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     
-    # ★ブロック判定（詳細ページ直接アクセス対策）
+    # ブロック判定
     if request.user.is_authenticated:
         if Block.objects.filter(blocker=request.user, blocked=job.created_by).exists() or \
            Block.objects.filter(blocker=job.created_by, blocked=request.user).exists():
@@ -382,7 +382,7 @@ def profile_detail(request, user_id):
     """他人から見たプロフィール"""
     target_user = get_object_or_404(User, pk=user_id)
     
-    # ★ブロック判定（プロフィール閲覧ブロック）
+    # ブロック判定
     if request.user.is_authenticated:
         if Block.objects.filter(blocker=request.user, blocked=target_user).exists() or \
            Block.objects.filter(blocker=target_user, blocked=request.user).exists():
@@ -456,8 +456,6 @@ def terms_view(request): return render(request, 'jobs/static_pages/terms.html')
 def privacy_view(request): return render(request, 'jobs/static_pages/privacy.html')
 def law_view(request): return render(request, 'jobs/static_pages/law.html')
 def guide_view(request): return render(request, 'jobs/guide_qa.html')
-def subscription_plans(request): 
-    # jobs/views.py の subscription_plans を修正
 
 def subscription_plans(request):
     # 1. 未ログインの場合 -> ログイン画面へ
@@ -465,7 +463,7 @@ def subscription_plans(request):
         messages.warning(request, "プランの確認・変更にはログインが必要です。")
         return redirect('login')
 
-    # 2. Ironランク（未確認）の場合 -> さっき作った案内ページへ強制移動
+    # 2. Ironランク（未確認）の場合 -> 案内ページへ強制移動
     if request.user.profile.rank == 'iron':
         return render(request, 'accounts/verification_required.html')
 
@@ -511,12 +509,9 @@ def payment_success(request):
     messages.success(request, 'お支払いが完了しました！ランク情報は間もなく更新されます。')
     return redirect('mypage')
 
-# jobs/views.py の一番下に追加
-
 @login_required
 def blocked_list(request):
     """ブロックしているユーザーの一覧"""
-    # 自分がブロックしている相手を取得
     blocks = Block.objects.filter(blocker=request.user).select_related('blocked')
     return render(request, 'jobs/blocked_list.html', {'blocks': blocks})
 
@@ -524,7 +519,6 @@ def blocked_list(request):
 def unblock_user(request, user_id):
     """ブロック解除処理"""
     target = get_object_or_404(User, id=user_id)
-    # ブロックデータを削除
     Block.objects.filter(blocker=request.user, blocked=target).delete()
     messages.success(request, f"{target.username}さんのブロックを解除しました。")
     return redirect('blocked_list')
