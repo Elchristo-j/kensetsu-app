@@ -6,11 +6,15 @@
     <title>建設マッチング エルクリスト</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
     <style>
         :root { --sumi-color: #15151a; --rankup-blue: #0066ff; }
         body { font-family: "Hiragino Sans", "Meiryo", sans-serif; background-color: #f4f5f7; color: var(--sumi-color); }
+        
+        /* 墨色（黒に近いグレー）の設定 */
         .bg-sumi { background-color: var(--sumi-color) !important; }
         
+        /* ナビバーの調整 */
         .navbar-brand { line-height: 1.1; display: flex; flex-direction: column; }
         .brand-title { font-weight: bold; font-size: 1.15rem; }
         .brand-sub { font-size: 0.7rem; opacity: 0.7; font-weight: normal; margin-top: 1px; }
@@ -18,6 +22,7 @@
         .navbar-dark .navbar-nav .nav-link { color: #ffffff !important; font-weight: 600; }
         .nav-username { color: #ffffff; font-size: 0.8rem; margin-right: 15px; border-right: 1px solid rgba(255,255,255,0.3); padding-right: 15px; }
         
+        /* 解約リンクなどは少し控えめに */
         .nav-link-cancel { font-size: 0.75rem !important; color: rgba(255,255,255,0.6) !important; font-weight: normal !important; }
         .nav-link-cancel:hover { color: rgba(255,255,255,1.0) !important; text-decoration: underline; }
 
@@ -41,14 +46,13 @@
             border-radius: 50%;
             border: 1px solid #15151a;
         }
-        .badge-notify-mobile {
-            position: absolute; top: 0; right: 0; transform: translate(50%, -50%);
-            font-size: 0.5rem;
-        }
+
+        /* フッターリンクのホバーエフェクト */
+        .footer-link { color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.2s; }
+        .footer-link:hover { color: #ffffff; text-decoration: underline; }
     </style>
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-sumi sticky-top shadow">
+<body class="d-flex flex-column min-vh-100"> <nav class="navbar navbar-expand-lg navbar-dark bg-sumi sticky-top shadow">
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">
                 <span class="brand-title">建設マッチング</span>
@@ -64,9 +68,7 @@
                     <a class="position-relative text-white ms-3" href="{% url 'notifications' %}">
                         <i class="bi bi-bell-fill"></i>
                         {% if user.profile.has_unread_notifications %}
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem;">
-                                !
-                            </span>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem;">!</span>
                         {% endif %}
                     </a>
                 </div>
@@ -106,26 +108,21 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'job_list' %}"><i class="bi bi-search"></i> 案件を探す</a>
                         </li>
-                        
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'create_job' %}">募集する</a>
                         </li>
-
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'guide_view' %}"><i class="bi bi-book"></i> ガイド</a>
                         </li>
-
                         <li class="nav-item ms-2">
                             <a class="nav-link btn btn-outline-light btn-sm px-3 rounded-pill" href="{% url 'mypage' %}">マイページ</a>
                         </li>
-
                         <li class="nav-item ms-2">
                             <form action="{% url 'logout' %}" method="post" class="d-inline">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-link nav-link">ログアウト</button>
                             </form>
                         </li>
-                        
                         <li class="nav-item ms-2 border-start border-secondary ps-2">
                              <a class="nav-link nav-link-cancel" href="{% url 'subscription_plans' %}#cancel-info">解約について</a>
                         </li>
@@ -134,11 +131,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'job_list' %}"><i class="bi bi-search"></i> 案件を探す</a>
                         </li>
-                        
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'login' %}">ログイン</a>
                         </li>
-                        
                         <li class="nav-item ms-2">
                             <a class="btn btn-warning text-dark fw-bold rounded-pill px-4" href="{% url 'signup' %}">新規登録</a>
                         </li>
@@ -148,7 +143,7 @@
         </div>
     </nav>
     
-    <div class="main-content min-vh-100">
+    <div class="main-content flex-grow-1">
         {% if messages %}
             <div class="container mt-3">
                 {% for m in messages %}
@@ -165,17 +160,41 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <footer class="bg-light text-center py-4 mt-5 border-top">
+    <footer class="bg-sumi text-white py-5 mt-5 border-top border-secondary">
         <div class="container">
-            <p class="mb-2">© 2026 建設マッチング-エルクリスト-</p>
-            <div>
-                <a href="{% url 'terms' %}" class="text-decoration-none text-secondary mx-2" style="font-size: 0.9rem;">利用規約</a>
-                <span class="text-secondary">|</span>
-                <a href="{% url 'privacy' %}" class="text-decoration-none text-secondary mx-2" style="font-size: 0.9rem;">プライバシーポリシー</a>
-                <span class="text-secondary">|</span>
-                <a href="{% url 'law' %}" class="text-decoration-none text-secondary mx-2" style="font-size: 0.9rem;">特商法表記</a>
+            <div class="row g-4 justify-content-between">
+                
+                <div class="col-md-4">
+                    <h5 class="fw-bold mb-3">建設マッチング<br>〜エルクリスト〜</h5>
+                    <p class="small text-white-50">
+                        現場の「助けて」と「手伝うよ」を<br>
+                        シンプルにつなぐプラットフォーム。
+                    </p>
+                    <small class="d-block text-white-50 mt-4">&copy; 2026 Elchristo. All Rights Reserved.</small>
+                </div>
+
+                <div class="col-md-3">
+                    <h6 class="fw-bold text-uppercase mb-3 border-bottom border-secondary pb-2 d-inline-block">Service</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><a href="{% url 'about' %}" class="footer-link">運営者情報・サービス紹介</a></li>
+                        <li class="mb-2"><a href="{% url 'guide_view' %}" class="footer-link">ご利用ガイド</a></li>
+                        <li class="mb-2"><a href="#" class="footer-link text-white-50">よくある質問 (準備中)</a></li>
+                        <li class="mb-2"><a href="#" class="footer-link text-white-50">お問い合わせ (準備中)</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-3">
+                    <h6 class="fw-bold text-uppercase mb-3 border-bottom border-secondary pb-2 d-inline-block">Legal</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><a href="{% url 'terms' %}" class="footer-link">利用規約</a></li>
+                        <li class="mb-2"><a href="{% url 'privacy' %}" class="footer-link">プライバシーポリシー</a></li>
+                        <li class="mb-2"><a href="{% url 'law' %}" class="footer-link">特定商取引法に基づく表記</a></li>
+                    </ul>
+                </div>
+
             </div>
         </div>
     </footer>
+
 </body>
 </html>
