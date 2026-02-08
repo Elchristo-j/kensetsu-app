@@ -496,3 +496,21 @@ def stripe_webhook(request):
 def payment_success(request):
     messages.success(request, 'お支払いが完了しました！ランク情報は間もなく更新されます。')
     return redirect('mypage')
+
+# jobs/views.py の一番下に追加
+
+@login_required
+def blocked_list(request):
+    """ブロックしているユーザーの一覧"""
+    # 自分がブロックしている相手を取得
+    blocks = Block.objects.filter(blocker=request.user).select_related('blocked')
+    return render(request, 'jobs/blocked_list.html', {'blocks': blocks})
+
+@login_required
+def unblock_user(request, user_id):
+    """ブロック解除処理"""
+    target = get_object_or_404(User, id=user_id)
+    # ブロックデータを削除
+    Block.objects.filter(blocker=request.user, blocked=target).delete()
+    messages.success(request, f"{target.username}さんのブロックを解除しました。")
+    return redirect('blocked_list')

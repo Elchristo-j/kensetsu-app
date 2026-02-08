@@ -47,7 +47,16 @@
                     <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark rounded-pill fw-bold">
                         <i class="bi bi-pencil-square"></i> プロフィール編集
                     </a>
-                    
+
+                    <div class="d-grid gap-2 col-10 mx-auto mb-4">
+    <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark rounded-pill fw-bold">
+        <i class="bi bi-pencil-square"></i> プロフィール編集
+    </a>
+    
+    <a href="{% url 'blocked_list' %}" class="btn btn-outline-danger rounded-pill fw-bold btn-sm">
+        <i class="bi bi-slash-circle"></i> ブロック管理
+    </a>
+    
                     {% if user.profile.rank != 'iron' %}
                         <a href="{% url 'subscription_plans' %}" class="btn btn-primary rounded-pill fw-bold shadow-sm">
                             <i class="bi bi-arrow-up-circle"></i> プラン変更・確認

@@ -53,4 +53,8 @@ urlpatterns = [
     path('plan/', views.subscription_plans, name='subscription_plans'),
     path('webhook/', views.stripe_webhook, name='stripe_webhook'),
     path('payment/success/', views.payment_success, name='payment_success'),
+
+    # ... 他のURL ...
+    path('blocked-list/', views.blocked_list, name='blocked_list'),
+    path('unblock/<int:user_id>/', views.unblock_user, name='unblock_user'),
 ]

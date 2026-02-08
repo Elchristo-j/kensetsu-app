@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-slash-circle text-danger"></i> ブロックしたユーザー一覧</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if blocks %}
+                        <div class="list-group list-group-flush">
+                            {% for block in blocks %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                    <div class="d-flex align-items-center">
+                                        {% if block.blocked.profile.avatar %}
+                                            <img src="{{ block.blocked.profile.avatar.url }}" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                                <span>{{ block.blocked.username|slice:":1" }}</span>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="mb-0 fw-bold">{{ block.blocked.username }}</h6>
+                                            <small class="text-muted">{{ block.created_at|date:"Y/m/d" }} ブロック</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <form action="{% url 'unblock_user' block.blocked.id %}" method="post" onsubmit="return confirm('ブロックを解除しますか？');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary rounded-pill">
+                                            解除する
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <p class="mb-0">ブロックしているユーザーはいません。</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white border-0 py-3 text-center">
+                    <a href="{% url 'mypage' %}" class="btn btn-link text-decoration-none">マイページに戻る</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
