@@ -1,23 +1,24 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
-from .models import Profile, FavoriteArea,Block, Report
+from .models import Profile, FavoriteArea, Block, Report
 
+# プロフィール単体でも管理できるように登録
 admin.site.register(Profile)
 
-# ▼▼▼ 通報リストを管理画面で見やすくする設定 ▼▼▼
+# ▼▼▼ 通報リストの設定 ▼▼▼
 @admin.register(Report)
 class ReportAdmin(admin.ModelAdmin):
-    list_display = ('reporter', 'target', 'reason', 'created_at') # 一覧に表示する項目
-    list_filter = ('created_at',) # 日付で絞り込み
-    search_fields = ('reason', 'reporter__username', 'target__username') # 検索機能
+    list_display = ('reporter', 'target', 'reason', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('reason', 'reporter__username', 'target__username')
 
-# ▼▼▼ ブロックリストも一応見えるようにしておく ▼▼▼
+# ▼▼▼ ブロックリストの設定 ▼▼▼
 @admin.register(Block)
 class BlockAdmin(admin.ModelAdmin):
     list_display = ('blocker', 'blocked', 'created_at')
 
-# ユーザー編集画面の中にプロフィール（ランクなど）を埋め込む設定
+# ユーザー編集画面の中にプロフィールを埋め込む設定
 class ProfileInline(admin.StackedInline):
     model = Profile
     can_delete = False
@@ -28,12 +29,24 @@ class ProfileInline(admin.StackedInline):
 class UserAdmin(BaseUserAdmin):
     inlines = (ProfileInline,)
     
-    # 一覧画面でIDなどを確認しやすくする
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'get_rank')
+    # ★ここに 'get_founding' を追加しました！
+    list_display = ('username', 'email', 'get_rank', 'get_founding', 'is_staff')
     
+    # ランクを表示する関数
     def get_rank(self, obj):
-        return obj.profile.rank
+        # 万が一プロフィールがない場合のエラー回避
+        if hasattr(obj, 'profile'):
+            return obj.profile.get_rank_display()
+        return '-'
     get_rank.short_description = '会員ランク'
+
+    # ★創設メンバーかどうかを表示する関数
+    def get_founding(self, obj):
+        if hasattr(obj, 'profile'):
+            return obj.profile.is_founding_member
+        return False
+    get_founding.boolean = True # これで True/False がアイコン（✅/❌）になります
+    get_founding.short_description = '創設メンバー'
 
 # 元々のUser設定を解除して、新しい設定で再登録
 admin.site.unregister(User)
