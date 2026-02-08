@@ -216,8 +216,8 @@ def create_checkout_session(request, plan_type):
         payment_method_types=['card'],
         line_items=[{'price': price_id, 'quantity': 1}],
         mode='subscription',
-        success_url=request.build_absolute_uri('/jobs/payment/success/'),
-        cancel_url=request.build_absolute_uri('/jobs/plan/'),
+        success_url=request.build_absolute_uri('/payment/success/'),
+        cancel_url=request.build_absolute_uri('/plan/'),
         metadata={'user_id': request.user.id, 'plan_type': plan_type}
     )
     return redirect(session.url, code=303)
