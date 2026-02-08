@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
-from django.db.models import Avg
 
 # 都道府県リスト
 PREFECTURES = [
@@ -58,6 +57,8 @@ class Profile(models.Model):
     skills = models.CharField(max_length=255, blank=True, null=True, verbose_name="得意な工事・スキル")
     invoice_num = models.CharField(max_length=50, blank=True, null=True, verbose_name="インボイス登録番号")
     
+    is_founding_member = models.BooleanField(default=False, verbose_name="創設メンバー")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -65,34 +66,40 @@ class Profile(models.Model):
     def monthly_limit(self):
         """今月の応募可能数"""
         r = str(self.rank).lower() if self.rank else 'iron'
-        if r == 'iron': return 3
-        if r == 'bronze': return 10
-        if r in ['silver', 'gold', 'platinum']: return 999 
+        # Silver以上は無制限
+        if r in ['silver', 'gold', 'platinum']: 
+            return 999999
+        # Bronze: 10回
+        if r == 'bronze': 
+            return 10
+        # Iron: 3回
         return 3
 
     @property
     def posting_limit(self):
         """今月の募集投稿可能数"""
         r = str(self.rank).lower() if self.rank else 'iron'
-        if r in ['iron', 'bronze']: return 0
-        if r == 'silver': return 3
-        if r in ['gold', 'platinum']: return 999
+        # Gold以上は無制限
+        if r in ['gold', 'platinum']: 
+            return 999999
+        # Silver: 3件
+        if r == 'silver': 
+            return 3
+        # Iron, Bronze: 投稿不可(0件)
         return 0
 
-    # ▼▼▼ 復活させたメソッド（ここがないとエラーになります） ▼▼▼
     def can_apply(self):
         """今月応募できるか判定"""
-        # 循環参照避けるためここでインポート
         from jobs.models import Application 
         
-        # 月初の取得
+        limit = self.monthly_limit
+        if limit >= 999999: return True # 無制限
+
         now = timezone.now()
         start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         
-        # 今月の応募数
         count = Application.objects.filter(applicant=self.user, applied_at__gte=start_of_month).count()
-        
-        return count < self.monthly_limit
+        return count < limit
 
     def can_post_job(self):
         """今月募集投稿できるか判定"""
@@ -100,27 +107,17 @@ class Profile(models.Model):
         
         limit = self.posting_limit
         if limit == 0: return False
-        
-        # 無制限の場合はカウント不要
-        if limit >= 999: return True
+        if limit >= 999999: return True # 無制限
 
         now = timezone.now()
         start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         
         count = Job.objects.filter(created_by=self.user, created_at__gte=start_of_month).count()
         return count < limit
-    # ▲▲▲ ここまで ▲▲▲
 
-    # ▼▼▼ ★追加：通知バッジ用メソッド ★ ▼▼▼
     def has_unread_notifications(self):
         return self.user.notifications.filter(is_read=False).exists()
 
-    def __str__(self):
-        return self.user.username
-    
-    # ▼▼▼ 追加 ▼▼▼
-    is_founding_member = models.BooleanField(default=False, verbose_name="創設メンバー")
-    
     def __str__(self):
         return self.user.username
 
@@ -132,25 +129,23 @@ class FavoriteArea(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.prefecture}{self.city}"
 
+# ブロック機能
+class Block(models.Model):
+    blocker = models.ForeignKey(User, related_name='blocking', on_delete=models.CASCADE)
+    blocked = models.ForeignKey(User, related_name='blocked_by', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('blocker', 'blocked')
+
+# 通報機能
+class Report(models.Model):
+    reporter = models.ForeignKey(User, related_name='reports_made', on_delete=models.CASCADE)
+    target = models.ForeignKey(User, related_name='reports_received', on_delete=models.CASCADE)
+    reason = models.TextField("通報理由")
+    created_at = models.DateTimeField(auto_now_add=True)
+
 @receiver(post_save, sender=User)
 def handle_user_profile_sync(sender, instance, created, **kwargs):
     if created:
         Profile.objects.get_or_create(user=instance)
-
-   # accounts/models.py (一番下に追加)
-
-# ブロック機能
-class Block(models.Model):
-    blocker = models.ForeignKey(User, related_name='blocking', on_delete=models.CASCADE) # ブロックした人
-    blocked = models.ForeignKey(User, related_name='blocked_by', on_delete=models.CASCADE) # ブロックされた人
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('blocker', 'blocked') # 重複ブロック防止
-
-# 通報機能
-class Report(models.Model):
-    reporter = models.ForeignKey(User, related_name='reports_made', on_delete=models.CASCADE) # 通報した人
-    target = models.ForeignKey(User, related_name='reports_received', on_delete=models.CASCADE) # 通報された人
-    reason = models.TextField("通報理由")
-    created_at = models.DateTimeField(auto_now_add=True)   

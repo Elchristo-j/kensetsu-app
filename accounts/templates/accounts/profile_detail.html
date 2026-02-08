@@ -18,10 +18,10 @@
         width: 100%;
     }
 
-    /* 非会員向けのボカシ */
+    /* ボカシ処理（未ログイン または アイアンランク） */
     .blur-content {
-        filter: blur(5px);
-        opacity: 0.6;
+        filter: blur(8px);
+        opacity: 0.5;
         pointer-events: none;
         user-select: none;
     }
@@ -45,58 +45,58 @@
                 <img src="{{ target_user.profile.avatar.url }}" class="rounded-circle img-thumbnail mb-3" style="width: 130px; height: 130px; object-fit: cover;">
             {% else %}
                 <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 130px; height: 130px;">
-                    <span class="fs-3">No Img</span>
+                    <span class="fs-3">{{ target_user.username|slice:":1" }}</span>
                 </div>
             {% endif %}
             
             <h3 class="fw-bold mb-1">{{ target_user.username }}</h3>
 
             {% if user.is_authenticated and user != target_user %}
-    <div class="dropdown mt-2">
-        <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill" type="button" data-bs-toggle="dropdown">
-            <i class="bi bi-three-dots"></i> メニュー
-        </button>
-        <ul class="dropdown-menu">
-            <li>
-                <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#reportModal">
-                    <i class="bi bi-flag"></i> このユーザーを通報する
-                </button>
-            </li>
-            <li>
-                <form action="{% url 'block_user' target_user.id %}" method="post" onsubmit="return confirm('本当にブロックしますか？\n今後このユーザーの投稿が表示されなくなります。');">
-                    {% csrf_token %}
-                    <button type="submit" class="dropdown-item text-secondary">
-                        <i class="bi bi-slash-circle"></i> ブロックする
+                <div class="dropdown mt-2">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-three-dots"></i> メニュー
                     </button>
-                </form>
-            </li>
-        </ul>
-    </div>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#reportModal">
+                                <i class="bi bi-flag"></i> このユーザーを通報する
+                            </button>
+                        </li>
+                        <li>
+                            <form action="{% url 'block_user' target_user.id %}" method="post" onsubmit="return confirm('本当にブロックしますか？\n今後このユーザーの投稿が表示されなくなります。');">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item text-secondary">
+                                    <i class="bi bi-slash-circle"></i> ブロックする
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
 
-    <div class="modal fade" id="reportModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form action="{% url 'report_user' target_user.id %}" method="post">
-                    {% csrf_token %}
-                    <div class="modal-header">
-                        <h5 class="modal-title fw-bold">通報のご協力をお願いします</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal fade" id="reportModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form action="{% url 'report_user' target_user.id %}" method="post">
+                                {% csrf_token %}
+                                <div class="modal-header">
+                                    <h5 class="modal-title fw-bold">通報のご協力をお願いします</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body text-start">
+                                    <p class="small text-muted">不適切な投稿や行為について詳細をお知らせください。</p>
+                                    <textarea name="reason" class="form-control" rows="4" placeholder="理由を入力してください" required></textarea>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                                    <button type="submit" class="btn btn-danger">通報する</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    <div class="modal-body text-start">
-                        <p class="small text-muted">不適切な投稿や行為について詳細をお知らせください。</p>
-                        <textarea name="reason" class="form-control" rows="4" placeholder="（例）暴言を吐かれた、架空の募集をしている、など" required></textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                        <button type="submit" class="btn btn-danger">通報する</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-{% endif %}
+                </div>
+            {% endif %}
             
-            <div class="mb-3">
+            <div class="mb-3 mt-3">
                 <span class="badge rounded-pill fs-6 badge-rank-{{ target_user.profile.rank|lower }}">
                     {{ target_user.profile.get_rank_display }}会員
                 </span>
@@ -178,7 +178,7 @@
                 
                 {% if worker_stats.exists %}
                     <div class="position-relative">
-                        <div class="{% if not user.is_authenticated %}blur-content{% endif %}">
+                        <div class="{% if not user.is_authenticated or user.profile.rank == 'iron' %}blur-content{% endif %}">
                             <div class="row align-items-center">
                                 <div class="col-md-5 text-center mb-3 mb-md-0">
                                     <h1 class="display-4 fw-bold text-primary">{{ worker_stats.average }}</h1>
@@ -193,12 +193,6 @@
                                         評価件数: {{ worker_stats.count }}件<br>
                                         (直近の確定評価に基づく)
                                     </p>
-                                    {% if worker_stats.wage_range %}
-                                    <div class="mt-3 p-2 bg-light rounded border">
-                                        <small class="text-muted d-block">推定日当ランク</small>
-                                        <strong class="fs-5 text-dark">¥{{ worker_stats.wage_range }}</strong>
-                                    </div>
-                                    {% endif %}
                                 </div>
                                 <div class="col-md-7 chart-container">
                                     <canvas id="pChartWorker"></canvas>
@@ -206,13 +200,17 @@
                             </div>
                         </div>
 
-                        {% if not user.is_authenticated %}
+                        {% if not user.is_authenticated or user.profile.rank == 'iron' %}
                         <div class="lock-overlay">
                             <div class="badge bg-dark fs-6 p-3 shadow rounded-pill">
                                 <i class="bi bi-lock-fill"></i> 詳細な評価は会員限定です
                             </div>
                             <div class="mt-2">
-                                <a href="{% url 'signup' %}" class="btn btn-sm btn-primary rounded-pill">会員登録する</a>
+                                {% if not user.is_authenticated %}
+                                    <a href="{% url 'signup' %}" class="btn btn-sm btn-primary rounded-pill">会員登録する</a>
+                                {% else %}
+                                    <a href="{% url 'subscription_plans' %}" class="btn btn-sm btn-warning fw-bold rounded-pill text-dark">プラン変更する</a>
+                                {% endif %}
                             </div>
                         </div>
                         {% endif %}
@@ -220,7 +218,7 @@
                 {% else %}
                     <div class="text-center py-5 bg-light rounded text-muted">
                         <i class="bi bi-chat-square-dots fs-1 d-block mb-3"></i>
-                        <p>まだ十分な評価データがありません（3件以上で表示）</p>
+                        <p>まだ十分な評価データがありません</p>
                     </div>
                 {% endif %}
                 
@@ -258,7 +256,7 @@
                 
                 {% if employer_stats.exists %}
                     <div class="position-relative">
-                        <div class="{% if not user.is_authenticated %}blur-content{% endif %}">
+                        <div class="{% if not user.is_authenticated or user.profile.rank == 'iron' %}blur-content{% endif %}">
                             <div class="row align-items-center">
                                 <div class="col-md-5 text-center mb-3 mb-md-0">
                                     <h1 class="display-4 fw-bold text-success">{{ employer_stats.average }}</h1>
@@ -279,13 +277,17 @@
                             </div>
                         </div>
 
-                        {% if not user.is_authenticated %}
+                        {% if not user.is_authenticated or user.profile.rank == 'iron' %}
                         <div class="lock-overlay">
                             <div class="badge bg-dark fs-6 p-3 shadow rounded-pill">
                                 <i class="bi bi-lock-fill"></i> 詳細な評価は会員限定です
                             </div>
                             <div class="mt-2">
-                                <a href="{% url 'signup' %}" class="btn btn-sm btn-primary rounded-pill">会員登録する</a>
+                                {% if not user.is_authenticated %}
+                                    <a href="{% url 'signup' %}" class="btn btn-sm btn-primary rounded-pill">会員登録する</a>
+                                {% else %}
+                                    <a href="{% url 'subscription_plans' %}" class="btn btn-sm btn-warning fw-bold rounded-pill text-dark">プラン変更する</a>
+                                {% endif %}
                             </div>
                         </div>
                         {% endif %}
@@ -293,7 +295,7 @@
                 {% else %}
                     <div class="text-center py-5 bg-light rounded text-muted">
                         <i class="bi bi-building fs-1 d-block mb-3"></i>
-                        <p>まだ十分な評価データがありません（3件以上で表示）</p>
+                        <p>まだ十分な評価データがありません</p>
                     </div>
                 {% endif %}
 
@@ -382,7 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-    }; // ★ここが抜けていました！
+    };
 
     // ワーカーチャート描画 (データがある場合のみ)
     {% if worker_stats.exists %}
