@@ -6,6 +6,8 @@ from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages  # ★これを追加！
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import Profile, FavoriteArea, PREFECTURES, Block, Report
 from django.http import HttpResponse
@@ -276,3 +278,20 @@ def stripe_webhook(request):
             except: pass
             
     return HttpResponse(status=200)
+
+@login_required
+def account_delete(request):
+    if request.method == 'POST':
+        # 退会実行ボタンが押された時の処理
+        user = request.user
+        # 物理削除は危険なので、ログインできない状態（論理削除）にするのが一般的です
+        user.is_active = False
+        user.save()
+        
+        # ログアウトさせる
+        logout(request)
+        messages.info(request, "退会処理が完了しました。ご利用ありがとうございました。")
+        return redirect('home') # トップページへ戻る
+
+    # 最初は確認画面を表示する
+    return render(request, 'accounts/account_delete_confirm.html')

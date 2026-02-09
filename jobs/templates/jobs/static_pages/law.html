@@ -1,62 +1,77 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5 mb-5">
-    <h2 class="mb-4 text-center fw-bold">特定商取引法に基づく表記</h2>
-    <div class="card border-0 shadow-sm rounded-4 p-4">
-        <table class="table table-bordered align-middle">
-            <tbody>
-                <tr>
-                    <th class="bg-light" style="width: 30%;">販売業者</th>
-                    <td>エルクリスト株式会社 (El'christo)</td>
-                </tr>
-                <tr>
-                    <th class="bg-light">運営責任者</th>
-                    <td>（ここに代表者名などが入ります）</td>
-                </tr>
-                <tr>
-                    <th class="bg-light">所在地</th>
-                    <td>徳島県...（住所）</td>
-                </tr>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-5">
+                    <h2 class="fw-bold text-center mb-5">特定商取引法に基づく表記</h2>
+                    
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th class="bg-light w-25 align-middle">販売事業者名</th>
+                                <td>吉川 普（El'christo）</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light align-middle">代表者</th>
+                                <td>吉川 普</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light align-middle">所在地</th>
+                                <td>
+                                    〒770-0000<br>
+                                    徳島県徳島市<br>
+                                    <small class="text-muted">※詳細な住所は、ご請求を頂いた場合には遅滞なく開示いたします。</small>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light align-middle">お問い合わせ</th>
+                                <td>
+                                    アプリ内のお問い合わせフォームよりご連絡ください。<br>
+                                    <small class="text-muted">※電話番号は、ご請求を頂いた場合には遅滞なく開示いたします。</small>
+                                </td>
+                            </tr>
+                            {% if not is_ios_app %}
+                            <tr>
+                                <th class="bg-light align-middle">販売価格</th>
+                                <td>
+                                    購入手続き画面に表示されます。<br>
+                                    （シルバー: 550円/月、ゴールド: 2,200円/月、プラチナ: 5,500円/月）
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light align-middle">商品代金以外の必要料金</th>
+                                <td>
+                                    当サイトの閲覧、コンテンツのダウンロード、お問い合わせ等の際の電子メールの送受信時などに、所定の通信料が発生いたします。
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light align-middle">お支払い方法</th>
+                                <td>クレジットカード決済（Stripe）</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light align-middle">代金の支払時期</th>
+                                <td>即時決済（ご利用のカード会社の締め日・支払日に準じます）</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light align-middle">商品の引渡時期</th>
+                                <td>決済完了後、即時に有料プラン機能が利用可能になります。</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light align-middle">返品・キャンセルについて</th>
+                                <td>
+                                    デジタルコンテンツの性質上、購入後の返品・キャンセル・返金はお受けできません。<br>
+                                    解約はマイページよりいつでも可能です（次回更新日までは有料機能をご利用いただけます）。
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-                {% if not is_ios_app %}
-                    <tr>
-                        <th class="bg-light">販売価格</th>
-                        <td>各プランの申し込みページに記載</td>
-                    </tr>
-                    <tr>
-                        <th class="bg-light">商品代金以外の必要料金</th>
-                        <td>インターネット接続料金、通信料金（お客様負担）</td>
-                    </tr>
-                    <tr>
-                        <th class="bg-light">支払方法</th>
-                        <td>クレジットカード決済 (Stripe)</td>
-                    </tr>
-                    <tr>
-                        <th class="bg-light">支払時期</th>
-                        <td>初回申し込み時、および毎月ごとの自動更新時</td>
-                    </tr>
-                    <tr>
-                        <th class="bg-light">商品の引き渡し時期</th>
-                        <td>決済完了後、直ちにご利用いただけます。</td>
-                    </tr>
-                    <tr>
-                        <th class="bg-light">解約・返品について</th>
-                        <td>
-                            マイページよりいつでも解約可能です。<br>
-                            サービスの性質上、返金には応じられませんのでご了承ください。
-                        </td>
-                    </tr>
-                {% endif %}
-                <tr>
-                    <th class="bg-light">お問い合わせ</th>
-                    <td>
-                        お問い合わせフォーム、または下記メールアドレスまでご連絡ください。<br>
-                        Email: support@elchristo.com
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

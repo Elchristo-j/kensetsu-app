@@ -24,4 +24,7 @@ urlpatterns = [
     # --- ブロック機能　ーーー
     path('block/<int:user_id>/', views.block_user, name='block_user'),
     path('report/<int:user_id>/', views.report_user, name='report_user'),
+
+    # ★この1行を追加してください！
+    path('account/delete/', views.account_delete, name='account_delete'),
 ]

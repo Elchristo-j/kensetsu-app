@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 500px;">
+        <div class="card-body p-5 text-center">
+            <h3 class="fw-bold text-danger mb-4">退会手続き</h3>
+            <p class="mb-4">
+                本当に退会（アカウント削除）しますか？<br>
+                この操作は取り消せません。
+            </p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-danger fw-bold rounded-pill">
+                        はい、退会します
+                    </button>
+                    <a href="{% url 'mypage' %}" class="btn btn-outline-secondary fw-bold rounded-pill">
+                        キャンセル
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
