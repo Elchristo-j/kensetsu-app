@@ -144,9 +144,11 @@
                             </form>
                         </li>
                         
-                        <li class="nav-item ms-lg-2 border-start border-secondary ps-lg-2 mt-2 mt-lg-0">
-                             <a class="nav-link nav-link-cancel" href="{% url 'subscription_plans' %}#cancel-info">解約について</a>
-                        </li>
+                        {% if not is_ios_app %}
+                            <li class="nav-item ms-lg-2 border-start border-secondary ps-lg-2 mt-2 mt-lg-0">
+                                 <a class="nav-link nav-link-cancel" href="{% url 'subscription_plans' %}#cancel-info">解約について</a>
+                            </li>
+                        {% endif %}
 
                     {% else %}
                         <li class="nav-item">
@@ -158,6 +160,7 @@
                         <li class="nav-item ms-lg-2">
                             <a class="nav-link" href="{% url 'login' %}">ログイン</a>
                         </li>
+                        
                         <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
                             <a class="btn btn-warning text-dark fw-bold rounded-pill px-4 w-100" href="{% url 'signup' %}">新規登録</a>
                         </li>
@@ -189,12 +192,12 @@
             <div class="row g-4 justify-content-between">
                 
                 <div class="col-md-4">
-                    <h5 class="fw-bold mb-3">建設マッチング<br>〜エルクリスト〜</h5>
+                    <h5 class="fw-bold mb-3">建設マッチング<br>〜El'christo〜</h5>
                     <p class="small text-white-50">
                         現場の「助けて」と「手伝うよ」を<br>
                         シンプルにつなぐプラットフォーム。
                     </p>
-                    <small class="d-block text-white-50 mt-4">&copy; 2026 Elchristo. All Rights Reserved.</small>
+                    <small class="d-block text-white-50 mt-4">&copy; 2026 El'christo. All Rights Reserved.</small>
                 </div>
 
                 <div class="col-md-3">

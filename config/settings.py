@@ -66,6 +66,9 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 # ★修正: 存在しないファイルを読み込まないよう削除しました
                 # 'jobs.context_processors.pending_verification_count', 
+                # ★これを一番下に追加してください
+                # 「プロジェクト名」の部分は、settings.pyが入っているフォルダ名に書き換えてください
+                'config.context_processors.app_detection',
             ],
         },
     },

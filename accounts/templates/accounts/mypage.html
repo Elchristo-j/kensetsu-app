@@ -48,23 +48,40 @@
                         <i class="bi bi-pencil-square"></i> プロフィール編集
                     </a>
     
-    <a href="{% url 'blocked_list' %}" class="btn btn-outline-danger rounded-pill fw-bold btn-sm">
-        <i class="bi bi-slash-circle"></i> ブロック管理
-    </a>
-    
-                    {% if user.profile.rank != 'iron' %}
-                        <a href="{% url 'subscription_plans' %}" class="btn btn-primary rounded-pill fw-bold shadow-sm">
-                            <i class="bi bi-arrow-up-circle"></i> プラン変更・確認
+                    <a href="{% url 'blocked_list' %}" class="btn btn-outline-danger rounded-pill fw-bold btn-sm">
+                        <i class="bi bi-slash-circle"></i> ブロック管理
+                    </a>
+
+                    {% if is_ios_app %}
+                        <div class="bg-light p-3 rounded mt-2 border">
+                            <small class="d-block text-muted text-start mb-1">
+                                <i class="bi bi-info-circle"></i> <strong>プラン変更について</strong>
+                            </small>
+                            <p class="small text-secondary text-start mb-0" style="font-size: 0.8rem; line-height: 1.4;">
+                                契約プランの変更や解約は、Webブラウザ版（Safari/Chrome）からログインして行ってください。<br>
+                                ※Appleの規約により、アプリ内では決済機能をご利用いただけません。
+                            </p>
+                        </div>
+                        
+                        <a href="{% url 'account_delete' %}" class="btn btn-sm btn-outline-secondary mt-2 rounded-pill">
+                            アカウントを削除（退会）
                         </a>
-                    {% else %}   
-                        <a href="{% url 'subscription_plans' %}" class="btn btn-outline-primary rounded-pill fw-bold">
-                            プランを見る
-                        </a>
-                        <p class="text-muted small mt-2 bg-light p-2 rounded">
-                            ※本人確認が完了すると、<br>有料プランへの変更が可能になります。
-                        </p>
+
+                    {% else %}
+                        {% if user.profile.rank != 'iron' %}
+                            <a href="{% url 'subscription_plans' %}" class="btn btn-primary rounded-pill fw-bold shadow-sm">
+                                <i class="bi bi-arrow-up-circle"></i> プラン変更・確認
+                            </a>
+                        {% else %}   
+                            <a href="{% url 'subscription_plans' %}" class="btn btn-outline-primary rounded-pill fw-bold">
+                                プランを見る
+                            </a>
+                            <p class="text-muted small mt-2 bg-light p-2 rounded">
+                                ※本人確認が完了すると、<br>有料プランへの変更が可能になります。
+                            </p>
+                        {% endif %}
                     {% endif %}
-                </div>
+                    </div>
 
                 <div class="mt-auto text-start bg-light p-3 rounded small border">
                     <p class="mb-2 fw-bold text-dark border-bottom pb-1"><i class="bi bi-ticket-perforated-fill text-primary"></i> 今月の残枠状況</p>
@@ -97,10 +114,8 @@
         </div>
 
         <div class="col-md-8">
-            
             <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
                 <h5 class="fw-bold mb-4 border-bottom pb-2"><i class="bi bi-briefcase"></i> 案件管理ダッシュボード</h5>
-
                 <ul class="nav nav-tabs mb-3" id="jobTab" role="tablist">
                     <li class="nav-item">
                         <button class="nav-link active fw-bold text-dark" id="applied-tab" data-bs-toggle="tab" data-bs-target="#applied" type="button">
