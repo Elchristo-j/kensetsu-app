@@ -11,24 +11,28 @@
         :root { --sumi-color: #15151a; --rankup-blue: #0066ff; }
         body { font-family: "Hiragino Sans", "Meiryo", sans-serif; background-color: #f4f5f7; color: var(--sumi-color); }
         
-        /* 墨色（黒に近いグレー）の設定 */
+        /* 墨色設定 */
         .bg-sumi { background-color: var(--sumi-color) !important; }
         .text-sumi { color: var(--sumi-color) !important; }
         .btn-sumi { background-color: var(--sumi-color); color: white; }
         .btn-sumi:hover { background-color: #333; color: white; }
         
-        /* ナビバーの調整 */
+        /* ナビバー調整 */
         .navbar-brand { line-height: 1.1; display: flex; flex-direction: column; }
         .brand-title { font-weight: bold; font-size: 1.15rem; }
         .brand-sub { font-size: 0.7rem; opacity: 0.7; font-weight: normal; margin-top: 1px; }
 
+        /* ★スマホでロゴを少し小さくしてスペース確保 */
+        @media (max-width: 576px) {
+            .brand-title { font-size: 0.95rem; } /* 少し小さく */
+            .brand-sub { font-size: 0.6rem; }
+        }
+
         .navbar-dark .navbar-nav .nav-link { color: #ffffff !important; font-weight: 600; }
         
-        /* 解約リンクなどは少し控えめに */
         .nav-link-cancel { font-size: 0.75rem !important; color: rgba(255,255,255,0.6) !important; font-weight: normal !important; }
         .nav-link-cancel:hover { color: rgba(255,255,255,1.0) !important; text-decoration: underline; }
 
-        /* ランクバッジスタイル */
         .rank-badge { font-size: 0.75rem; padding: 0.25em 0.6em; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
         .badge-platinum { background: linear-gradient(45deg, #2c3e50, #00d2ff) !important; color: white !important; text-transform: uppercase; }
         .badge-gold { background: linear-gradient(45deg, #d4af37, #f1c40f) !important; color: white !important; text-transform: uppercase; }
@@ -36,7 +40,6 @@
         .badge-bronze { background-color: #cd7f32 !important; color: white !important; text-transform: lowercase; }
         .badge-iron { background-color: #6c757d !important; color: white !important; text-transform: lowercase; }
         
-        /* 通知バッジ（赤点） */
         .notification-dot {
             position: absolute;
             top: 5px;
@@ -48,7 +51,6 @@
             border: 1px solid #15151a;
         }
 
-        /* フッターリンクのホバーエフェクト */
         .footer-link { color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.2s; }
         .footer-link:hover { color: #ffffff; text-decoration: underline; }
     </style>
@@ -56,22 +58,21 @@
 <body class="d-flex flex-column min-vh-100">
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-sumi sticky-top shadow">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">
+        <div class="container-fluid px-3"> <a class="navbar-brand me-2" href="{% url 'home' %}">
                 <span class="brand-title">建設マッチング</span>
                 <span class="brand-sub">~ エルクリスト ~</span>
             </a>
 
             {% if user.is_authenticated %}
-                <div class="d-flex align-items-center d-lg-none ms-auto me-2">
-                    <span class="text-white small fw-bold me-1 d-inline-block text-truncate" style="max-width: 80px;">
+                <div class="d-flex align-items-center d-lg-none ms-auto me-1">
+                    <span class="text-white small fw-bold me-1 d-inline-block text-truncate" style="max-width: 70px; vertical-align: middle;">
                         {{ user.username }}
                     </span>
-                    <span class="badge badge-{{ user.profile.rank|lower }}" style="font-size: 0.6rem;">
+                    <span class="badge badge-{{ user.profile.rank|lower }}" style="font-size: 0.6rem; padding: 0.3em 0.5em;">
                         {{ user.profile.rank|upper }}
                     </span>
                     
-                    <a class="position-relative text-white ms-3" href="{% url 'notifications' %}">
+                    <a class="position-relative text-white ms-2 me-1" href="{% url 'notifications' %}">
                         <i class="bi bi-bell-fill"></i>
                         {% if user.profile.has_unread_notifications %}
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem;">!</span>
@@ -80,7 +81,7 @@
                 </div>
             {% endif %}
 
-            <button class="navbar-toggler ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="padding: 0.25rem 0.5rem; font-size: 0.9rem;">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
@@ -131,7 +132,6 @@
                                 <button type="submit" class="btn btn-link nav-link w-100 text-start text-lg-center">ログアウト</button>
                             </form>
                         </li>
-                        
                         <li class="nav-item ms-lg-2 border-start border-secondary ps-lg-2 mt-2 mt-lg-0">
                              <a class="nav-link nav-link-cancel" href="{% url 'subscription_plans' %}#cancel-info">解約について</a>
                         </li>
