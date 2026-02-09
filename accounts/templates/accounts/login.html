@@ -18,10 +18,18 @@
                         {% endif %}
                     </div>
                 {% endfor %}
+                
                 <button type="submit" class="btn btn-sumi w-100 mt-3 py-2 fw-bold shadow-sm rounded-pill">
                     ログインする
                 </button>
-            </form>
+
+                <div class="mt-4 p-3 bg-light rounded small text-muted border">
+                    <strong class="d-block mb-1"><i class="bi bi-question-circle"></i> パスワードをお忘れの場合</strong>
+                    セキュリティ保護のため、自動リセット機能を停止しています。<br>
+                    お手数ですが、<a href="{% url 'contact' %}" class="text-decoration-underline fw-bold text-sumi">お問い合わせフォーム</a>より「パスワード再発行希望」とご連絡ください。<br>
+                    運営者が本人確認の上、手動で再設定いたします。
+                </div>
+                </form>
         </div>
         <div class="card-footer text-center bg-light border-0 py-3">
             <span class="text-muted small">アカウントをお持ちでない方は</span><br>
