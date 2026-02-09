@@ -1,13 +1,61 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
 {% block content %}
-<div class="container my-5">
-    <h2 class="mb-4">特定商取引法に基づく表記</h2>
-    <div class="card shadow-sm p-4">
-        <table class="table table-bordered">
-            <tr><th class="bg-light">運営者名</th><td>エルクリスト（El Christo）</td></tr>
-            <tr><th class="bg-light">代表者</th><td>吉川 普</td></tr>
-            <tr><th class="bg-light">メールアドレス</th><td>info@el-christo.online</td></tr>
-            <tr><th class="bg-light">支払方法</th><td>クレジットカード決済</td></tr>
+<div class="container mt-5 mb-5">
+    <h2 class="mb-4 text-center fw-bold">特定商取引法に基づく表記</h2>
+    <div class="card border-0 shadow-sm rounded-4 p-4">
+        <table class="table table-bordered align-middle">
+            <tbody>
+                <tr>
+                    <th class="bg-light" style="width: 30%;">販売業者</th>
+                    <td>吉川 普 (El'christo)</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">運営責任者</th>
+                    <td>吉川 普</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">所在地</th>
+                    <td>徳島県...（住所）</td>
+                </tr>
+
+                {% if not is_ios_app %}
+                    <tr>
+                        <th class="bg-light">販売価格</th>
+                        <td>各プランの申し込みページに記載</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">商品代金以外の必要料金</th>
+                        <td>インターネット接続料金、通信料金（お客様負担）</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">支払方法</th>
+                        <td>クレジットカード決済 (Stripe)</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">支払時期</th>
+                        <td>初回申し込み時、および毎月ごとの自動更新時</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">商品の引き渡し時期</th>
+                        <td>決済完了後、直ちにご利用いただけます。</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">解約・返品について</th>
+                        <td>
+                            マイページよりいつでも解約可能です。<br>
+                            サービスの性質上、返金には応じられませんのでご了承ください。
+                        </td>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <th class="bg-light">お問い合わせ</th>
+                    <td>
+                        お問い合わせフォーム、または下記メールアドレスまでご連絡ください。<br>
+                        Email: kma@el-christo.online
+                    </td>
+                </tr>
+            </tbody>
         </table>
     </div>
 </div>
