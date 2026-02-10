@@ -131,11 +131,11 @@ def mypage(request):
 
     # ランクごとの上限設定
     LIMITS = {
-        'iron':     {'job': 1,  'app': 3},
-        'bronze':   {'job': 5,  'app': 10},
-        'silver':   {'job': 10, 'app': 20},
-        'gold':     {'job': 20, 'app': 50},
-        'platinum': {'job': 999,'app': 999},
+        'iron':     {'job': 0,  'app': 3},
+        'bronze':   {'job': 0,  'app': 10},
+        'silver':   {'job': 3, 'app': 9000},
+        'gold':     {'job': 9000, 'app': 9000},
+        'platinum': {'job': 9000,'app': 9000},
     }
     
     my_limits = LIMITS.get(profile.rank, LIMITS['iron'])
