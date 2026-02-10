@@ -1,13 +1,12 @@
-from django.utils import timezone # ★ファイルの先頭に追加
+from django.utils import timezone
 import os
 import stripe
 import datetime
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages  # ★これを追加！
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import Profile, FavoriteArea, PREFECTURES, Block, Report
 from django.http import HttpResponse
@@ -36,11 +35,9 @@ def calculate_utility_wage_text(score):
 
 # --- 集計関数 ---
 def calculate_stats(user, review_type):
-
     all_reviews = Review.objects.filter(reviewee=user, review_type=review_type)
     total_count = all_reviews.count()
 
-    # ▼ 変更点: 3件未満は問答無用で「データなし」扱い
     if total_count < 3:
         return {
             'exists': False,
@@ -52,17 +49,10 @@ def calculate_stats(user, review_type):
             'wage_range': None
         }
     
-    # ▼ 変更点: 3の倍数で切り捨てる計算 (例: 5 // 3 * 3 = 3,  8 // 3 * 3 = 6)
     visible_count = (total_count // 3) * 3
-
-    # ▼ 変更点: 「古い順」に visible_count 件だけを取得して計算対象にする
-    # これにより、最新の1,2件（端数）は計算から除外されるため、誰が何点をつけたかバレません。
     target_ids = all_reviews.order_by('created_at').values_list('id', flat=True)[:visible_count]
     target_reviews = Review.objects.filter(id__in=target_ids)
 
-    # --- 以下、集計ロジックは target_reviews に対して行う ---
-
-    
     if review_type == 'employer_to_worker':
         p1 = target_reviews.aggregate(Avg('ability'))['ability__avg'] or 0
         p2 = target_reviews.aggregate(Avg('cooperation'))['cooperation__avg'] or 0
@@ -86,15 +76,13 @@ def calculate_stats(user, review_type):
 
     return {
         'exists': True,
-        'is_hidden': False, # 3件以上あるので必ず表示
-        'count': total_count, # 表示上の件数は「全件」でOK（計算だけ3の倍数）
+        'is_hidden': False,
+        'count': total_count,
         'average': round(avg_score, 1),
         'chart_data': chart_data,
         'labels': labels,
         'wage_range': wage_range,
     }
-    
-   
 
 # --- ビュー定義 ---
 
@@ -103,7 +91,6 @@ def signup(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # ログインさせる
             from django.contrib.auth import login
             login(request, user)
             return redirect('home')
@@ -114,12 +101,10 @@ def signup(request):
 @login_required
 def profile_edit(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
-    
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
-            # ★修正: マイページへ戻る
             return redirect('mypage')
     else:
         form = ProfileForm(instance=profile)
@@ -128,54 +113,50 @@ def profile_edit(request):
 @login_required
 def mypage(request):
     profile = request.user.profile
+    
+    # 1. 評価データの計算
     worker_stats = calculate_stats(request.user, 'employer_to_worker')
     employer_stats = calculate_stats(request.user, 'worker_to_employer')
+    
+    # 2. 案件データの取得
     my_posted = Job.objects.filter(created_by=request.user).order_by('-created_at')[:5]
     my_applied = Application.objects.filter(applicant=request.user).order_by('-applied_at')[:5]
 
-    # ▼▼▼ 【追加】今月の利用状況の集計 ▼▼▼
+    # 3. 今月の利用状況の集計
     now = timezone.now()
     start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
-    # 今月の使用数をカウント
     used_jobs = Job.objects.filter(created_by=request.user, created_at__gte=start_of_month).count()
     used_apps = Application.objects.filter(applicant=request.user, applied_at__gte=start_of_month).count()
 
-    # ランクごとの上限設定（※仕様に合わせて書き換えてください！）
+    # ランクごとの上限設定
     LIMITS = {
         'iron':     {'job': 1,  'app': 3},
         'bronze':   {'job': 5,  'app': 10},
         'silver':   {'job': 10, 'app': 20},
         'gold':     {'job': 20, 'app': 50},
-        'platinum': {'job': 999,'app': 999}, # 無制限
+        'platinum': {'job': 999,'app': 999},
     }
     
-    # 自分のランクの上限を取得（なければIron扱い）
     my_limits = LIMITS.get(profile.rank, LIMITS['iron'])
-    
-    # 残り回数を計算（マイナスにならないようにmax使用）
     remaining_jobs = max(0, my_limits['job'] - used_jobs)
     remaining_apps = max(0, my_limits['app'] - used_apps)
-    # ▲▲▲ 【追加終わり】 ▲▲▲
 
+    # 4. コンテキストの作成（全てのデータをまとめる）
     context = {
-        'user': request.user, 'profile': profile,
-        'worker_stats': worker_stats, 'employer_stats': employer_stats,
-        'my_posted_jobs': my_posted, 'my_applications': my_applied,
-        
-        # HTMLで使えるように渡す
-        'remaining_jobs': remaining_jobs,
-        'remaining_apps': remaining_apps,
+        'user': request.user,
+        'profile': profile,
+        'worker_stats': worker_stats,     # ★重要: これがチャート用データ
+        'employer_stats': employer_stats, # ★重要: これがチャート用データ
+        'my_posted_jobs': my_posted,
+        'my_applications': my_applied,
+        'remaining_post': remaining_jobs,  # HTML側で使用
+        'remaining_apply': remaining_apps, # HTML側で使用
         'limit_jobs': my_limits['job'],
         'limit_apps': my_limits['app'],
     }
-    return render(request, 'accounts/mypage.html', context)
-
-    context = {
-        'user': request.user, 'profile': profile,
-        'worker_stats': worker_stats, 'employer_stats': employer_stats,
-        'my_posted_jobs': my_posted, 'my_applications': my_applied,
-    }
+    
+    # 5. レンダリング（returnはこれ1回のみ）
     return render(request, 'accounts/mypage.html', context)
 
 def profile_detail(request, user_id):
@@ -186,9 +167,12 @@ def profile_detail(request, user_id):
     jobs = Job.objects.filter(created_by=target).order_by('-created_at')
 
     context = {
-        'target_user': target, 'profile': profile,
-        'worker_stats': worker_stats, 'employer_stats': employer_stats,
-        'jobs': jobs, 'prefectures': PREFECTURES,
+        'target_user': target, 
+        'profile': profile,
+        'worker_stats': worker_stats, 
+        'employer_stats': employer_stats,
+        'jobs': jobs, 
+        'prefectures': PREFECTURES,
     }
     return render(request, 'accounts/profile_detail.html', context)
 
@@ -211,7 +195,6 @@ def upgrade_plan_page(request):
 
 @login_required
 def create_checkout_session(request, plan_type):
-    # Stripeロジック
     price_id = settings.STRIPE_PRICE_IDS.get(plan_type)
     if not price_id: return redirect('mypage')
     session = stripe.checkout.Session.create(
@@ -231,7 +214,7 @@ def block_user(request, user_id):
     if request.method == 'POST':
         Block.objects.get_or_create(blocker=request.user, blocked=target)
         messages.warning(request, f'{target.username}さんをブロックしました。')
-    return redirect('home') # 本当は前のページに戻るのが良いですが一旦ホームへ
+    return redirect('home')
 
 @login_required
 def report_user(request, user_id):
@@ -244,7 +227,6 @@ def report_user(request, user_id):
 
 @csrf_exempt
 def stripe_webhook(request):
-    # Webhookロジック
     payload = request.body
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
     try:
@@ -258,16 +240,11 @@ def stripe_webhook(request):
         
         if uid:
             try:
-                # User経由でProfileを取得するように変更
                 user = User.objects.get(id=uid)
                 p = user.profile
-                
-                # ランク更新
                 if ptype: 
                     p.rank = ptype
                 
-                # ▼▼▼ キャンペーン自動適用ロジック ▼▼▼
-                # 「有料プラン」かつ「2026年3月31日まで」なら創設メンバーにする
                 today = datetime.date.today()
                 campaign_end = datetime.date(2026, 3, 31)
                 
@@ -282,16 +259,10 @@ def stripe_webhook(request):
 @login_required
 def account_delete(request):
     if request.method == 'POST':
-        # 退会実行ボタンが押された時の処理
         user = request.user
-        # 物理削除は危険なので、ログインできない状態（論理削除）にするのが一般的です
         user.is_active = False
         user.save()
-        
-        # ログアウトさせる
         logout(request)
         messages.info(request, "退会処理が完了しました。ご利用ありがとうございました。")
-        return redirect('home') # トップページへ戻る
-
-    # 最初は確認画面を表示する
+        return redirect('home')
     return render(request, 'accounts/account_delete_confirm.html')
