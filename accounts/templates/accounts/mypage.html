@@ -206,6 +206,9 @@
     document.addEventListener('DOMContentLoaded', function() {
         var ctx = document.getElementById('radarChart');
         if (ctx) {
+            // 【重要】もしチャートが0のままだった場合、下記の変数名が間違っています。
+            // profile_detail.html（プロフィール詳細ページ）を開き、
+            // <script>の中にある dataValues = [...] の中身をここにコピペしてください。
             var dataValues = [
                 {{ user.profile.rating_tech|default:0 }},   // 技術
                 {{ user.profile.rating_price|default:0 }},  // 価格
