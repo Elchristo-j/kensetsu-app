@@ -25,13 +25,20 @@
                 {% endif %}
                 
                 <h4 class="fw-bold">{{ user.username }}</h4>
-                <div class="mb-3">
+                <div class="mb-2">
                     <span class="badge rounded-pill fs-6 badge-rank-{{ user.profile.rank|lower }}">
                         {{ user.profile.get_rank_display }}会員
                     </span>
                     {% if user.profile.is_verified %}
-                        <span class="badge bg-success rounded-pill">本人確認済</span>
+                        <span class="badge bg-success rounded-pill ms-1">本人確認済</span>
                     {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <span class="text-warning fs-5">
+                        <i class="bi bi-star-fill"></i> {{ user.profile.average_rating|default:"0.0" }}
+                    </span>
+                    <span class="text-muted small ms-1">({{ user.profile.review_count|default:"0" }}件の評価)</span>
                 </div>
                 {% if user.profile.is_founding_member %}
                     <div class="mb-4 mt-2 d-flex justify-content-center">
@@ -55,11 +62,14 @@
                     {% if is_ios_app %}
                         <div class="bg-light p-3 rounded mt-2 border text-start">
                             <small class="d-block text-muted mb-1">
-                                <i class="bi bi-info-circle"></i> <strong>プラン変更について</strong>
+                                <i class="bi bi-info-circle"></i> <strong>プラン設定について</strong>
                             </small>
                             <p class="small text-secondary mb-0" style="font-size: 0.8rem; line-height: 1.4;">
                                 契約プランの変更・解約、およびクレジットカード情報の更新は、<br>
                                 セキュリティ保護のためアプリ内では行えません。<br>
+                                <span class="mt-1 d-block">
+                                    お手数ですが、ブラウザ（SafariやChrome）よりWebサイトへログインして設定をお願いいたします。
+                                </span>
                             </p>
                         </div>
                         
