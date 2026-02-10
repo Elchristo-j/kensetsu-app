@@ -10,7 +10,16 @@
     .badge-rank-silver { background-color: #e0e0e0; color: #333; border: 1px solid #ccc; }
     .badge-rank-gold { background-color: #ffc107; color: #000; }
     .badge-rank-platinum { background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%); color: #006064; border: 1px solid #4dd0e1; }
+    
+    /* レーダーチャート用のCanvasサイズ調整 */
+    #radarChart {
+        max-width: 200px;
+        max-height: 200px;
+        margin: 0 auto;
+    }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="container mt-5 mb-5">
     <div class="row">
@@ -25,7 +34,7 @@
                 {% endif %}
                 
                 <h4 class="fw-bold">{{ user.username }}</h4>
-                <div class="mb-2">
+                <div class="mb-3">
                     <span class="badge rounded-pill fs-6 badge-rank-{{ user.profile.rank|lower }}">
                         {{ user.profile.get_rank_display }}会員
                     </span>
@@ -33,13 +42,11 @@
                         <span class="badge bg-success rounded-pill ms-1">本人確認済</span>
                     {% endif %}
                 </div>
-                
-                <div class="mb-3">
-                    <span class="text-warning fs-5">
-                        <i class="bi bi-star-fill"></i> {{ user.profile.average_rating|default:"0.0" }}
-                    </span>
-                    <span class="text-muted small ms-1">({{ user.profile.review_count|default:"0" }}件の評価)</span>
+
+                <div class="mb-4">
+                    <canvas id="radarChart"></canvas>
                 </div>
+
                 {% if user.profile.is_founding_member %}
                     <div class="mb-4 mt-2 d-flex justify-content-center">
                         <img src="{% static 'images/founding_member_badge.png' %}"
@@ -197,4 +204,51 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var ctx = document.getElementById('radarChart').getContext('2d');
+        
+        // ★ここに実際のユーザーの評価データを入れる必要があります
+        // もしDjango側から数値が渡ってきているなら、以下のように入れます
+        // 例: user.profile.rating_tech, user.profile.rating_speed ... など
+        // 数値がない場合はデフォルト値(3など)が表示されます
+        var dataValues = [
+            {{ user.profile.rating_tech|default:3 }},   // 技術
+            {{ user.profile.rating_price|default:3 }},  // 価格
+            {{ user.profile.rating_speed|default:3 }},  // スピード
+            {{ user.profile.rating_manner|default:3 }}, // マナー
+            {{ user.profile.rating_safety|default:3 }}  // 安全
+        ];
+
+        var myRadarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['技術', '価格', 'スピード', 'マナー', '安全'],
+                datasets: [{
+                    label: '評価',
+                    data: dataValues,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(54, 162, 235, 1)'
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        angleLines: { display: true },
+                        suggestedMin: 0,
+                        suggestedMax: 5,
+                        ticks: { stepSize: 1, display: false } // 目盛り数字を消してスッキリさせる
+                    }
+                },
+                plugins: {
+                    legend: { display: false } // 凡例を消す
+                }
+            }
+        });
+    });
+</script>
+
 {% endblock %}
