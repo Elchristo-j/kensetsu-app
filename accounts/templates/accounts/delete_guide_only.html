@@ -1,22 +1,55 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="container mt-5 mb-5">
     <div class="card shadow-sm border-0 rounded-4">
         <div class="card-body p-4">
+            
             <h3 class="fw-bold mb-4 border-bottom pb-2">解約・退会について</h3>
             
-            <p>現在、会員の解約は自動処理システム準備中のため、お手数ですが下記より『解約希望』と書き、『解約理由』を記載していただいて運営事務局までメッセージを送信してください。
-確認次第、順次登録情報を削除させていただきます。</p>
+            <div class="mb-4">
+                <h5 class="fw-bold text-dark">有料プランの解約について</h5>
+                <p class="text-muted">
+                    有料プラン（シルバー・ゴールドなど）をご契約中のお客様は、次回更新日の前日までに解約手続きを行うことで、次回の請求を停止することができます。<br>
+                    解約手続き後も、契約期間満了までは有料機能をご利用いただけます。
+                </p>
+                <p class="small text-secondary bg-light p-3 rounded">
+                    <strong>解約手順：</strong><br>
+                    Webブラウザでマイページにログインし、「プラン変更・確認」ボタンから「プランの解約」を選択してください。<br>
+                    ※iOSアプリ内からは解約操作が行えません。SafariやChromeをご利用ください。
+                </p>
+            </div>
 
-            <div class="alert alert-info mt-4">
-                <strong>退会をご希望の方へ</strong><br>
-                マイページの「アカウントを削除（退会）」ボタンから手続き可能です。
+            <div class="mb-4">
+                <h5 class="fw-bold text-dark">退会（アカウント削除）について</h5>
+                <p class="text-muted">
+                    サービスの利用を完全に停止し、登録データを削除したい場合は「退会」手続きを行ってください。<br>
+                    退会すると、これまでの案件履歴、メッセージ、評価データなど、すべての情報が復元できなくなりますのでご注意ください。
+                </p>
+                <div class="alert alert-info" role="alert">
+                    <strong><i class="bi bi-info-circle"></i> 退会をご希望の方へ</strong><br>
+                    マイページの最下部にある「アカウントを削除（退会）」ボタンから、即時退会が可能です。
+                </div>
             </div>
-            
+
+            <div class="mt-5 border-top pt-4">
+                <p class="text-muted small">
+                    ご不明な点がございましたら、お問い合わせフォームよりご連絡ください。
+                </p>
+                <div class="d-grid gap-2 col-md-6 mx-auto">
+                    <a href="{% url 'contact' %}" class="btn btn-outline-dark rounded-pill">
+                        <i class="bi bi-envelope"></i> お問い合わせ
+                    </a>
+                </div>
+            </div>
+
             <div class="text-center mt-4">
-                <a href="{% url 'mypage' %}" class="btn btn-outline-secondary rounded-pill">戻る</a>
+                <a href="{% url 'mypage' %}" class="btn btn-secondary rounded-pill px-4">
+                    マイページへ戻る
+                </a>
             </div>
+
         </div>
     </div>
 </div>
