@@ -266,3 +266,9 @@ def account_delete(request):
         messages.info(request, "退会処理が完了しました。ご利用ありがとうございました。")
         return redirect('home')
     return render(request, 'accounts/account_delete_confirm.html')
+
+# accounts/views.py の一番下あたりに追加
+@login_required
+def delete_guide_only(request):
+    # ここはIronランクでも誰でも見られるように制限はかけません
+    return render(request, 'accounts/delete_guide_only.html')

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-body p-4">
+            <h3 class="fw-bold mb-4 border-bottom pb-2">解約・退会について</h3>
+            
+            <p>現在、会員の解約は自動処理システム準備中のため、お手数ですが下記より『解約希望』と書き、『解約理由』を記載していただいて運営事務局までメッセージを送信してください。
+確認次第、順次登録情報を削除させていただきます。</p>
+
+            <div class="alert alert-info mt-4">
+                <strong>退会をご希望の方へ</strong><br>
+                マイページの「アカウントを削除（退会）」ボタンから手続き可能です。
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{% url 'mypage' %}" class="btn btn-outline-secondary rounded-pill">戻る</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

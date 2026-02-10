@@ -27,4 +27,7 @@ urlpatterns = [
 
     # ★この1行を追加してください！
     path('account/delete/', views.account_delete, name='account_delete'),
+
+    # accounts/urls.py の urlpatterns の中に追加
+    path('guide/cancellation-info/', views.delete_guide_only, name='delete_guide_only'),
 ]
