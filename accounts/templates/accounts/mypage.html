@@ -85,11 +85,11 @@
 
                     {% else %}
                         {% if user.profile.rank != 'iron' %}
-                            <a href="{% url 'plan_list' %}" class="btn btn-primary rounded-pill fw-bold shadow-sm">
+                            <a href="{% url 'subscription_plans' %}" class="btn btn-primary rounded-pill fw-bold shadow-sm">
                                 <i class="bi bi-arrow-up-circle"></i> プラン変更・確認
                             </a>
                         {% else %}   
-                            <a href="{% url 'plan_list' %}" class="btn btn-outline-primary rounded-pill fw-bold">
+                            <a href="{% url 'subscription_plans' %}" class="btn btn-outline-primary rounded-pill fw-bold">
                                 プランを見る
                             </a>
                             <p class="text-muted small mt-2 bg-light p-2 rounded">
