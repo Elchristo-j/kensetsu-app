@@ -179,7 +179,13 @@
                     </h2>
                     <div id="qa1" class="accordion-collapse collapse" data-bs-parent="#accordionQA">
                         <div class="accordion-body text-muted">
-                            A. 基本的な利用（応募・募集・チャット）は無料です。より多くの案件に応募したり、優先的に募集を表示させたい場合に「有料プラン」をご用意しています。
+                            {% if is_ios_app %}
+                                A. 基本的な利用（応募・募集・チャット）は無料です。<br>
+                                一部の機能には回数制限などが設けられています。
+                            {% else %}
+                                A. 基本的な利用（応募・募集・チャット）は無料です。<br>
+                                より多くの案件に応募したり、優先的に募集を表示させたい場合に「有料プラン」をご用意しています。
+                            {% endif %}
                         </div>
                     </div>
                 </div>
