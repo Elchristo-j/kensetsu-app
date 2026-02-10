@@ -63,37 +63,45 @@
                     <i class="bi bi-slash-circle"></i> ブロック管理
                 </a>
 
-                {% if is_ios_app %}
-                    <div class="bg-white p-3 rounded mt-2 border text-start">
-                        <small class="d-block text-muted mb-1">
-                            <i class="bi bi-info-circle"></i> <strong>プラン設定について</strong>
-                        </small>
-                        <p class="small text-secondary mb-0" style="font-size: 0.8rem; line-height: 1.4;">
-                            契約プランの変更・解約、およびクレジットカード情報の更新は、<br>
-                            セキュリティ保護のためアプリ内では行えません。<br>
-                            <span class="mt-1 d-block">
-                                お手数ですが、ブラウザ（SafariやChrome）よりWebサイトへログインして設定をお願いいたします。
-                            </span>
-                        </p>
-                    </div>
-                    <a href="{% url 'account_delete' %}" class="btn btn-sm btn-outline-secondary mt-2 rounded-pill">
-                        アカウントを削除（退会）
+                {% if user.profile.rank == 'iron' %}
+                    <a href="{% url 'profile_edit' %}" class="btn btn-success rounded-pill fw-bold shadow-sm">
+                        <i class="bi bi-person-badge"></i> 本人確認をする
                     </a>
+                    <p class="text-muted small mt-2 bg-light p-2 rounded">
+                        ※本人確認が完了すると、<br>会員ランクがアップします。
+                    </p>
+
+                    {% if is_ios_app %}
+                        <a href="{% url 'account_delete' %}" class="btn btn-sm btn-outline-secondary mt-2 rounded-pill">
+                            アカウントを削除（退会）
+                        </a>
+                    {% endif %}
+
                 {% else %}
-                    {% if user.profile.rank != 'iron' %}
+                    {% if is_ios_app %}
+                        <div class="bg-white p-3 rounded mt-2 border text-start">
+                            <small class="d-block text-muted mb-1">
+                                <i class="bi bi-info-circle"></i> <strong>プラン設定について</strong>
+                            </small>
+                            <p class="small text-secondary mb-0" style="font-size: 0.8rem; line-height: 1.4;">
+                                契約プランの変更・解約、およびクレジットカード情報の更新は、<br>
+                                セキュリティ保護のためアプリ内では行えません。<br>
+                                <span class="mt-1 d-block">
+                                    お手数ですが、ブラウザ（SafariやChrome）よりWebサイトへログインして設定をお願いいたします。
+                                </span>
+                            </p>
+                        </div>
+                        <a href="{% url 'account_delete' %}" class="btn btn-sm btn-outline-secondary mt-2 rounded-pill">
+                            アカウントを削除（退会）
+                        </a>
+
+                    {% else %}
                         <a href="{% url 'upgrade_plan_page' %}" class="btn btn-primary rounded-pill fw-bold shadow-sm">
                             <i class="bi bi-arrow-up-circle"></i> プラン変更・確認
                         </a>
-                    {% else %}   
-                        <a href="{% url 'upgrade_plan_page' %}" class="btn btn-outline-primary rounded-pill fw-bold">
-                            プランを見る
-                        </a>
-                        <p class="text-muted small mt-2">
-                            ※本人確認が完了すると有料プランへ変更可能です。
-                        </p>
                     {% endif %}
                 {% endif %}
-            </div>
+                </div>
             
             <div class="mt-auto text-start bg-light p-3 rounded small border">
                 <p class="mb-2 fw-bold text-dark border-bottom pb-1"><i class="bi bi-ticket-perforated-fill text-primary"></i> 今月の残枠状況</p>
