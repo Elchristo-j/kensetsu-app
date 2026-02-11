@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     # ... 拡張ライブラリ ...
     'cloudinary_storage',
     'cloudinary',
+    'storages',  # ← これを追記
     # ... 自作アプリ ...
     'jobs',
     'accounts',
@@ -130,6 +131,23 @@ CLOUDINARY_STORAGE = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# ==========================================
+# 画像ファイル (Media) 設定 
+# ==========================================
+
+# --- AWS S3 設定 (機密データ用) ---
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = 'ap-northeast-1'
+
+# S3のURLに署名（期限付きの鍵）を付ける設定（セキュリティ強化）
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None
+AWS_S3_VERIFY = True
+
 
 
 # ==========================================

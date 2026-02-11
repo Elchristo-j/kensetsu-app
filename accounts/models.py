@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+# 1. 冒頭にインポートを追加
+from .storage_backends import PrivateS3Storage
 
 # 都道府県リスト
 PREFECTURES = [
@@ -48,8 +50,17 @@ class Profile(models.Model):
     bio = models.TextField(blank=True, verbose_name="自己紹介")
     
     # 画像
+    # アバターは今まで通り（デフォルトのCloudinaryへ）
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name="アバター画像")
-    id_card_image = models.ImageField(upload_to='id_cards/', blank=True, null=True, verbose_name="本人確認書類")
+
+    # 本人確認書類のみ、S3（PrivateS3Storage）を指定
+    id_card_image = models.ImageField(
+        upload_to='id_cards/', 
+        storage=PrivateS3Storage(),  # ← これを追加
+        blank=True, 
+        null=True, 
+        verbose_name="本人確認書類"
+    )
 
     # 詳細プロフィール
     experience_years = models.IntegerField(default=0, verbose_name="経験年数")
