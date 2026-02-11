@@ -106,14 +106,14 @@
         <div class="col-md-8">
             <h4 class="fw-bold mb-3">会員の解約について</h4>
             <div class="card bg-light border-0 p-4 rounded-4">
-                <p>
-                    現在、会員の解約は自動処理システム準備中のため、お手数ですが下記より<strong>『解約希望』</strong>と<strong>『解約理由』</strong>を記載していただき、運営事務局までメッセージを送信してください。<br>
-                    確認次第、順次登録情報を削除させていただきます。
-                </p>
+               <p class="mb-3" style="line-height: 1.8;">
+                会員の解約は、マイページにて<strong>『アカウント削除（退会）』</strong>ボタンを押し、<strong>『はい、退会します』</strong>ボタンを押せば完了です。
+                アカウント情報は完全に削除されますが、押し間違い事故への対応もあり、30日間はデータベースに残る可能性がありますのでご了承ください。<br>
+               </p>
                 
                 <div class="text-center mt-3">
-                    <a href="mailto:support@example.com" class="btn btn-outline-danger rounded-pill px-4">
-                        <i class="bi bi-envelope"></i> メッセージを送信する
+                    <a href="{% url 'mypage' %}" class="btn btn-outline-danger rounded-pill px-5 py-2 fw-bold">
+                     <i class="bi bi-envelope"></i> マイページで退会手続きをする
                     </a>
                 </div>
             </div>
