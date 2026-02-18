@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+
 {% block content %}
 <div class="container my-5" style="max-width: 500px;">
   <div class="card shadow border-0 overflow-hidden">
@@ -8,15 +9,32 @@
     <div class="card-body p-4">
       <form method="post">
         {% csrf_token %}
+        
+        {# ▼▼▼ ここからループ処理 ▼▼▼ #}
         {% for field in form %}
           <div class="mb-3">
             <label class="form-label fw-bold">{{ field.label }}</label>
+            
+            {# 入力フォーム本体 #}
             {{ field }}
+
+            {# ▼▼▼ ここを追加しました！エラーがある時だけ赤文字で表示 ▼▼▼ #}
+            {% if field.errors %}
+              <div class="text-danger small mt-1 fw-bold">
+                {% for error in field.errors %}
+                  {{ error }}<br>
+                {% endfor %}
+              </div>
+            {% endif %}
+            {# ▲▲▲ 追加終わり ▲▲▲ #}
+
             {% if field.help_text %}
               <div class="form-text text-muted small">{{ field.help_text }}</div>
             {% endif %}
           </div>
         {% endfor %}
+        {# ▲▲▲ ループ終了 ▲▲▲ #}
+
         <button type="submit" class="btn btn-sumi w-100 mt-3 py-2">登録する</button>
       </form>
     </div>

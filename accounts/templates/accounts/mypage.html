@@ -72,17 +72,13 @@
                     </p>
                 {% else %}
                     {% if is_ios_app %}
-                        <div class="bg-white p-3 rounded mt-2 border text-start">
-                            <small class="d-block text-muted mb-1">
-                                <i class="bi bi-info-circle"></i> <strong>詳細設定について</strong>
+                        <div class="bg-light p-3 rounded mt-2 text-center border">
+                            <small class="text-muted d-block">
+                                <i class="bi bi-shield-lock"></i> アカウント設定
                             </small>
-                            <p class="small text-secondary mb-0" style="font-size: 0.8rem; line-height: 1.4;">
-                                アカウント情報の変更や詳細設定は、<br>
-                                セキュリティ保護のためアプリ内では行えません。<br>
-                                <span class="mt-1 d-block">
-                                    お手数ですが、Webサイト版にて設定のご確認をお願いいたします。
-                                </span>
-                            </p>
+                            <small class="text-secondary" style="font-size: 0.75rem;">
+                                現在、セキュリティ保護のため<br>アプリ内での設定変更を制限しています。
+                            </small>
                         </div>
                     {% else %}
                         <a href="{% url 'upgrade_plan_page' %}" class="btn btn-primary rounded-pill fw-bold shadow-sm">
