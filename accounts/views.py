@@ -154,6 +154,8 @@ def mypage(request):
         'remaining_apply': remaining_apps, # HTML側で使用
         'limit_jobs': my_limits['job'],
         'limit_apps': my_limits['app'],
+        
+        'prefectures': PREFECTURES,
     }
     
     # 5. レンダリング（returnはこれ1回のみ）
