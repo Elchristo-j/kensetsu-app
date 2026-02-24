@@ -124,6 +124,13 @@
                   <div class="alert alert-success border-0 shadow-sm rounded-4">
                     <p class="fw-bold mb-2">✅ すでに応募済みです</p>
                     <a href="{% url 'cancel_application' job.id %}" class="btn btn-outline-danger btn-sm rounded-pill">応募をキャンセルする</a>
+                  {% if is_applied and application %}
+                  <div class="mt-3">
+                      <a href="{% url 'chat_room' application.id %}" class="btn btn-info w-100">
+                          <i class="fas fa-comments"></i> 募集者とチャットする
+                      </a>
+                  </div>
+                {% endif %}  
                   </div>
                 {% elif not job.is_closed %}
                   

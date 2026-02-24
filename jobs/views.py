@@ -159,9 +159,11 @@ def job_detail(request, job_id):
             messages.warning(request, "この案件は表示できません。")
             return redirect('home')
 
+    application = None
     is_applied = False
     if request.user.is_authenticated:
-        is_applied = Application.objects.filter(job=job, applicant=request.user).exists()
+        application = Application.objects.filter(job=job, applicant=request.user).first()
+        is_applied = (application is not None)
     
     can_apply = False
     limit_info = 0
@@ -172,13 +174,19 @@ def job_detail(request, job_id):
     if request.method == 'POST':
         if not request.user.is_authenticated: return redirect('login')
         if not is_applied and can_apply and not job.is_closed:
-            Application.objects.create(job=job, applicant=request.user)
+            new_app = Application.objects.create(job=job, applicant=request.user)
             messages.success(request, '応募が完了しました！')
             return redirect('job_detail', job_id=job.id)
         else:
             messages.error(request, '応募できませんでした（制限超過または応募済み）')
 
-    context = {'job': job, 'is_applied': is_applied, 'can_apply': can_apply, 'limit_info': limit_info}
+    context = {
+        'job': job, 
+        'is_applied': is_applied, 
+        'application': application,  # ← これがチャットボタンへのリンクに使えます
+        'can_apply': can_apply, 
+        'limit_info': limit_info
+    }
     return render(request, 'jobs/job_detail.html', context)
 
 @login_required
@@ -233,7 +241,15 @@ def apply_job(request, job_id):
 @login_required
 def cancel_application(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
-    Application.objects.filter(job=job, applicant=request.user).delete()
+    app = Application.objects.filter(job=job, applicant=request.user).first()
+    if app:
+        # この応募に関連するチャット通知などを削除（リンクURLで判定）
+        chat_link_part = f"/application/{app.id}/"
+        Notification.objects.filter(link__contains=chat_link_part).delete()
+        
+        # 応募自体の削除
+        app.delete()
+        messages.info(request, "応募をキャンセルしました。")
     return redirect('job_detail', job_id=job.id)
 
 # --- 3. Management & Contract Flow (★契約・完了・評価) ---
@@ -318,7 +334,12 @@ def submit_review(request, application_id):
 
 @login_required
 def chat_room(request, application_id):
-    app = get_object_or_404(Application, pk=application_id)
+    try:
+        app = Application.objects.get(pk=application_id)
+    except Application.DoesNotExist:
+        messages.warning(request, "このチャットルームは存在しないか、応募がキャンセルされました。")
+        return redirect('mypage')
+        
     if request.user != app.applicant and request.user != app.job.created_by:
         return redirect('home')
 

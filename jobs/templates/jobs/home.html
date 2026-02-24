@@ -4,7 +4,7 @@
 
 {% block content %}
 <style>
-    /* ランク別カードスタイル */
+    /* ランク別カードスタイル（枠線） */
     .card-rank-platinum { border: 2px solid #00d2ff; }
     .card-rank-gold { border: 2px solid #f1c40f; }
     .card-rank-silver { border: 2px solid #95a5a6; }
@@ -30,26 +30,31 @@
         border-radius: 0 0 2rem 2rem;
     }
 
-    /* ▼▼▼ ここが追加ポイント（ホバーエフェクト） ▼▼▼ */
+    /* ▼▼▼ ホバーエフェクト（光る影） ▼▼▼ */
     .job-card-hover {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     
-    /* 基本のホバー */
+    /* 基本のホバー（少し浮く） */
     .job-card-hover:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
         z-index: 5;
     }
 
-    /* ゴールド会員：金色のぼんやり光る影 */
+    /* ゴールド会員：金色の強い光 */
     .card-rank-gold.job-card-hover:hover {
-        box-shadow: 0 10px 25px rgba(241, 196, 15, 0.5) !important;
+        box-shadow: 0 0 20px rgba(241, 196, 15, 0.8), 0 10px 25px rgba(241, 196, 15, 0.5) !important;
     }
 
-    /* プラチナ会員：青く光る影 */
+    /* プラチナ会員：青白い強い光 */
     .card-rank-platinum.job-card-hover:hover {
-        box-shadow: 0 10px 25px rgba(0, 210, 255, 0.5) !important;
+        box-shadow: 0 0 20px rgba(0, 210, 255, 0.8), 0 10px 25px rgba(0, 210, 255, 0.5) !important;
+    }
+
+    /* シルバー会員：銀色の控えめな光 */
+    .card-rank-silver.job-card-hover:hover {
+        box-shadow: 0 0 15px rgba(149, 165, 166, 0.7), 0 10px 20px rgba(149, 165, 166, 0.4) !important;
     }
 </style>
 
@@ -88,11 +93,17 @@
                 <div class="col-md-4">
                     <input type="text" name="q" class="form-control border-0 bg-light py-2" placeholder="キーワード (例: 荷揚げ, 夜勤)">
                 </div>
-                <div class="col-md-2">
+                
+                <div class="col-md-2 d-flex flex-column gap-2">
                     <button type="submit" class="btn btn-dark w-100 py-2 fw-bold rounded-pill">検索</button>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'favorite_search' %}" class="btn btn-warning w-100 py-2 fw-bold rounded-pill" style="font-size: 0.8rem;">
+                        <i class="fas fa-star"></i> お気に入り
+                    </a>
+                    {% endif %}
                 </div>
             </form>
-        </div>
+            </div>
     </div>
 </div>
 
@@ -120,7 +131,7 @@
     <div class="row g-4">
         {% for job in jobs %}
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 border-0 rounded-4 position-relative card-rank-{{ job.created_by.profile.display_rank|lower }} shadow-sm job-card-hover">
+            <div class="card h-100 border-0 rounded-4 position-relative card-rank-{{ job.created_by.profile.rank|lower }} shadow-sm job-card-hover">
                 
                 {% if job.is_new %}
                     <span class="badge-new">NEW!!</span>
@@ -165,8 +176,8 @@
                         {% endif %}
 
                         <div class="mt-2">
-                            <span class="badge rank-badge badge-{{ job.created_by.profile.display_rank|lower }}">
-                                {{ job.created_by.profile.display_rank }}会員
+                            <span class="badge rank-badge badge-{{ job.created_by.profile.rank|lower }}">
+                                {{ job.created_by.profile.rank|upper }}会員
                             </span>
                         </div>
                     </div>
