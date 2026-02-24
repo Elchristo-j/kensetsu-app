@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load humanize %}
-{% load job_extras %} {# ★カスタム時間表示用 #}
+{% load job_extras %}
 
 {% block content %}
 <style>
@@ -97,7 +97,8 @@
                 <div class="col-md-2 d-flex flex-column gap-2">
                     <button type="submit" class="btn btn-dark w-100 py-2 fw-bold rounded-pill">検索</button>
                     {% if user.is_authenticated %}
-                    <a href="{% url 'favorite_search_view' %}" class="btn btn-warning ...">
+                    <a href="{% url 'favorite_search_view' %}" class="btn btn-warning w-100 py-2 fw-bold rounded-pill" style="font-size: 0.8rem;">
+                        <i class="fas fa-star"></i> お気に入り
                     </a>
                     {% endif %}
                 </div>
@@ -146,7 +147,6 @@
                                 {{ job.prefecture }}{{ job.city }}
                             </span>
                             <div class="text-muted" style="font-size: 0.75rem;">
-                                {# ★カスタム時間表示 #}
                                 {{ job.created_at|custom_timesince }}
                             </div>
                         </div>
