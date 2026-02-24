@@ -182,4 +182,196 @@
                     <div class="col-md-5 text-center mb-3 mb-md-0">
                         <h1 class="display-4 fw-bold text-primary">{{ worker_stats.average }}</h1>
                         <div class="text-warning fs-4">
-                            {% if worker_stats.average >= 9
+                            {% if worker_stats.average >= 9.0 %}★★★★★
+                            {% elif worker_stats.average >= 7.0 %}★★★★☆
+                            {% elif worker_stats.average >= 5.0 %}★★★☆☆
+                            {% elif worker_stats.average >= 3.0 %}★★☆☆☆
+                            {% else %}★☆☆☆☆{% endif %}
+                        </div>
+                        <p class="text-muted small mt-2">
+                            評価件数: {{ worker_stats.count }}件
+                        </p>
+                    </div>
+                    <div class="col-md-7 chart-container">
+                        <canvas id="pChartWorker"></canvas>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-4 bg-white border rounded text-muted">
+                    <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-info-circle-fill text-primary"></i> 評価項目の基準</h6>
+                    <div class="row g-3 small">
+                        <div class="col-md-6"><strong class="d-block text-dark">能力</strong>現場で通用する技術力、知識、スピード。</div>
+                        <div class="col-md-6"><strong class="d-block text-dark">協調性</strong>チームワーク、報連相の徹底。</div>
+                        <div class="col-md-6"><strong class="d-block text-dark">勤勉性</strong>遅刻欠席なし、真面目な勤務態度。</div>
+                        <div class="col-md-6"><strong class="d-block text-dark">人間性</strong>挨拶、マナー、現場の雰囲気作り。</div>
+                        <div class="col-12"><strong class="d-block text-dark">有用性</strong>支払った報酬以上の価値を感じたか。</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="content-employer">
+                <div class="row align-items-center">
+                    <div class="col-md-5 text-center mb-3 mb-md-0">
+                        <h1 class="display-4 fw-bold text-success">{{ employer_stats.average }}</h1>
+                        <div class="text-warning fs-4">
+                            {% if employer_stats.average >= 9.0 %}★★★★★
+                            {% elif employer_stats.average >= 7.0 %}★★★★☆
+                            {% elif employer_stats.average >= 5.0 %}★★★☆☆
+                            {% else %}★★☆☆☆{% endif %}
+                        </div>
+                        <p class="text-muted small mt-2">
+                            評価件数: {{ employer_stats.count }}件
+                        </p>
+                    </div>
+                    <div class="col-md-7 chart-container">
+                        <canvas id="pChartEmployer"></canvas>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-4 bg-white border rounded text-muted">
+                    <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-info-circle-fill text-success"></i> 評価項目の基準</h6>
+                    <div class="row g-3 small">
+                        <div class="col-md-6"><strong class="d-block text-dark">作業時間</strong>時間厳守、無理な残業なし。</div>
+                        <div class="col-md-6"><strong class="d-block text-dark">報酬</strong>見合った金額、スムーズな支払い。</div>
+                        <div class="col-md-6"><strong class="d-block text-dark">仕事内容</strong>募集内容との相違なし。</div>
+                        <div class="col-md-6"><strong class="d-block text-dark">段取り</strong>資材準備、的確な指示出し。</div>
+                        <div class="col-12"><strong class="d-block text-dark">信用性</strong>トラブル対応、信頼感。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <h5 class="fw-bold mb-4 border-bottom pb-2"><i class="bi bi-briefcase"></i> 案件管理ダッシュボード</h5>
+        <ul class="nav nav-tabs mb-3" id="jobTab" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active fw-bold text-dark" id="applied-tab" data-bs-toggle="tab" data-bs-target="#applied" type="button">
+                    応募した案件
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link fw-bold text-dark" id="posted-tab" data-bs-toggle="tab" data-bs-target="#posted" type="button">
+                    募集した案件
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="jobTabContent">
+            <div class="tab-pane fade show active" id="applied">
+                {% if my_applications %}
+                    <div class="list-group">
+                        {% for app in my_applications %}
+                            <div class="list-group-item list-group-item-action border-0 bg-light mb-2 rounded-3">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1 fw-bold text-primary">
+                                        <a href="{% url 'job_detail' app.job.id %}" class="text-decoration-none">{{ app.job.title }}</a>
+                                    </h6>
+                                    <small class="text-muted">{{ app.applied_at|date:"m/d" }}</small>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <span class="badge bg-secondary">{{ app.get_status_display }}</span>
+                                    {% if app.status == 'contracted' or app.status == 'completed' %}
+                                        <a href="{% url 'chat_room' app.id %}" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                            <i class="bi bi-chat-dots"></i> チャットへ
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-4">応募した案件はありません。</p>
+                {% endif %}
+            </div>
+
+            <div class="tab-pane fade" id="posted">
+                {% if my_posted_jobs %}
+                    <div class="list-group">
+                        {% for job in my_posted_jobs %}
+                            <div class="list-group-item list-group-item-action border-0 bg-light mb-2 rounded-3">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1 fw-bold">
+                                        <a href="{% url 'job_detail' job.id %}" class="text-decoration-none text-dark">{{ job.title }}</a>
+                                    </h6>
+                                    <small class="text-muted">{{ job.created_at|date:"m/d" }}</small>
+                                </div>
+                                <div class="mt-2 text-end">
+                                    <a href="{% url 'job_applicants' job.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                        応募者管理
+                                    </a>
+                                    <a href="{% url 'edit_job' job.id %}" class="btn btn-sm btn-outline-secondary rounded-pill ms-1">編集</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-4">まだ募集していません。<br><a href="{% url 'create_job' %}">案件を作成する</a></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // 共通チャート設定関数
+    const createChart = (ctxId, data, labels, color) => {
+        const ctx = document.getElementById(ctxId);
+        if (!ctx) return; 
+
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '評価スコア',
+                    data: data,
+                    backgroundColor: color + '33', // 透明度20%
+                    borderColor: color,
+                    borderWidth: 2,
+                    pointBackgroundColor: color
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 10,  // ★profile_detailに合わせて10点満点に設定
+                        ticks: { stepSize: 2, display: false },
+                        grid: { circular: true, color: 'rgba(0, 0, 0, 0.3)' },
+                        angleLines: { color: 'rgba(0, 0, 0, 0.3)' },
+                        pointLabels: { font: { size: 12 }, color: '#333' }
+                    }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    };
+
+    // ワーカーチャート描画 (データがある場合のみ)
+    {% if worker_stats.exists %}
+        createChart(
+            'pChartWorker', 
+            {{ worker_stats.chart_data|safe }}, 
+            {{ worker_stats.labels|safe }}, 
+            '#0d6efd' // 青色
+        );
+    {% endif %}
+
+    // 発注者チャート描画 (データがある場合のみ)
+    {% if employer_stats.exists %}
+        createChart(
+            'pChartEmployer', 
+            {{ employer_stats.chart_data|safe }}, 
+            {{ employer_stats.labels|safe }}, 
+            '#198754' // 緑色
+        );
+    {% endif %}
+});
+</script>
+{% endblock %}
