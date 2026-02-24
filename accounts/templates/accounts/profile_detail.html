@@ -156,7 +156,45 @@
         </div>
     </div>
 
-    <div class="card shadow-sm border-0 rounded-4 p-4">
+    {% if target_user == request.user %}
+    <div class="card border-0 shadow-sm rounded-4 mt-4 mb-4 bg-white">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-3"><i class="fas fa-star text-warning"></i> お気に入りエリアの管理</h5>
+            
+            <form action="{% url 'add_favorite_area' %}" method="post" class="row g-2 mb-3">
+                {% csrf_token %}
+                <div class="col-md-5">
+                    <select name="prefecture" class="form-select border border-secondary bg-light">
+                        <option value="">都道府県を選択</option>
+                        {% for p in prefectures %}
+                            {% if p.0 %}<option value="{{ p.0 }}">{{ p.1 }}</option>{% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <input type="text" name="city" class="form-control border border-secondary bg-light" placeholder="市区町村 (任意)">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-warning w-100 fw-bold">追加</button>
+                </div>
+            </form>
+
+            {% if target_user.favorite_areas.all %}
+            <div class="d-flex flex-wrap gap-2">
+                {% for area in target_user.favorite_areas.all %}
+                <span class="badge bg-light text-dark border px-3 py-2 d-flex align-items-center rounded-pill shadow-sm">
+                    {{ area.prefecture }} {% if area.city %}{{ area.city }}{% endif %}
+                    <a href="{% url 'delete_favorite_area' area.id %}" class="text-danger ms-2 text-decoration-none" onclick="return confirm('削除しますか？');">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </a>
+                </span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    <div class="card shadow-sm border-0 rounded-4 p-4 mt-4">
         <h5 class="fw-bold mb-3 border-bottom pb-2">実績・評価</h5>
         
         <ul class="nav nav-tabs mb-4" id="profileTab" role="tablist">
