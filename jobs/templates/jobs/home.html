@@ -97,8 +97,7 @@
                 <div class="col-md-2 d-flex flex-column gap-2">
                     <button type="submit" class="btn btn-dark w-100 py-2 fw-bold rounded-pill">検索</button>
                     {% if user.is_authenticated %}
-                    <a href="{% url 'favorite_search' %}" class="btn btn-warning w-100 py-2 fw-bold rounded-pill" style="font-size: 0.8rem;">
-                        <i class="fas fa-star"></i> お気に入り
+                    <a href="{% url 'favorite_search_view' %}" class="btn btn-warning ...">
                     </a>
                     {% endif %}
                 </div>

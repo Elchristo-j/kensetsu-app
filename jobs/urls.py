@@ -57,4 +57,6 @@ urlpatterns = [
     # ... 他のURL ...
     path('blocked-list/', views.blocked_list, name='blocked_list'),
     path('unblock/<int:user_id>/', views.unblock_user, name='unblock_user'),
+
+    path('favorite-search/', views.favorite_search_view, name='favorite_search_view'),
 ]
