@@ -131,7 +131,7 @@ def favorite_search_view(request):
     favorite_areas = request.user.favorite_areas.all()
     if not favorite_areas.exists():
         messages.info(request, "お気に入りエリアが登録されていません。")
-        return redirect('profile_detail', user_id=request.user.id)
+        return redirect('mypage') # マイページにリダイレクト
     
     query = Q()
     for area in favorite_areas:
@@ -390,11 +390,23 @@ def mypage(request):
     current_post = Job.objects.filter(created_by=request.user, created_at__gte=start_of_month).count()
     remaining_post = max(0, profile.posting_limit - current_post)
 
+    worker_stats = calculate_stats_for_user(request.user, 'employer_to_worker')
+    employer_stats = calculate_stats_for_user(request.user, 'worker_to_employer')
+
+    # プラン情報の取得 (必要な場合)
+    limit_jobs = profile.posting_limit
+    limit_apps = profile.monthly_limit
+
     context = {
         'my_applications': my_applications,
         'my_posted_jobs': my_posted_jobs,
         'remaining_apply': remaining_apply,
         'remaining_post': remaining_post,
+        'worker_stats': worker_stats,
+        'employer_stats': employer_stats,
+        'limit_jobs': limit_jobs,
+        'limit_apps': limit_apps,
+        'prefectures': PREFECTURES, # ★ これを追加することでマイページで都道府県が表示されます！
     }
     return render(request, 'accounts/mypage.html', context)
 
@@ -444,12 +456,12 @@ def add_favorite_area(request):
         c = request.POST.get('city', '')
         if p:
             FavoriteArea.objects.get_or_create(user=request.user, prefecture=p, city=c)
-    return redirect('profile_detail', user_id=request.user.id)
+    return redirect('mypage') # ★ プロフィールではなくマイページにリダイレクト
 
 @login_required
 def delete_favorite_area(request, area_id):
     get_object_or_404(FavoriteArea, id=area_id, user=request.user).delete()
-    return redirect('profile_detail', user_id=request.user.id)
+    return redirect('mypage') # ★ プロフィールではなくマイページにリダイレクト
 
 # --- 5. Admin & Static & New Pages ---
 
