@@ -243,13 +243,20 @@ def cancel_application(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     app = Application.objects.filter(job=job, applicant=request.user).first()
     if app:
-        # この応募に関連するチャット通知などを削除（リンクURLで判定）
+        # この応募に関連するチャット通知などを削除
         chat_link_part = f"/application/{app.id}/"
         Notification.objects.filter(link__contains=chat_link_part).delete()
         
-        # 応募自体の削除
-        app.delete()
-        messages.info(request, "応募をキャンセルしました。")
+        # ▼▼ 修正：採用前なら消す、採用後なら「辞退」ステータスに変える ▼▼
+        if app.status == 'pending':
+            app.delete()
+        else:
+            app.status = 'canceled'
+            app.save()
+            # 相手（発注者）に辞退したことを通知する
+            create_notification(job.created_by, f"案件「{job.title}」で{request.user.username}さんが辞退しました。", f"/application/{app.id}/chat/")
+            
+        messages.info(request, "応募をキャンセル（辞退）しました。")
     return redirect('job_detail', job_id=job.id)
 
 # --- 3. Management & Contract Flow (★契約・完了・評価) ---
@@ -279,12 +286,18 @@ def reject_applicant(request, application_id):
 def contract_application(request, application_id):
     app = get_object_or_404(Application, pk=application_id)
     if request.user == app.job.created_by: 
-        app.status = 'contracted'
-        app.save()
-        create_notification(app.applicant, f"案件「{app.job.title}」の契約が成立しました！", f"/application/{app.id}/chat/")
-        messages.success(request, "契約が成立しました。業務を開始できます。")
+        # ▼▼ 修正：相手が辞退していないかチェックする ▼▼
+        if app.status == 'canceled':
+            messages.error(request, "この応募者はすでに辞退しています。契約はできません。")
+            return redirect('chat_room', application_id=app.id)
+            
+        if app.status == 'accepted':
+            app.status = 'contracted'
+            app.save()
+            create_notification(app.applicant, f"案件「{app.job.title}」の契約が成立しました！", f"/application/{app.id}/chat/")
+            messages.success(request, "契約が成立しました。業務を開始できます。")
+            
     return redirect('chat_room', application_id=app.id)
-
 @login_required
 def complete_job_work(request, application_id):
     app = get_object_or_404(Application, pk=application_id)

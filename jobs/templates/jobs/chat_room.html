@@ -14,6 +14,7 @@
                     {% elif application.status == 'contracted' %}bg-primary
                     {% elif application.status == 'completed' %}bg-success
                     {% elif application.status == 'reviewed' %}bg-dark
+                    {% elif application.status == 'canceled' %}bg-danger
                     {% else %}bg-secondary{% endif %} fs-6">
                     ステータス: {{ application.get_status_display }}
                 </span>
@@ -27,7 +28,12 @@
             </div>
 
             <div class="d-flex gap-2">
-                {% if application.status == 'accepted' %}
+                {% if application.status == 'canceled' %}
+                    <button class="btn btn-outline-danger fw-bold" disabled>
+                        <i class="bi bi-x-circle"></i> 辞退済み
+                    </button>
+
+                {% elif application.status == 'accepted' %}
                     {% if request.user == application.job.created_by %}
                         <a href="{% url 'contract_application' application.id %}" class="btn btn-primary fw-bold" onclick="return confirm('契約を確定しますか？');">
                             <i class="bi bi-pen"></i> 契約を成立させる
@@ -69,6 +75,13 @@
                 <p class="text-center text-muted my-5">メッセージはまだありません。やり取りを開始しましょう！</p>
             {% endfor %}
         </div>
+        
+        {% if application.status == 'canceled' %}
+        <div class="card-footer bg-light border-top p-4 text-center">
+            <h6 class="text-danger fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill"></i> この応募は辞退されました</h6>
+            <span class="text-muted small">辞退されたため、メッセージの送信や契約手続きは行えません。</span>
+        </div>
+        {% else %}
         <div class="card-footer bg-white border-top p-3">
             <form method="post" enctype="multipart/form-data" class="d-flex gap-2">
                 {% csrf_token %}
@@ -76,7 +89,8 @@
                 <button type="submit" class="btn btn-dark rounded-pill px-4"><i class="bi bi-send"></i></button>
             </form>
         </div>
-    </div>
+        {% endif %}
+        </div>
 </div>
 
 <div class="modal fade" id="reviewModal" tabindex="-1">
