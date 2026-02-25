@@ -84,7 +84,7 @@ class Application(models.Model):
         ('contracted', '契約成立'),
         ('completed', '業務完了'),
         ('reviewed', '評価済み'),
-        ('rejected', '不採用')
+        ('rejected', '不採用'),
         ('canceled', '辞退'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='applied')
