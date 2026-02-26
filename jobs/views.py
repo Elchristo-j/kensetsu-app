@@ -256,6 +256,15 @@ def cancel_application(request, job_id):
         messages.info(request, "応募を辞退しました。")
     return redirect('job_detail', job_id=job.id)
 
+# --- 3. Management & Contract Flow (★契約・完了・評価) ---
+
+# ▼▼ 復活：消えていた応募者リスト表示の処理 ▼▼
+@login_required
+def job_applicants(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    if job.created_by != request.user: return redirect('home')
+    return render(request, 'jobs/job_applicants.html', {'job': job, 'applications': job.applications.all()})
+
 @login_required
 def adopt_applicant(request, application_id):
     app = get_object_or_404(Application, pk=application_id)
@@ -286,26 +295,23 @@ def contract_application(request, application_id):
             create_notification(app.applicant, f"案件「{app.job.title}」の契約が成立しました！", f"/application/{app.id}/chat/")
             messages.success(request, "契約が成立しました。業務を開始できます。")
 
-            # ▼▼▼ 追加：枠が埋まったら他の人を自動でお祈り（見送り）にする魔法 ▼▼▼
+            # ▼▼▼ 魔法：枠が埋まったら他の人を自動でお祈り（見送り）にする ▼▼▼
             job = app.job
-            # 現在の「契約成立(contracted)」以上の人数の合計を計算
             filled_count = job.applications.filter(status__in=['contracted', 'completed']).count()
             
             # もし募集枠が完全に埋まったら…
             if filled_count >= job.headcount:
-                # まだ「審査中(pending)」か「交渉中(accepted)」のまま取り残されている他の応募者を探す
                 leftover_apps = job.applications.filter(status__in=['pending', 'accepted'])
                 
                 for leftover in leftover_apps:
                     leftover.status = 'rejected'
                     leftover.save()
-                    # 丁寧なお見送り通知を送る
                     create_notification(
                         leftover.applicant, 
                         f"案件「{job.title}」は募集枠が埋まったため、今回は見送りとなりました。またの機会にお願いいたします。", 
                         f"/job/{job.id}/"
                     )
-            # ▲▲▲ 追加ここまで ▲▲▲
+            # ▲▲▲ 魔法ここまで ▲▲▲
             
     return redirect('chat_room', application_id=app.id)
 
@@ -430,7 +436,7 @@ def mypage(request):
         'employer_stats': employer_stats,
         'limit_jobs': limit_jobs,
         'limit_apps': limit_apps,
-        'prefectures': PREFECTURES, # ★ これを追加することでマイページで都道府県が表示されます！
+        'prefectures': PREFECTURES,
     }
     return render(request, 'accounts/mypage.html', context)
 
@@ -480,12 +486,12 @@ def add_favorite_area(request):
         c = request.POST.get('city', '')
         if p:
             FavoriteArea.objects.get_or_create(user=request.user, prefecture=p, city=c)
-    return redirect('mypage') # ★ プロフィールではなくマイページにリダイレクト
+    return redirect('mypage')
 
 @login_required
 def delete_favorite_area(request, area_id):
     get_object_or_404(FavoriteArea, id=area_id, user=request.user).delete()
-    return redirect('mypage') # ★ プロフィールではなくマイページにリダイレクト
+    return redirect('mypage')
 
 # --- 5. Admin & Static & New Pages ---
 
@@ -499,10 +505,8 @@ def approve_profile(request, user_id):
     p = get_object_or_404(User, pk=user_id).profile
     p.is_verified = True
 
-    # ▼▼▼ 追加：IronランクならBronzeへ昇格させる ▼▼▼
     if p.rank == 'iron':
         p.rank = 'bronze'
-    # ▲▲▲ 追加ここまで ▲▲▲
 
     p.save()
     return redirect('admin_dashboard')
@@ -521,16 +525,13 @@ def law_view(request): return render(request, 'jobs/static_pages/law.html')
 def guide_view(request): return render(request, 'jobs/guide_qa.html')
 
 def subscription_plans(request):
-    # 1. 未ログインの場合 -> ログイン画面へ
     if not request.user.is_authenticated:
         messages.warning(request, "プランの確認・変更にはログインが必要です。")
         return redirect('login')
 
-    # 2. Ironランク（未確認）の場合 -> 案内ページへ強制移動
     if request.user.profile.rank == 'iron':
         return render(request, 'accounts/verification_required.html')
 
-    # 3. それ以外（Bronze以上） -> 正常にプランページを表示
     return render(request, 'jobs/subscription_plans.html')
 
 # --- 6. Stripe Payment ---
