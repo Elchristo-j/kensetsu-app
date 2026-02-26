@@ -239,6 +239,7 @@ def apply_job(request, job_id):
     return redirect('job_detail', job_id=job.id)
 
 @login_required
+@login_required
 def cancel_application(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     app = Application.objects.filter(job=job, applicant=request.user).first()
@@ -247,26 +248,15 @@ def cancel_application(request, job_id):
         chat_link_part = f"/application/{app.id}/"
         Notification.objects.filter(link__contains=chat_link_part).delete()
         
-        # ▼▼ 修正：採用前なら消す、採用後なら「辞退」ステータスに変える ▼▼
-        if app.status == 'pending':
-            app.delete()
-        else:
-            app.status = 'canceled'
-            app.save()
-            # 相手（発注者）に辞退したことを通知する
-            create_notification(job.created_by, f"案件「{job.title}」で{request.user.username}さんが辞退しました。", f"/application/{app.id}/chat/")
+        # ▼▼ 修正：審査中であっても削除せず、必ず「辞退」ステータスとして残す ▼▼
+        app.status = 'canceled'
+        app.save()
+        # 相手（発注者）に辞退したことを通知する
+        create_notification(job.created_by, f"案件「{job.title}」で{request.user.username}さんが辞退しました。", f"/application/{app.id}/chat/")
             
-        messages.info(request, "応募をキャンセル（辞退）しました。")
+        messages.info(request, "応募を辞退しました。")
     return redirect('job_detail', job_id=job.id)
-
-# --- 3. Management & Contract Flow (★契約・完了・評価) ---
-
-@login_required
-def job_applicants(request, job_id):
-    job = get_object_or_404(Job, pk=job_id)
-    if job.created_by != request.user: return redirect('home')
-    return render(request, 'jobs/job_applicants.html', {'job': job, 'applications': job.applications.all()})
-
+    
 @login_required
 def adopt_applicant(request, application_id):
     app = get_object_or_404(Application, pk=application_id)

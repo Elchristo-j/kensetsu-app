@@ -126,28 +126,48 @@
                   {% if application.status == 'canceled' %}
                     <div class="alert alert-secondary border-0 shadow-sm rounded-4 p-4">
                       <p class="fw-bold mb-3 text-muted">🚫 この案件は辞退済みです</p>
-                      {% if application %}
                       <a href="{% url 'chat_room' application.id %}" class="btn btn-outline-secondary w-75 rounded-pill shadow-sm">
                           <i class="bi bi-chat-dots me-2"></i>募集者とのチャット履歴
                       </a>
-                      {% endif %}
                     </div>
+                  
+                  {% elif application.status == 'rejected' %}
+                    <div class="alert alert-secondary border-0 shadow-sm rounded-4 p-4">
+                      <p class="fw-bold mb-2 text-muted">今回は見送りとなりました</p>
+                      <p class="small text-muted mb-3">またの機会によろしくお願いいたします。</p>
+                      <a href="{% url 'chat_room' application.id %}" class="btn btn-outline-secondary w-75 rounded-pill shadow-sm">
+                          <i class="bi bi-chat-dots me-2"></i>過去のチャット履歴
+                      </a>
+                    </div>
+
+                  {% elif application.status == 'contracted' %}
+                    <div class="alert alert-info border-0 shadow-sm rounded-4 p-4">
+                      <p class="fw-bold mb-3 text-primary">🤝 契約が成立しています</p>
+                      <a href="{% url 'chat_room' application.id %}" class="btn btn-primary w-75 rounded-pill shadow-sm">
+                          <i class="bi bi-chat-dots-fill me-2"></i>チャット・業務完了画面へ
+                      </a>
+                    </div>
+
+                  {% elif application.status == 'completed' %}
+                    <div class="alert alert-success border-0 shadow-sm rounded-4 p-4">
+                      <p class="fw-bold mb-3 text-success">🎉 業務完了済みです</p>
+                      <a href="{% url 'chat_room' application.id %}" class="btn btn-success w-75 rounded-pill shadow-sm">
+                          <i class="bi bi-chat-dots-fill me-2"></i>チャット・評価画面へ
+                      </a>
+                    </div>
+
                   {% else %}
                     <div class="alert alert-success border-0 shadow-sm rounded-4 p-4">
-                      <p class="fw-bold mb-3">✅ すでに応募済みです</p>
+                      <p class="fw-bold mb-3">✅ すでに応募済みです（{{ application.get_status_display }}）</p>
                       
-                      {% if application %}
-                        <div class="d-flex flex-column gap-2 align-items-center">
-                            <a href="{% url 'chat_room' application.id %}" class="btn btn-info w-75 rounded-pill shadow-sm">
-                                <i class="bi bi-chat-dots-fill me-2"></i>募集者とチャットする
-                            </a>
-                            <a href="{% url 'cancel_application' job.id %}" class="btn btn-outline-danger btn-sm rounded-pill w-50 mt-2" onclick="return confirm('本当に辞退しますか？この操作は取り消せません。');">
-                                応募を辞退する
-                            </a>
-                        </div>
-                      {% else %}
-                        <a href="{% url 'cancel_application' job.id %}" class="btn btn-outline-danger btn-sm rounded-pill" onclick="return confirm('本当に辞退しますか？');">応募をキャンセルする</a>
-                      {% endif %}
+                      <div class="d-flex flex-column gap-2 align-items-center">
+                          <a href="{% url 'chat_room' application.id %}" class="btn btn-info w-75 rounded-pill shadow-sm">
+                              <i class="bi bi-chat-dots-fill me-2"></i>募集者とチャットする
+                          </a>
+                          <a href="{% url 'cancel_application' job.id %}" class="btn btn-outline-danger btn-sm rounded-pill w-50 mt-2" onclick="return confirm('本当に辞退しますか？この操作は取り消せません。');">
+                              応募を辞退する
+                          </a>
+                      </div>
                     </div>
                   {% endif %}
                 
