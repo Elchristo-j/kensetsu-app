@@ -78,15 +78,14 @@ class Application(models.Model):
     applicant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
     applied_at = models.DateTimeField(auto_now_add=True)
     
-    STATUS_CHOICES = [
-        ('applied', '選考中'),
-        ('accepted', '採用(契約待ち)'),
+    STATUS_CHOICES = (
+        ('pending', '審査中'),
+        ('accepted', '交渉中（チャットへ）'),  # ←「採用」から変更
         ('contracted', '契約成立'),
         ('completed', '業務完了'),
-        ('reviewed', '評価済み'),
-        ('rejected', '不採用'),
         ('canceled', '辞退'),
-    ]
+        ('rejected', '見送り（また今度お願いします）'),  # ←「不採用」から変更
+    )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='applied')
 
     def __str__(self):

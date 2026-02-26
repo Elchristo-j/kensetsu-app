@@ -286,7 +286,7 @@ def reject_applicant(request, application_id):
 def contract_application(request, application_id):
     app = get_object_or_404(Application, pk=application_id)
     if request.user == app.job.created_by: 
-        # ▼▼ 修正：相手が辞退していないかチェックする ▼▼
+        # 相手が辞退していないかチェックする
         if app.status == 'canceled':
             messages.error(request, "この応募者はすでに辞退しています。契約はできません。")
             return redirect('chat_room', application_id=app.id)
@@ -296,8 +296,30 @@ def contract_application(request, application_id):
             app.save()
             create_notification(app.applicant, f"案件「{app.job.title}」の契約が成立しました！", f"/application/{app.id}/chat/")
             messages.success(request, "契約が成立しました。業務を開始できます。")
+
+            # ▼▼▼ 追加：枠が埋まったら他の人を自動でお祈り（見送り）にする魔法 ▼▼▼
+            job = app.job
+            # 現在の「契約成立(contracted)」以上の人数の合計を計算
+            filled_count = job.applications.filter(status__in=['contracted', 'completed']).count()
+            
+            # もし募集枠が完全に埋まったら…
+            if filled_count >= job.headcount:
+                # まだ「審査中(pending)」か「交渉中(accepted)」のまま取り残されている他の応募者を探す
+                leftover_apps = job.applications.filter(status__in=['pending', 'accepted'])
+                
+                for leftover in leftover_apps:
+                    leftover.status = 'rejected'
+                    leftover.save()
+                    # 丁寧なお見送り通知を送る
+                    create_notification(
+                        leftover.applicant, 
+                        f"案件「{job.title}」は募集枠が埋まったため、今回は見送りとなりました。またの機会にお願いいたします。", 
+                        f"/job/{job.id}/"
+                    )
+            # ▲▲▲ 追加ここまで ▲▲▲
             
     return redirect('chat_room', application_id=app.id)
+
 @login_required
 def complete_job_work(request, application_id):
     app = get_object_or_404(Application, pk=application_id)
