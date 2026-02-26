@@ -87,7 +87,11 @@ class Application(models.Model):
         ('rejected', '見送り（また今度お願いします）'),  # ←「不採用」から変更
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='applied')
-
+@property
+    def remaining_headcount(self):
+        # 「契約成立」または「業務完了」になった人数だけを引く（交渉中はまだ引かない）
+        filled_count = self.applications.filter(status__in=['contracted', 'completed']).count()
+        return max(0, self.headcount - filled_count)
     def __str__(self):
         return f"{self.applicant.username} -> {self.job.title}"
 
