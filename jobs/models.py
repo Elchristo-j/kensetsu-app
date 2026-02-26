@@ -72,6 +72,13 @@ class Job(models.Model):
         limit = getattr(self, 'headcount', 1) 
         return f"{self.accepted_count} / {limit}"
 
+    # ▼▼▼ 修正：ここが正しい「残り人数の計算」の場所です ▼▼▼
+    @property
+    def remaining_headcount(self):
+        # 「契約成立」または「業務完了」になった人数だけを引く（交渉中はまだ引かない）
+        filled_count = self.applications.filter(status__in=['contracted', 'completed']).count()
+        return max(0, self.headcount - filled_count)
+    # ▲▲▲ 修正ここまで ▲▲▲
 
 class Application(models.Model):
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='applications')
@@ -86,12 +93,9 @@ class Application(models.Model):
         ('canceled', '辞退'),
         ('rejected', '見送り（また今度お願いします）'),  # ←「不採用」から変更
     )
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='applied')
-@property
-    def remaining_headcount(self):
-        # 「契約成立」または「業務完了」になった人数だけを引く（交渉中はまだ引かない）
-        filled_count = self.applications.filter(status__in=['contracted', 'completed']).count()
-        return max(0, self.headcount - filled_count)
+    # デフォルトのステータスを pending に修正（これがないと応募時にエラーになる可能性があります）
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+
     def __str__(self):
         return f"{self.applicant.username} -> {self.job.title}"
 
@@ -162,8 +166,6 @@ class Review(models.Model):
     def __str__(self):
         return f"{self.reviewer} -> {self.reviewee} ({self.job})"
     
-# jobs/models.py (一番下に追加)
-
 class Contact(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField("お名前", max_length=100)
