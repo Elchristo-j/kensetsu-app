@@ -55,7 +55,9 @@
                     <select name="category" class="form-select border-0">
                         <option value="">🛠 全ての業種</option>
                         {% for key, value in categories %}
-                            <option value="{{ key }}">{{ value }}</option>
+                            <option value="{{ key }}" {% if request.GET.category == key|stringformat:"s" %}selected{% endif %}>
+                                {{ value }}
+                            </option>
                         {% endfor %}
                     </select>
                 </div>
@@ -63,7 +65,11 @@
                     <select name="prefecture" class="form-select border-0">
                         <option value="">📍 全てのエリア</option>
                         {% for p in prefectures %}
-                            {% if p.0 %}<option value="{{ p.0 }}">{{ p.1 }}</option>{% endif %}
+                            {% if p.0 %}
+                            <option value="{{ p.0 }}" {% if request.GET.prefecture == p.0 %}selected{% endif %}>
+                                {{ p.1 }}
+                            </option>
+                            {% endif %}
                         {% endfor %}
                     </select>
                 </div>
