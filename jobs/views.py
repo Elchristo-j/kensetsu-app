@@ -239,7 +239,6 @@ def apply_job(request, job_id):
     return redirect('job_detail', job_id=job.id)
 
 @login_required
-@login_required
 def cancel_application(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     app = Application.objects.filter(job=job, applicant=request.user).first()
@@ -256,7 +255,7 @@ def cancel_application(request, job_id):
             
         messages.info(request, "応募を辞退しました。")
     return redirect('job_detail', job_id=job.id)
-    
+
 @login_required
 def adopt_applicant(request, application_id):
     app = get_object_or_404(Application, pk=application_id)
