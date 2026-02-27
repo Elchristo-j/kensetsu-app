@@ -35,7 +35,7 @@
 
                 {% elif application.status == 'accepted' %}
                     {% if request.user == application.job.created_by %}
-                        <a href="{% url 'contract_application' application.id %}" class="btn btn-primary fw-bold" onclick="return confirm('契約を確定しますか？');">
+                        <a href="{% url 'contract_application' application.id %}" class="btn btn-primary">🤝 契約成立にする</a>
                             <i class="bi bi-pen"></i> 契約を成立させる
                         </a>
                     {% else %}
@@ -43,7 +43,7 @@
                     {% endif %}
 
                 {% elif application.status == 'contracted' %}
-                    <a href="{% url 'complete_job_work' application.id %}" class="btn btn-success fw-bold" onclick="return confirm('業務を完了としますか？');">
+                    <a href="{% url 'complete_application' application.id %}" class="btn btn-success">🎉 業務完了にする</a>
                         <i class="bi bi-check-circle"></i> 業務完了
                     </a>
 
