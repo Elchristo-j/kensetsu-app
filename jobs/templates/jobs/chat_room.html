@@ -43,7 +43,7 @@
                     {% endif %}
 
                 {% elif application.status == 'contracted' %}
-                    <a href="{% url 'complete_application' application.id %}" class="btn btn-success">🎉 業務完了にする</a>
+                    <a href="{% url 'complete_job_work' application.id %}" class="btn btn-success">🎉 業務完了にする</a>
                         <i class="bi bi-check-circle"></i> 業務完了
                     </a>
 
