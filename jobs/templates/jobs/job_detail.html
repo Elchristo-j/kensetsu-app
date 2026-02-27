@@ -14,7 +14,7 @@
           <div class="d-flex justify-content-between align-items-center">
             <h6 class="text-muted small mb-0">お仕事詳細</h6>
             <span class="badge {% if job.is_closed %}bg-secondary{% else %}bg-danger{% endif %}">
-              {% if job.is_closed %}募集終了{% else %}募集中：あと {{ job.headcount }} 人{% endif %}
+              {% if job.is_closed %}募集終了{% else %}募集中：あと {{ job.remaining_headcount }} 人{% endif %}
             </span>
           </div>
           <h2 class="fw-bold mt-2">{{ job.title }}</h2>
@@ -26,9 +26,6 @@
               ¥{{ job.price|intcomma }} <span class="fs-6 text-muted fw-normal">/ {{ job.get_unit_display }}</span>
             </h3>
             <span class="text-muted small">掲載日: {{ job.created_at|date:"Y/m/d" }}</span>
-            {% if job.updated_at != job.created_at %}
-              <span class="text-muted small ms-2">(最終更新: {{ job.updated_at|date:"Y/m/d H:i" }})</span>
-            {% endif %}
           </div>
 
           <div class="table-responsive mb-4">
@@ -48,15 +45,9 @@
                   <td>{{ job.working_hours }}</td>
                 </tr>
                 {% endif %}
-                {% if job.break_time %}
-                <tr>
-                  <th class="bg-light small fw-bold"><i class="bi bi-cup-hot me-1"></i>休憩時間</th>
-                  <td>{{ job.break_time }}</td>
-                </tr>
-                {% endif %}
                 <tr>
                   <th class="bg-light small fw-bold"><i class="bi bi-people me-1"></i>募集人数</th>
-                  <td>残り {{ job.headcount }} 名</td> 
+                  <td>残り {{ job.remaining_headcount }} 名</td> 
                 </tr>
               </tbody>
             </table>
@@ -83,8 +74,6 @@
               <div class="me-3">
                 {% if job.created_by.profile.avatar %}
                   <img src="{{ job.created_by.profile.avatar.url }}" class="rounded-circle" width="60" height="60" style="object-fit: cover;">
-                {% elif job.created_by.profile.image %}
-                  <img src="{{ job.created_by.profile.image.url }}" class="rounded-circle" width="60" height="60" style="object-fit: cover;">
                 {% else %}
                   <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
                       {{ job.created_by.username|slice:":1" }}
@@ -95,15 +84,9 @@
                 <h6 class="fw-bold mb-1">
                   <a href="{% url 'profile_detail' job.created_by.id %}" class="text-decoration-none text-dark">
                     {{ job.created_by.username }}
-                    {% if job.created_by.profile.is_verified %}
-                      <i class="bi bi-patch-check-fill text-primary ms-1"></i>
-                    {% endif %}
                   </a>
-                  {% if job.created_by.profile.company_name %}
-                    <span class="text-muted small fw-normal">({{ job.created_by.profile.company_name }})</span>
-                  {% endif %}
                 </h6>
-                <p class="small text-secondary mb-0"style="overflow-wrap: anywhere;">{{ job.created_by.profile.bio|default:"自己紹介はありません。" }}</p>
+                <p class="small text-secondary mb-0" style="overflow-wrap: anywhere;">{{ job.created_by.profile.bio|default:"自己紹介はありません。" }}</p>
               </div>
             </div>
           </div>
@@ -159,7 +142,6 @@
                   {% else %}
                     <div class="alert alert-success border-0 shadow-sm rounded-4 p-4">
                       <p class="fw-bold mb-3">✅ すでに応募済みです（{{ application.get_status_display }}）</p>
-                      
                       <div class="d-flex flex-column gap-2 align-items-center">
                           <a href="{% url 'chat_room' application.id %}" class="btn btn-info w-75 rounded-pill shadow-sm">
                               <i class="bi bi-chat-dots-fill me-2"></i>募集者とチャットする
@@ -172,7 +154,6 @@
                   {% endif %}
                 
                 {% elif not job.is_closed %}
-                  
                   {% if user.profile.can_apply %}
                     <form action="{% url 'apply_job' job.id %}" method="post">
                       {% csrf_token %}
@@ -183,17 +164,7 @@
                   {% else %}
                     <div class="alert alert-warning border-0 shadow-sm rounded-4 p-4">
                       <p class="fw-bold mb-2 text-dark"><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>今月の応募制限に達しました</p>
-                      <p class="small text-secondary mb-3">
-                        現在のランク「<span class="fw-bold">{{ user.profile.display_rank|title }}</span>」の応募枠は
-                        月<span class="fw-bold">
-                            {% if user.profile.monthly_limit >= 999 %}無制限
-                            {% else %}{{ user.profile.monthly_limit }}回{% endif %}
-                        </span>です。<br>
-                        さらなる応募にはランクアップをご検討ください。
-                      </p>
-                      <button class="btn btn-secondary btn-lg px-5 rounded-pill" disabled>
-                        今月の応募枠がありません
-                      </button>
+                      <button class="btn btn-secondary btn-lg px-5 rounded-pill" disabled>今月の応募枠がありません</button>
                     </div>
                   {% endif %}
 
@@ -205,7 +176,6 @@
               {% endif %}
             {% endif %}
           </div>
-
         </div>
       </div>
     </div>

@@ -1,66 +1,69 @@
-{% extends "base.html" %}
-
+{% extends 'base.html' %}
 {% block content %}
-<div class="container my-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>「{{ job.title }}」への応募者一覧</h2>
-        <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-secondary btn-sm">案件詳細へ戻る</a>
-    </div>
+<div class="container mt-4 mb-5">
+  <div class="mb-3">
+    <a href="{% url 'job_detail' job.id %}" class="text-decoration-none text-secondary">&lt; 案件詳細に戻る</a>
+  </div>
 
+  <h3 class="fw-bold mb-4">「{{ job.title }}」の応募者リスト</h3>
+
+  {% if not applications %}
+    <div class="alert alert-light border text-center p-5">
+      まだ応募者はいません。
+    </div>
+  {% else %}
     <div class="row">
-        {% for app in applications %}
-        <div class="col-md-6 mb-3">
-            <div class="card shadow-sm {% if app.status == 'accepted' %}border-success{% endif %}">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h5 class="card-title mb-1">
-                                <a href="{% url 'profile_detail' app.applicant.id %}" class="text-decoration-none">
-                                    {{ app.applicant.username }} さん
-                                </a>
-                                {% if app.applicant.profile.is_verified %}
-                                <span class="badge bg-sumi ml-1" style="font-size: 0.7rem;">本人確認済</span>
-                                {% endif %}
-                            </h5>
-                            <p class="text-muted small">応募日: {{ app.created_at|date:"Y/m/d H:i" }}</p>
-                        </div>
-                        <a href="{% url 'chat_room' app.id %}" class="btn btn-sm btn-outline-primary">
-                            チャット
-                        </a>
-                    </div>
+      {% for app in applications %}
+        <div class="col-md-6 mb-4">
+          <div class="card shadow-sm h-100 border-{% if app.status == 'contracted' or app.status == 'completed' %}success{% elif app.status == 'rejected' or app.status == 'canceled' %}secondary{% else %}primary{% endif %}">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">
+                  <a href="{% url 'profile_detail' app.applicant.id %}" class="text-dark text-decoration-none">
+                    {{ app.applicant.username }}
+                  </a>
+                </h5>
+                <span class="badge 
+                  {% if app.status == 'pending' %}bg-warning text-dark
+                  {% elif app.status == 'accepted' %}bg-info text-dark
+                  {% elif app.status == 'contracted' %}bg-primary
+                  {% elif app.status == 'completed' %}bg-success
+                  {% elif app.status == 'canceled' %}bg-secondary
+                  {% elif app.status == 'rejected' %}bg-dark
+                  {% endif %}">
+                  {{ app.get_status_display }}
+                </span>
+              </div>
 
-                    <hr>
+              <div class="mt-4 text-center">
+                {% if app.status == 'pending' %}
+                  <a href="{% url 'adopt_applicant' app.id %}" class="btn btn-outline-primary btn-sm w-100 mb-2" onclick="return confirm('この方と交渉（チャット）を開始しますか？');">💬 交渉中（チャット）へ進む</a>
+                  <a href="{% url 'reject_applicant' app.id %}" class="btn btn-outline-secondary btn-sm w-100" onclick="return confirm('この方を見送りにしますか？');">🙏 見送り（また今度）にする</a>
+                
+                {% elif app.status == 'accepted' %}
+                  <a href="{% url 'chat_room' app.id %}" class="btn btn-info btn-sm w-100 mb-2">💬 チャットルームへ</a>
+                
+                {% elif app.status == 'contracted' %}
+                  <p class="small text-success fw-bold mb-2">🤝 契約進行中</p>
+                  <a href="{% url 'chat_room' app.id %}" class="btn btn-primary btn-sm w-100">チャット・業務完了画面へ</a>
+                
+                {% elif app.status == 'completed' %}
+                  <p class="small text-success fw-bold mb-2">🎉 業務完了</p>
+                  <a href="{% url 'chat_room' app.id %}" class="btn btn-success btn-sm w-100">チャット・評価画面へ</a>
 
-                    <div class="d-flex align-items-center">
-                        {% if app.status == 'accepted' %}
-                            <div class="w-100">
-                                <span class="badge bg-success mb-2 d-block">採用済み</span>
-                                <form action="{% url 'reject_applicant' app.id %}" method="POST" onsubmit="return confirm('本当に採用を取り消しますか？（相手に通知されます）')">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-danger w-100">採用をキャンセル（募集主都合）</button>
-                                </form>
-                            </div>
-                        {% else %}
-                            <div class="w-100 d-flex gap-2">
-                                <form action="{% url 'adopt_applicant' app.id %}" method="POST" class="flex-grow-1">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-sumi w-100">採用する</button>
-                                </form>
-                                <form action="{% url 'reject_applicant' app.id %}" method="POST" class="flex-grow-1" onsubmit="return confirm('今回はお断りしますか？（相手に通知されます）')">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary w-100">お断りする</button>
-                                </form>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
+                {% elif app.status == 'canceled' %}
+                  <p class="small text-muted mb-0">この応募者は辞退しました</p>
+                  <a href="{% url 'chat_room' app.id %}" class="btn btn-outline-secondary btn-sm w-100 mt-2">過去のチャット履歴</a>
+
+                {% elif app.status == 'rejected' %}
+                  <p class="small text-muted mb-0">見送り済みの応募者です</p>
+                {% endif %}
+              </div>
             </div>
+          </div>
         </div>
-        {% empty %}
-        <div class="col-12 text-center py-5">
-            <p class="text-muted">現在、応募者はいません。</p>
-        </div>
-        {% endfor %}
+      {% endfor %}
     </div>
+  {% endif %}
 </div>
 {% endblock %}
