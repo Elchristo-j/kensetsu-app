@@ -65,7 +65,8 @@ class Job(models.Model):
 
     @property
     def accepted_count(self):
-        return self.applications.filter(status='accepted').count()
+        # 契約成立・業務完了になった人数をカウントする
+        return self.applications.filter(status__in=['contracted', 'completed']).count()
     
     @property
     def recruitment_status(self):

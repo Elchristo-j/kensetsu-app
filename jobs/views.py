@@ -302,6 +302,10 @@ def contract_application(request, application_id):
             
             # もし募集枠が完全に埋まったら…
             if filled_count >= job.headcount:
+                # ▼▼ 追加：枠が埋まったら自動で募集終了にして一覧から消す！ ▼▼
+                job.is_closed = True
+                job.save()
+                
                 leftover_apps = job.applications.filter(status__in=['pending', 'accepted'])
                 
                 for leftover in leftover_apps:

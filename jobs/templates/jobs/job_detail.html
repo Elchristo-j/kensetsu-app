@@ -13,8 +13,8 @@
         <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
           <div class="d-flex justify-content-between align-items-center">
             <h6 class="text-muted small mb-0">お仕事詳細</h6>
-            <span class="badge {% if job.is_closed %}bg-secondary{% else %}bg-danger{% endif %}">
-              {% if job.is_closed %}募集終了{% else %}募集中：あと {{ job.remaining_headcount }} 人{% endif %}
+            <span class="badge {% if job.is_closed or job.remaining_headcount <= 0 %}bg-secondary{% else %}bg-danger{% endif %}">
+              {% if job.is_closed or job.remaining_headcount <= 0 %}募集終了{% else %}募集中：あと {{ job.remaining_headcount }} 人{% endif %}
             </span>
           </div>
           <h2 class="fw-bold mt-2">{{ job.title }}</h2>
