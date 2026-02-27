@@ -277,7 +277,8 @@ def adopt_applicant(request, application_id):
 def reject_applicant(request, application_id):
     app = get_object_or_404(Application, pk=application_id)
     if request.user == app.job.created_by:
-        app.delete()
+        app.status = 'rejected'  # ←見送りステータスに変更
+        app.save()
     return redirect('job_applicants', job_id=app.job.id)
 
 @login_required

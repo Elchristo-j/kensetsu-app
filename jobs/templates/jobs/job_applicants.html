@@ -37,8 +37,8 @@
 
               <div class="mt-4 text-center">
                 {% if app.status == 'pending' %}
-                  <a href="{% url 'adopt_applicant' app.id %}" class="btn btn-outline-primary btn-sm w-100 mb-2" onclick="return confirm('この方と交渉（チャット）を開始しますか？');">💬 交渉中（チャット）へ進む</a>
-                  <a href="{% url 'reject_applicant' app.id %}" class="btn btn-outline-secondary btn-sm w-100" onclick="return confirm('この方を見送りにしますか？');">🙏 見送り（また今度）にする</a>
+                  <a href="{% url 'adopt_applicant' app.id %}" class="btn btn-outline-primary btn-sm w-100 mb-2">💬 交渉中（チャット）へ進む</a>
+                  <a href="{% url 'reject_applicant' app.id %}" class="btn btn-outline-secondary btn-sm w-100">🙏 見送り（また今度）にする</a>
                 
                 {% elif app.status == 'accepted' %}
                   <a href="{% url 'chat_room' app.id %}" class="btn btn-info btn-sm w-100 mb-2">💬 チャットルームへ</a>
