@@ -305,7 +305,6 @@ def contract_application(request, application_id):
                 # ▼▼ 追加：枠が埋まったら自動で募集終了にして一覧から消す！ ▼▼
                 job.is_closed = True
                 job.save()
-                
                 leftover_apps = job.applications.filter(status__in=['pending', 'accepted'])
                 
                 for leftover in leftover_apps:
@@ -428,13 +427,21 @@ def mypage(request):
     worker_stats = calculate_stats_for_user(request.user, 'employer_to_worker')
     employer_stats = calculate_stats_for_user(request.user, 'worker_to_employer')
 
-    # プラン情報の取得 (必要な場合)
     limit_jobs = profile.posting_limit
     limit_apps = profile.monthly_limit
+
+    # ▼▼▼ 今回追加する「進行中案件のピックアップ」の魔法 ▼▼▼
+    # 【ワーカーとして】契約成立・業務完了の案件
+    active_worker_apps = request.user.applications.filter(status__in=['contracted', 'completed']).order_by('-applied_at')
+    # 【発注者として】自分の案件に応募がきて、契約成立・業務完了している案件
+    active_employer_apps = Application.objects.filter(job__created_by=request.user, status__in=['contracted', 'completed']).order_by('-applied_at')
+    # ▲▲▲ 追加ここまで ▲▲▲
 
     context = {
         'my_applications': my_applications,
         'my_posted_jobs': my_posted_jobs,
+        'active_worker_apps': active_worker_apps,    # ←追加
+        'active_employer_apps': active_employer_apps, # ←追加
         'remaining_apply': remaining_apply,
         'remaining_post': remaining_post,
         'worker_stats': worker_stats,
@@ -444,7 +451,7 @@ def mypage(request):
         'prefectures': PREFECTURES,
     }
     return render(request, 'accounts/mypage.html', context)
-
+    
 @login_required
 def profile_detail(request, user_id):
     """他人から見たプロフィール"""

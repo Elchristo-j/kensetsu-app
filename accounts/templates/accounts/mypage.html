@@ -44,6 +44,63 @@
                 {% endif %}
             </div>
 
+{% if active_worker_apps or active_employer_apps %}
+<div class="card shadow border-0 mb-5" style="border-radius: 15px; overflow: hidden;">
+    <div class="card-header bg-dark text-white fw-bold py-3">
+        <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>進行中の案件（やることリスト）
+    </div>
+    <div class="list-group list-group-flush">
+        
+        {% for app in active_employer_apps %}
+        <div class="list-group-item p-4 bg-light">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="badge bg-primary px-3 py-2 rounded-pill shadow-sm">📢 発注した仕事</span>
+                {% if app.status == 'contracted' %}
+                    <span class="badge bg-info text-dark px-3 py-2 rounded-pill shadow-sm">🤝 契約進行中（作業待ち）</span>
+                {% elif app.status == 'completed' %}
+                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm">🟡 業務完了（相互評価へ）</span>
+                {% endif %}
+            </div>
+            <h5 class="fw-bold mb-2">
+                <a href="{% url 'job_detail' app.job.id %}" class="text-dark text-decoration-none">{{ app.job.title }}</a>
+            </h5>
+            <p class="text-secondary small mb-3">
+                <i class="bi bi-person-fill me-1"></i>受注者: 
+                <a href="{% url 'profile_detail' app.applicant.id %}" class="text-decoration-none fw-bold">{{ app.applicant.username }}</a> さん
+            </p>
+            <a href="{% url 'chat_room' app.id %}" class="btn btn-dark w-100 rounded-pill shadow-sm">
+                <i class="bi bi-chat-dots-fill me-2"></i>チャット・評価画面へ進む
+            </a>
+        </div>
+        {% endfor %}
+
+        {% for app in active_worker_apps %}
+        <div class="list-group-item p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="badge bg-success px-3 py-2 rounded-pill shadow-sm">🛠 受注した仕事</span>
+                {% if app.status == 'contracted' %}
+                    <span class="badge bg-info text-dark px-3 py-2 rounded-pill shadow-sm">🤝 契約進行中（作業をお願いします）</span>
+                {% elif app.status == 'completed' %}
+                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm">🟡 業務完了（相互評価へ）</span>
+                {% endif %}
+            </div>
+            <h5 class="fw-bold mb-2">
+                <a href="{% url 'job_detail' app.job.id %}" class="text-dark text-decoration-none">{{ app.job.title }}</a>
+            </h5>
+            <p class="text-secondary small mb-3">
+                <i class="bi bi-building me-1"></i>発注者: 
+                <a href="{% url 'profile_detail' app.job.created_by.id %}" class="text-decoration-none fw-bold">{{ app.job.created_by.username }}</a> さん
+            </p>
+            <a href="{% url 'chat_room' app.id %}" class="btn btn-outline-dark w-100 rounded-pill shadow-sm">
+                <i class="bi bi-chat-dots-fill me-2"></i>チャット・評価画面へ進む
+            </a>
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+{% endif %}
+
             {% if user.profile.is_founding_member %}
                 <div class="mb-4 mt-2 d-flex justify-content-center">
                     <img src="{% static 'images/founding_member_badge.png' %}"
