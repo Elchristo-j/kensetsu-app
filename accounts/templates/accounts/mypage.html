@@ -43,7 +43,7 @@
                     <span class="badge bg-success rounded-pill">本人確認済</span>
                 {% endif %}
             </div>
-
+<div class="alert alert-info">デバッグ：受注 {{ active_worker_apps|length }} 件 / 発注 {{ active_employer_apps|length }} 件</div>
 {% if active_worker_apps or active_employer_apps %}
 <div class="card shadow border-0 mb-5" style="border-radius: 15px; overflow: hidden;">
     <div class="card-header bg-dark text-white fw-bold py-3">

@@ -16,6 +16,7 @@ from django.db.models import Avg
 from .forms import CustomUserCreationForm, ProfileForm
 from jobs.models import Job, Application, Review
 
+
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 # --- 日当換算テキスト変換 ---
@@ -122,6 +123,13 @@ def mypage(request):
     my_posted = Job.objects.filter(created_by=request.user).order_by('-created_at')[:5]
     my_applied = Application.objects.filter(applicant=request.user).order_by('-applied_at')[:5]
 
+    # ▼▼▼ 今回追加する「進行中案件のピックアップ」の魔法（ここに追加！） ▼▼▼
+    # 【ワーカーとして】契約成立・業務完了の案件
+    active_worker_apps = Application.objects.filter(applicant=request.user, status__in=['contracted', 'completed']).order_by('-applied_at')
+    # 【発注者として】自分の案件に応募がきて、契約成立・業務完了している案件
+    active_employer_apps = Application.objects.filter(job__created_by=request.user, status__in=['contracted', 'completed']).order_by('-applied_at')
+    # ▲▲▲ 追加ここまで ▲▲▲
+
     # 3. 今月の利用状況の集計
     now = timezone.now()
     start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -150,17 +158,20 @@ def mypage(request):
         'employer_stats': employer_stats, # ★重要: これがチャート用データ
         'my_posted_jobs': my_posted,
         'my_applications': my_applied,
+        
+        'active_worker_apps': active_worker_apps,    # ←★追加（やることリスト用）
+        'active_employer_apps': active_employer_apps, # ←★追加（やることリスト用）
+
         'remaining_post': remaining_jobs,  # HTML側で使用
         'remaining_apply': remaining_apps, # HTML側で使用
         'limit_jobs': my_limits['job'],
         'limit_apps': my_limits['app'],
-        
+
         'prefectures': PREFECTURES,
     }
     
     # 5. レンダリング（returnはこれ1回のみ）
     return render(request, 'accounts/mypage.html', context)
-
 def profile_detail(request, user_id):
     target = get_object_or_404(User, id=user_id)
     profile, _ = Profile.objects.get_or_create(user=target)
