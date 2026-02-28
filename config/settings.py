@@ -158,19 +158,6 @@ LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 
 
-# ==========================================
-# メール送信設定
-# ==========================================
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587             # ← 465から587に変更
-EMAIL_USE_TLS = True         # ← Trueに変更
-EMAIL_USE_SSL = False
-EMAIL_HOST_USER = 'kma.elchristo@gmail.com'
-EMAIL_HOST_PASSWORD = 'hiarszogyqugncso'  
-DEFAULT_FROM_EMAIL = '建設マッチング-Elchristo-運営局 <' + EMAIL_HOST_USER + '>'
-EMAIL_TIMEOUT = 10           # ← 「S」を消して 10 だけにする
 
 # ==========================================
 # 本番環境セキュリティ（Render）
@@ -231,5 +218,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'hiroshi.77dk@gmail.com'  # ★後で変更
-EMAIL_HOST_PASSWORD = 'yjme mlas abco rjgc'  # ★後で変更
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = 'kma.elchristo@gmail.com'  # ★後で変更
+EMAIL_HOST_PASSWORD = 'hiarszogyqugncso'  # ★後で変更
+DEFAULT_FROM_EMAIL = '建設マッチング-Elchristo-運営局 <' + EMAIL_HOST_USER + '>'
+EMAIL_TIMEOUT = 10  # ← 「S」を消して 10 だけにする
