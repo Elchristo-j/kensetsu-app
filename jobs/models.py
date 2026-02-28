@@ -5,6 +5,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.mail import send_mass_mail
 
 # ★職種リストを修正しました
 # ジャンルごとにコメントで区切っています
@@ -73,13 +74,12 @@ class Job(models.Model):
         limit = getattr(self, 'headcount', 1) 
         return f"{self.accepted_count} / {limit}"
 
-    # ▼▼▼ 修正：ここが正しい「残り人数の計算」の場所です ▼▼▼
     @property
     def remaining_headcount(self):
         # 「契約成立」または「業務完了」になった人数だけを引く（交渉中はまだ引かない）
         filled_count = self.applications.filter(status__in=['contracted', 'completed']).count()
         return max(0, self.headcount - filled_count)
-    # ▲▲▲ 修正ここまで ▲▲▲
+
 
 class Application(models.Model):
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='applications')
@@ -88,13 +88,12 @@ class Application(models.Model):
     
     STATUS_CHOICES = (
         ('pending', '審査中'),
-        ('accepted', '交渉中（チャットへ）'),  # ←「採用」から変更
+        ('accepted', '交渉中（チャットへ）'), 
         ('contracted', '契約成立'),
         ('completed', '業務完了'),
         ('canceled', '辞退'),
-        ('rejected', '見送り（また今度お願いします）'),  # ←「不採用」から変更
+        ('rejected', '見送り（また今度お願いします）'),
     )
-    # デフォルトのステータスを pending に修正（これがないと応募時にエラーになる可能性があります）
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
     def __str__(self):
@@ -107,15 +106,6 @@ class Message(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
-    # ★重要：エラー回避のため image フィールドを削除しました
-
-
-class Notification(models.Model):
-    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
-    message = models.CharField(max_length=255)
-    link = models.CharField(max_length=255, blank=True, null=True)
-    is_read = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Review(models.Model):
@@ -177,3 +167,63 @@ class Contact(models.Model):
 
     def __str__(self):
         return self.subject
+
+# --- お知らせ（通知）モデル（整理完了） ---
+class Notification(models.Model):
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications', verbose_name='受信者')
+    title = models.CharField(max_length=100, verbose_name='タイトル', default='お知らせ')
+    message = models.TextField(verbose_name='メッセージ', default='')
+    link = models.CharField(max_length=255, blank=True, null=True, verbose_name='リンク先URL（任意）')
+    is_read = models.BooleanField(default=False, verbose_name='既読フラグ')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='作成日時')
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.recipient.username}宛: {self.title}"
+    
+ # --- ここから追加：全ユーザーへの一斉お知らせ（拡声器） ---
+class Broadcast(models.Model):
+    title = models.CharField(max_length=100, verbose_name='タイトル')
+    message = models.TextField(verbose_name='メッセージ')
+    link = models.CharField(max_length=255, blank=True, null=True, verbose_name='リンク先URL（任意）')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='作成日時')
+
+    class Meta:
+        verbose_name = '全ユーザーへの一斉お知らせ'
+        verbose_name_plural = '全ユーザーへの一斉お知らせ'
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        
+        # 新しくお知らせが作成された時だけ、全員に通知とメールを飛ばす
+        if is_new:
+            # メールアドレスが登録されている全ユーザーを取得
+            users = User.objects.exclude(email='')
+            
+            # 1. サイト内のベルマーク通知（Notification）を全員分一斉に作成
+            notifications = [
+                Notification(recipient=user, title=self.title, message=self.message, link=self.link)
+                for user in users
+            ]
+            Notification.objects.bulk_create(notifications)
+
+            # 2. 全員にメールを一斉送信
+            messages = []
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'info@elchristo.com')
+            for user in users:
+                mail_body = f"{user.username} 様\n\nエルクリスト運営局からのお知らせです。\n\n【{self.title}】\n{self.message}\n\n"
+                if self.link:
+                    mail_body += f"詳細はこちら: {self.link}\n\n"
+                mail_body += "------------------------\nエルクリスト運営局"
+                
+                messages.append((self.title, mail_body, from_email, [user.email]))
+            
+            # fail_silently=True で、誰か1人のメールが失敗してもシステムを止めない
+            if messages:
+                send_mass_mail(messages, fail_silently=True)
+
+    def __str__(self):
+        return self.title   

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Job, Application, Message, Notification, Review, Contact
+from .models import Job, Application, Message, Notification, Review, Contact, Broadcast
 
 class JobAdmin(admin.ModelAdmin):
     list_display = ('title', 'created_by', 'created_at', 'is_closed')
@@ -13,6 +13,7 @@ admin.site.register(Application)
 admin.site.register(Message)
 admin.site.register(Notification)
 admin.site.register(Review, ReviewAdmin) # ← これで評価データが見れるようになります
+admin.site.register(Broadcast)
 
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
