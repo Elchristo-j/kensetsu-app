@@ -164,14 +164,13 @@ LOGOUT_REDIRECT_URL = 'home'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 465
-EMAIL_USE_TLS = False
-EMAIL_USE_SSL = True
+EMAIL_PORT = 587             # ← 465から587に変更
+EMAIL_USE_TLS = True         # ← Trueに変更
+EMAIL_USE_SSL = False
 EMAIL_HOST_USER = 'hiroshi.77dk@gmail.com'
-EMAIL_HOST_PASSWORD = 'fjzafkfjetgueblb'
+EMAIL_HOST_PASSWORD = 'fjzafkfjetgueblb'  # ※テスト完了後、必ず再発行してください！
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-EMAIL_TIMEOUT = 10
-
+EMAIL_TIMEOUT = 10           # ← 「S」を消して 10 だけにする
 
 # ==========================================
 # 本番環境セキュリティ（Render）
