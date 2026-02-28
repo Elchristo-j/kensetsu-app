@@ -16,6 +16,11 @@ from django.db.models import Avg
 from .forms import CustomUserCreationForm, ProfileForm
 from jobs.models import Job, Application, Review
 
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
+
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -91,13 +96,52 @@ def signup(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            from django.contrib.auth import login
-            login(request, user)
-            return redirect('home')
+            # 1. ユーザーを「仮登録（無効）」状態で保存
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+
+            # 2. 認証用URLの作成
+            domain = request.get_host()
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            protocol = 'https' if request.is_secure() else 'http'
+            activation_url = f"{protocol}://{domain}/accounts/activate/{uid}/{token}/"
+
+            # 3. メールの作成と送信
+            subject = "【エルクリスト】本登録を完了してください"
+            message = f"{user.username} 様\n\nエルクリストへの仮登録ありがとうございます。\n以下のURLをクリックして、本登録を完了してください。\n\n{activation_url}\n\n※このURLは1回のみ有効です。\n※心当たりがない場合は、このメールを破棄してください。"
+            
+            from_email = settings.EMAIL_HOST_USER if hasattr(settings, 'EMAIL_HOST_USER') else 'no-reply@elchristo.com'
+            send_mail(subject, message, from_email, [user.email])
+            
+            # 4. 案内メッセージを出してログイン画面へ
+            messages.success(request, '仮登録が完了しました。ご入力いただいたメールアドレスに認証メールを送信しました。メール内のURLをクリックして本登録を完了させてください。')
+            return redirect('login')
     else:
         form = CustomUserCreationForm()
     return render(request, 'accounts/signup.html', {'form': form})
+
+# メール内のURLがクリックされた時の処理（新規追加）
+def activate(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        # トークンが正しければユーザーを有効化（本登録）してログイン
+        user.is_active = True
+        user.save()
+        from django.contrib.auth import login
+        login(request, user)
+        messages.success(request, 'メール認証が完了し、本登録されました！ようこそエルクリストへ！')
+        return redirect('home')
+    else:
+        # トークンが無効な場合
+        messages.error(request, '認証リンクが無効か、すでに有効期限切れです。お手数ですがもう一度最初から登録をお試しください。')
+        return redirect('signup')
 
 @login_required
 def profile_edit(request):

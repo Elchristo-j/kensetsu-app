@@ -227,3 +227,10 @@ STORAGES = {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
 }
+# --- メール送信設定（Gmailを使う場合） ---
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'hiroshi.77dk@gmail.com'  # ★後で変更
+EMAIL_HOST_PASSWORD = 'yjme mlas abco rjgc'  # ★後で変更
