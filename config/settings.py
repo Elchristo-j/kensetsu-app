@@ -168,7 +168,7 @@ EMAIL_PORT = 587             # ← 465から587に変更
 EMAIL_USE_TLS = True         # ← Trueに変更
 EMAIL_USE_SSL = False
 EMAIL_HOST_USER = 'kma.elchristo@gmail.com'
-EMAIL_HOST_PASSWORD = 'hiar szog yqug ncso'  
+EMAIL_HOST_PASSWORD = 'hiarszogyqugncso'  
 DEFAULT_FROM_EMAIL = '建設マッチング-Elchristo-運営局 <' + EMAIL_HOST_USER + '>'
 EMAIL_TIMEOUT = 10           # ← 「S」を消して 10 だけにする
 
