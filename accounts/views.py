@@ -245,6 +245,34 @@ def profile_detail(request, user_id):
     employer_stats = calculate_stats(target, 'worker_to_employer')
     jobs = Job.objects.filter(created_by=target).order_by('-created_at')
 
+    # ▼▼▼ 追加：「今見ているユーザー」と「ターゲット」の間に契約関係があるか判定 ▼▼▼
+    is_contracted_partner = False
+
+    # 未ログインユーザーはエラーになるので、ログイン済かチェック
+    if request.user.is_authenticated:
+        if request.user == target:
+            # 自分自身のプロフィールを見る場合は全て表示
+            is_contracted_partner = True
+        else:
+            # パターン1: 自分がワーカーで、相手(target)が発注者の案件が「契約成立」or「業務完了」か
+            as_worker = Application.objects.filter(
+                applicant=request.user,
+                job__created_by=target,
+                status__in=['contracted', 'completed']
+            ).exists()
+            
+            # パターン2: 自分が発注者で、相手(target)がワーカーの案件が「契約成立」or「業務完了」か
+            as_employer = Application.objects.filter(
+                applicant=target,
+                job__created_by=request.user,
+                status__in=['contracted', 'completed']
+            ).exists()
+
+            # どちらかの関係が成り立っていれば、詳細開示フラグをTrueにする
+            if as_worker or as_employer:
+                is_contracted_partner = True
+    # ▲▲▲ 追加ここまで ▲▲▲
+
     context = {
         'target_user': target, 
         'profile': profile,
@@ -252,9 +280,9 @@ def profile_detail(request, user_id):
         'employer_stats': employer_stats,
         'jobs': jobs, 
         'prefectures': PREFECTURES,
+        'is_contracted_partner': is_contracted_partner,  # ← ★HTMLに判定結果を渡す
     }
     return render(request, 'accounts/profile_detail.html', context)
-
 @login_required
 def add_favorite_area(request):
     if request.method == 'POST':

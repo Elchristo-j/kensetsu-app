@@ -63,7 +63,12 @@ class ProfileForm(forms.ModelForm):
             'experience_years',
             'qualifications',
             'skills',
-            'invoice_num'
+            'invoice_num',
+            # ▼▼▼ 今回追加：第3段階開示用の連絡先フィールド ▼▼▼
+            'real_name',
+            'phone_number',
+            'line_id'
+            # ▲▲▲ 追加ここまで ▲▲▲
         ]
         
         widgets = {
@@ -80,6 +85,11 @@ class ProfileForm(forms.ModelForm):
             'qualifications': forms.TextInput(attrs={'class': 'form-control'}),
             'skills': forms.TextInput(attrs={'class': 'form-control'}),
             'invoice_num': forms.TextInput(attrs={'class': 'form-control'}),
+            # ▼▼▼ 今回追加：第3段階開示用の入力ウィジェット ▼▼▼
+            'real_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例: 山田 太郎（契約者のみ公開）'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例: 090-0000-0000（契約者のみ公開）'}),
+            'line_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'LINE ID（契約者のみ公開）'}),
+            # ▲▲▲ 追加ここまで ▲▲▲
         }
 
         labels = {
@@ -96,4 +106,9 @@ class ProfileForm(forms.ModelForm):
             'qualifications': '保有資格',
             'skills': 'スキル・得意分野',
             'invoice_num': 'インボイス登録番号',
+            # ▼▼▼ 今回追加：第3段階開示用のラベル ▼▼▼
+            'real_name': '担当者名（本名）',
+            'phone_number': '電話番号',
+            'line_id': 'LINE ID',
+            # ▲▲▲ 追加ここまで ▲▲▲
         }

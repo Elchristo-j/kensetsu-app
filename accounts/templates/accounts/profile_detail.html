@@ -18,7 +18,7 @@
         width: 100%;
     }
 
-    /* ボカシ処理（未ログイン または アイアンランク） */
+    /* ボカシ処理 */
     .blur-content {
         filter: blur(8px);
         opacity: 0.5;
@@ -33,6 +33,16 @@
         z-index: 10;
         width: 100%;
         text-align: center;
+    }
+    
+    /* 連絡先表示エリア用 */
+    .contact-info-box {
+        background-color: #f8f9fa;
+        border: 2px solid #0d6efd;
+        border-radius: 10px;
+        padding: 20px;
+        max-width: 600px;
+        margin: 0 auto;
     }
 </style>
 
@@ -140,13 +150,59 @@
                 {% endif %}
             </div>
             
-            {% if target_user.profile.bio %}
-                <div class="bg-white p-3 rounded text-start d-inline-block border shadow-sm mb-4" style="max-width: 600px; width: 100%;">
-                    <small class="text-muted fw-bold d-block mb-1">自己紹介</small>
-                    <p class="mb-0 small text-dark" style="white-space: pre-wrap;">{{ target_user.profile.bio }}</p>
+            {% if not user.is_authenticated %}
+                <div class="bg-white p-4 rounded border shadow-sm mb-4 position-relative" style="max-width: 600px; margin: 0 auto;">
+                    <div class="blur-content text-start">
+                        <small class="text-muted fw-bold d-block mb-1">自己紹介</small>
+                        <p class="mb-0 small text-dark">こちらはダミーテキストです。ログインすると詳細な自己紹介や実績を見ることができます。</p>
+                    </div>
+                    <div class="lock-overlay">
+                        <div class="badge bg-dark fs-6 p-3 shadow rounded-pill mb-2">
+                            <i class="bi bi-lock-fill"></i> 自己紹介・連絡先は会員限定です
+                        </div>
+                        <br>
+                        <a href="{% url 'signup' %}" class="btn btn-sm btn-primary rounded-pill mt-2">無料会員登録して詳細を見る</a>
+                    </div>
+                </div>
+            {% else %}
+                {% if target_user.profile.bio %}
+                    <div class="bg-white p-3 rounded text-start d-inline-block border shadow-sm mb-4" style="max-width: 600px; width: 100%;">
+                        <small class="text-muted fw-bold d-block mb-1">自己紹介</small>
+                        <p class="mb-0 small text-dark" style="white-space: pre-wrap;">{{ target_user.profile.bio }}</p>
+                    </div>
+                {% endif %}
+
+                <div class="contact-info-box mb-4 text-start shadow-sm">
+                    <h6 class="fw-bold mb-3 border-bottom pb-2 text-primary">
+                        <i class="bi bi-person-lines-fill"></i> 連絡先情報
+                    </h6>
+                    
+                    {% if is_contracted_partner %}
+                        <div class="row g-2 mb-2">
+                            <div class="col-4 text-muted small">担当者名</div>
+                            <div class="col-8 fw-bold">{{ target_user.profile.real_name|default:"未登録" }}</div>
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-4 text-muted small">電話番号</div>
+                            <div class="col-8 fw-bold">{{ target_user.profile.phone_number|default:"未登録" }}</div>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-4 text-muted small">LINE ID</div>
+                            <div class="col-8 fw-bold">{{ target_user.profile.line_id|default:"未登録" }}</div>
+                        </div>
+                        {% if user != target_user %}
+                            <div class="mt-3 p-2 bg-primary bg-opacity-10 text-primary small rounded text-center">
+                                <i class="bi bi-check-circle-fill"></i> 契約が成立したため、連絡先が開示されています。
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-shield-lock text-muted" style="font-size: 2rem;"></i>
+                            <p class="text-muted small mt-2 mb-0">連絡先（本名・電話番号・LINE等）は、<br>マッチング契約が成立した相手にのみ開示されます。</p>
+                        </div>
+                    {% endif %}
                 </div>
             {% endif %}
-
             {% if target_user.favorite_areas.exists %}
                 <div class="mt-2">
                     <small class="text-muted"><i class="bi bi-geo-alt-fill"></i> 主な活動エリア:</small>
@@ -233,6 +289,7 @@
                     </div>
                 </div>
 
+                {% if user.is_authenticated %}
                 <div class="mt-5 border-top pt-4">
                     <h6 class="fw-bold mb-3">技能・資格</h6>
                     <div class="row g-3">
@@ -250,6 +307,7 @@
                         </div>
                     </div>
                 </div>
+                {% endif %}
             </div>
 
             <div class="tab-pane fade" id="content-employer">

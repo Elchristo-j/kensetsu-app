@@ -42,6 +42,12 @@ class Profile(models.Model):
     position = models.CharField(max_length=100, blank=True, null=True, verbose_name="役職・部署")
     age_group = models.CharField(max_length=5, choices=AGE_GROUP_CHOICES, blank=True, null=True, verbose_name="年代")
     
+    # === 追加：第3段階（契約成立後）でのみ開示する連絡先情報 ===
+    real_name = models.CharField(max_length=50, blank=True, verbose_name="担当者名（本名）")
+    phone_number = models.CharField(max_length=20, blank=True, verbose_name="電話番号")
+    line_id = models.CharField(max_length=50, blank=True, verbose_name="LINE ID")
+    # ========================================================
+
     # 職種（メイン・サブ）
     occupation_main = models.CharField(max_length=50, blank=True, null=True, verbose_name="メイン職種")
     occupation_sub = models.CharField(max_length=50, blank=True, null=True, verbose_name="サブ職種")
