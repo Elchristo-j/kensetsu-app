@@ -17,7 +17,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-nhtj$^$miwt^=x$g8_pmtn0f2!^0$!+2!@7(r98xek2x1sa2n0')
 DEBUG = True
-ALLOWED_HOSTS = ['*']
+
+# ★今回変更：'*'（すべて許可）から、セキュリティを高めつつ新しいドメインを許可する形に変更しました
+ALLOWED_HOSTS = [
+    'kensetsu-app-1.onrender.com',
+    'el-christo.jp',
+    'www.el-christo.jp',
+    'localhost',
+    '127.0.0.1',
+    '.ngrok-free.dev',
+]
 
 
 # ==========================================
@@ -170,6 +179,9 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.ngrok-free.dev',
     'http://localhost',
     'http://127.0.0.1',
+    # ★今回追加：独自ドメインでのフォーム送信やStripe決済を許可します
+    'https://el-christo.jp',
+    'https://www.el-christo.jp',
 ]
 
 if 'RENDER' in os.environ:
