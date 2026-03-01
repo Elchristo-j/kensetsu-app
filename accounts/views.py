@@ -167,12 +167,33 @@ def mypage(request):
     my_posted = Job.objects.filter(created_by=request.user).order_by('-created_at')[:5]
     my_applied = Application.objects.filter(applicant=request.user).order_by('-applied_at')[:5]
 
-    # ▼▼▼ 今回追加する「進行中案件のピックアップ」の魔法（ここに追加！） ▼▼▼
-    # 【ワーカーとして】契約成立・業務完了の案件
-    active_worker_apps = Application.objects.filter(applicant=request.user, status__in=['contracted', 'completed']).order_by('-applied_at')
-    # 【発注者として】自分の案件に応募がきて、契約成立・業務完了している案件
-    active_employer_apps = Application.objects.filter(job__created_by=request.user, status__in=['contracted', 'completed']).order_by('-applied_at')
-    # ▲▲▲ 追加ここまで ▲▲▲
+    # ▼▼▼ 修正：「進行中案件（やることリスト）」の取得 ▼▼▼
+    # 【ワーカーとして】
+    raw_worker_apps = Application.objects.filter(applicant=request.user, status__in=['contracted', 'completed']).order_by('-applied_at')
+    active_worker_apps = []
+    for app in raw_worker_apps:
+        # 自分（ワーカー）から発注者への評価が存在するか
+        worker_reviewed = Review.objects.filter(job=app.job, reviewer=app.applicant, reviewee=app.job.created_by).exists()
+        # 相手（発注者）から自分への評価が存在するか
+        employer_reviewed = Review.objects.filter(job=app.job, reviewer=app.job.created_by, reviewee=app.applicant).exists()
+        
+        # 両方の評価が終わっていなければ（片方だけ、または両方未完了なら）リストに残す
+        if not (worker_reviewed and employer_reviewed):
+            active_worker_apps.append(app)
+
+    # 【発注者として】
+    raw_employer_apps = Application.objects.filter(job__created_by=request.user, status__in=['contracted', 'completed']).order_by('-applied_at')
+    active_employer_apps = []
+    for app in raw_employer_apps:
+        # 相手（ワーカー）から自分への評価が存在するか
+        worker_reviewed = Review.objects.filter(job=app.job, reviewer=app.applicant, reviewee=app.job.created_by).exists()
+        # 自分（発注者）からワーカーへの評価が存在するか
+        employer_reviewed = Review.objects.filter(job=app.job, reviewer=app.job.created_by, reviewee=app.applicant).exists()
+        
+        # 両方の評価が終わっていなければリストに残す
+        if not (worker_reviewed and employer_reviewed):
+            active_employer_apps.append(app)
+    # ▲▲▲ 修正ここまで ▲▲▲
 
     # 3. 今月の利用状況の集計
     now = timezone.now()
@@ -216,6 +237,7 @@ def mypage(request):
     
     # 5. レンダリング（returnはこれ1回のみ）
     return render(request, 'accounts/mypage.html', context)
+
 def profile_detail(request, user_id):
     target = get_object_or_404(User, id=user_id)
     profile, _ = Profile.objects.get_or_create(user=target)
