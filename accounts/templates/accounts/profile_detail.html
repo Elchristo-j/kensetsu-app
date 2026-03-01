@@ -186,9 +186,19 @@
                             <div class="col-4 text-muted small">電話番号</div>
                             <div class="col-8 fw-bold">{{ target_user.profile.phone_number|default:"未登録" }}</div>
                         </div>
-                        <div class="row g-2">
+                        <div class="row g-2 mb-2">
                             <div class="col-4 text-muted small">LINE ID</div>
                             <div class="col-8 fw-bold">{{ target_user.profile.line_id|default:"未登録" }}</div>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-4 text-muted small">メールアドレス</div>
+                            <div class="col-8 fw-bold">
+                                {% if target_user.profile.contact_email %}
+                                    <a href="mailto:{{ target_user.profile.contact_email }}">{{ target_user.profile.contact_email }}</a>
+                                {% else %}
+                                    未登録
+                                {% endif %}
+                            </div>
                         </div>
                         {% if user != target_user %}
                             <div class="mt-3 p-2 bg-primary bg-opacity-10 text-primary small rounded text-center">
@@ -198,7 +208,7 @@
                     {% else %}
                         <div class="text-center py-4">
                             <i class="bi bi-shield-lock text-muted" style="font-size: 2rem;"></i>
-                            <p class="text-muted small mt-2 mb-0">連絡先（本名・電話番号・LINE等）は、<br>マッチング契約が成立した相手にのみ開示されます。</p>
+                            <p class="text-muted small mt-2 mb-0">連絡先（本名・電話番号・メール・LINE等）は、<br>マッチング契約が成立した相手にのみ開示されます。</p>
                         </div>
                     {% endif %}
                 </div>

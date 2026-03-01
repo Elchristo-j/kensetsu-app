@@ -46,6 +46,7 @@ class Profile(models.Model):
     real_name = models.CharField(max_length=50, blank=True, verbose_name="担当者名（本名）")
     phone_number = models.CharField(max_length=20, blank=True, verbose_name="電話番号")
     line_id = models.CharField(max_length=50, blank=True, verbose_name="LINE ID")
+    contact_email = models.EmailField(max_length=255, blank=True, verbose_name="連絡用メールアドレス") # ←★これを追加
     # ========================================================
 
     # 職種（メイン・サブ）

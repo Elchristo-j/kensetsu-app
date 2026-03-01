@@ -89,6 +89,7 @@ class ProfileForm(forms.ModelForm):
             'real_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例: 山田 太郎（契約者のみ公開）'}),
             'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例: 090-0000-0000（契約者のみ公開）'}),
             'line_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'LINE ID（契約者のみ公開）'}),
+            'contact_email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': '例: info@el-christo.jp（契約者のみ公開）'}),  # ←★これを追加
             # ▲▲▲ 追加ここまで ▲▲▲
         }
 
@@ -110,5 +111,6 @@ class ProfileForm(forms.ModelForm):
             'real_name': '担当者名（本名）',
             'phone_number': '電話番号',
             'line_id': 'LINE ID',
+            'contact_email': '連絡用メールアドレス',  # ←★これを追加
             # ▲▲▲ 追加ここまで ▲▲▲
         }
