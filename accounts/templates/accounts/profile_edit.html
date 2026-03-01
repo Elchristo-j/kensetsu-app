@@ -75,7 +75,29 @@
                             {{ form.invoice_num }}
                         </div>
 
-                        <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">画像設定</h6>
+                        <h6 class="fw-bold text-primary border-bottom pb-2 mb-3 mt-5"><i class="bi bi-person-lines-fill"></i> 連絡先情報（契約成立後にのみ公開）</h6>
+                        <div class="alert alert-info small mb-3">
+                            <i class="bi bi-info-circle-fill"></i> ここに入力した連絡先は、マッチング契約が成立した相手にのみ開示されます。一般公開はされませんので安心してご入力ください。
+                        </div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">担当者名（本名）</label>
+                                {{ form.real_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">電話番号</label>
+                                {{ form.phone_number }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">LINE ID</label>
+                                {{ form.line_id }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">連絡用メールアドレス</label>
+                                {{ form.contact_email }}
+                            </div>
+                        </div>
+                        <h6 class="fw-bold text-muted border-bottom pb-2 mb-3 mt-4">画像設定</h6>
                         <div class="mb-3">
                             <label class="form-label fw-bold">プロフィール画像</label>
                             {{ form.avatar }}
