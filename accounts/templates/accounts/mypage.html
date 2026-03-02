@@ -53,7 +53,7 @@
     <div class="list-group list-group-flush">
         
         {% for app in active_employer_apps %}
-        <div class="list-group-item p-4 bg-light">
+        <div class="list-group-item p-4 bg-light job-card-hover card-rank-{{ app.applicant.profile.display_rank|lower }}">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <span class="badge bg-primary px-3 py-2 rounded-pill shadow-sm">📢 発注した仕事</span>
                 {% if app.status == 'contracted' %}
@@ -76,7 +76,7 @@
         {% endfor %}
 
         {% for app in active_worker_apps %}
-        <div class="list-group-item p-4">
+        <div class="list-group-item p-4 bg-light job-card-hover card-rank-{{ app.job.created_by.profile.display_rank|lower }}">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <span class="badge bg-success px-3 py-2 rounded-pill shadow-sm">🛠 受注した仕事</span>
                 {% if app.status == 'contracted' %}
@@ -320,7 +320,7 @@
                 {% if my_applications %}
                     <div class="list-group">
                         {% for app in my_applications %}
-                            <div class="list-group-item list-group-item-action border-0 bg-light mb-2 rounded-3">
+                            <div class="list-group-item list-group-item-action border-0 bg-light mb-2 rounded-3 job-card-hover card-rank-{{ app.job.created_by.profile.display_rank|lower }}">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h6 class="mb-1 fw-bold text-primary">
                                         <a href="{% url 'job_detail' app.job.id %}" class="text-decoration-none">{{ app.job.title }}</a>
@@ -347,7 +347,7 @@
                 {% if my_posted_jobs %}
                     <div class="list-group">
                         {% for job in my_posted_jobs %}
-                            <div class="list-group-item list-group-item-action border-0 bg-light mb-2 rounded-3">
+                            <div class="list-group-item list-group-item-action border-0 bg-light mb-2 rounded-3 job-card-hover">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h6 class="mb-1 fw-bold">
                                         <a href="{% url 'job_detail' job.id %}" class="text-decoration-none text-dark">{{ job.title }}</a>
