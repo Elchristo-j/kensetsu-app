@@ -4,6 +4,11 @@
 {% block content %}
 <div class="container mt-4 mb-5">
     
+    <div class="mb-3">
+        <a href="{% url 'mypage' %}#todo-section" class="btn btn-sm btn-outline-secondary rounded-pill shadow-sm">
+            <i class="bi bi-arrow-left"></i> やることリストに戻る
+        </a>
+    </div>
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body bg-light rounded-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
@@ -35,16 +40,16 @@
 
                 {% elif application.status == 'accepted' %}
                     {% if request.user == application.job.created_by %}
-                        <a href="{% url 'contract_application' application.id %}" class="btn btn-primary">🤝 契約成立にする</a>
-                            <i class="bi bi-pen"></i> 契約を成立させる
+                        <a href="{% url 'contract_application' application.id %}" class="btn btn-primary fw-bold">
+                            <i class="bi bi-pen"></i> 契約成立にする
                         </a>
                     {% else %}
                         <button class="btn btn-secondary" disabled>契約待ち</button>
                     {% endif %}
 
                 {% elif application.status == 'contracted' %}
-                    <a href="{% url 'complete_job_work' application.id %}" class="btn btn-success">🎉 業務完了にする</a>
-                        <i class="bi bi-check-circle"></i> 業務完了
+                    <a href="{% url 'complete_job_work' application.id %}" class="btn btn-success fw-bold">
+                        <i class="bi bi-check-circle"></i> 業務完了にする
                     </a>
 
                 {% elif application.status == 'completed' %}
