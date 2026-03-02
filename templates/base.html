@@ -53,13 +53,15 @@
         .footer-link:hover { color: #ffffff; text-decoration: underline; }
 
         /* ▼▼ 全画面共通：ランク別カードの枠線と発光エフェクト ▼▼ */
-        /* プラチナの枠線をチタンブルーに変更 */
         .card-rank-platinum { border: 2px solid #3a7ca5 !important; }
         .card-rank-gold { border: 2px solid #f1c40f !important; }
         .card-rank-silver { border: 2px solid #95a5a6 !important; }
 
+        /* ホバーアクションの基本 */
         .job-card-hover {
             transition: transform 0.3s ease, box-shadow 0.3s ease; 
+            position: relative;
+            overflow: hidden; /* 光の帯がはみ出ないようにカード内で切り取る */
         }
         
         .job-card-hover:hover {
@@ -68,13 +70,49 @@
             z-index: 5;
         }
 
-        .card-rank-gold.job-card-hover:hover {
-            box-shadow: 0 10px 25px rgba(241, 196, 15, 0.5) !important;
+        /* ▼▼ キラッと斜めの光の筋が走るエフェクト（レアカード演出） ▼▼ */
+        .card-rank-gold::before,
+        .card-rank-platinum::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 50%;
+            height: 100%;
+            /* 白く輝く斜めの帯 */
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg);
+            z-index: 10;
+            pointer-events: none; /* クリックの邪魔にならないように */
         }
 
-        /* プラチナの光をチタンブルーに変更 */
+        /* ゴールドとプラチナのみ、ホバーすると光の筋がサッと走り抜ける */
+        .card-rank-gold.job-card-hover:hover::before,
+        .card-rank-platinum.job-card-hover:hover::before {
+            animation: shineEffect 1.5s infinite; /* 1.5秒間隔で走り続ける */
+        }
+
+        @keyframes shineEffect {
+            0% { left: -100%; }
+            50% { left: 200%; }
+            100% { left: 200%; }
+        }
+
+        /* ▼▼ 影（後光）も呼吸するように明滅させる ▼▼ */
+        .card-rank-gold.job-card-hover:hover {
+            animation: glowGold 1.5s infinite alternate;
+        }
         .card-rank-platinum.job-card-hover:hover {
-            box-shadow: 0 10px 25px rgba(58, 124, 165, 0.5) !important;
+            animation: glowPlatinum 1.5s infinite alternate;
+        }
+
+        @keyframes glowGold {
+            0% { box-shadow: 0 5px 15px rgba(241, 196, 15, 0.4) !important; }
+            100% { box-shadow: 0 15px 35px rgba(241, 196, 15, 0.8) !important; }
+        }
+        @keyframes glowPlatinum {
+            0% { box-shadow: 0 5px 15px rgba(58, 124, 165, 0.4) !important; }
+            100% { box-shadow: 0 15px 35px rgba(58, 124, 165, 0.9) !important; }
         }
         /* ▲▲ 追加ここまで ▲▲ */
     </style>
