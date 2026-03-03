@@ -13,7 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 # モデル・フォームのインポート
 from accounts.models import Profile, FavoriteArea, PREFECTURES, Block
 from accounts.forms import ProfileForm
-from .models import Job, Application, Message, Notification, JOB_CATEGORIES, Review
+from .models import Job, Application, Message, Notification, JOB_CATEGORIES, Review,News
 from .forms import JobForm, MessageForm, ContactForm
 
 # --- ヘルパー関数 ---
@@ -85,7 +85,8 @@ def contact(request):
 def home(request):
     expiration_date = timezone.now() - timedelta(days=31)
     jobs = Job.objects.filter(is_closed=False, created_at__gte=expiration_date).order_by('-created_at')
-    
+    # ▼これを足す（公開されているお知らせを最新順に3件取得）
+    news_list = News.objects.filter(is_published=True).order_by('-created_at')[:3]
     # ブロック判定
     if request.user.is_authenticated:
         ignore_ids = get_blocked_user_ids(request.user)
@@ -95,7 +96,7 @@ def home(request):
     favorites = []
     if request.user.is_authenticated:
         favorites = request.user.favorite_areas.all()
-    context = {'jobs': jobs, 'prefectures': PREFECTURES, 'categories': JOB_CATEGORIES, 'favorites': favorites}
+    context = {'jobs': jobs, 'prefectures': PREFECTURES, 'categories': JOB_CATEGORIES, 'favorites': favorites, 'news_list': news_list, }
     return render(request, 'jobs/home.html', context)
 
 def job_list(request):

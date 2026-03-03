@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Job, Application, Message, Notification, Review, Contact, Broadcast
+from .models import Job, Application, Message, Notification, Review, Contact, Broadcast, News # ← 最後にNewsを追加しました！
 
 class JobAdmin(admin.ModelAdmin):
     list_display = ('title', 'created_by', 'created_at', 'is_closed')
@@ -21,3 +21,10 @@ class ContactAdmin(admin.ModelAdmin):
     list_filter = ('created_at',) # 日付で絞り込み
     search_fields = ('name', 'email', 'subject', 'message') # 検索機能
     readonly_fields = ('created_at',) # 日付は書き換え不可に
+
+# ▼▼ 今回追加：お知らせ（News）を管理画面に登録 ▼▼
+@admin.register(News)
+class NewsAdmin(admin.ModelAdmin):
+    list_display = ('title', 'category', 'is_published', 'created_at') # 一覧画面で見える項目
+    list_filter = ('category', 'is_published') # 横の絞り込みメニュー
+    search_fields = ('title', 'content') # 検索窓の対象

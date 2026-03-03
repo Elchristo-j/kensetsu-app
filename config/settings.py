@@ -6,17 +6,25 @@ Updated for SSL Email Support & Render Stability.
 from pathlib import Path
 import os
 import dj_database_url
+import environ  # ← ① これを追加！
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ▼▼ ② ここから追加：.envファイルを読み込む魔法の装置 ▼▼
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+# ▲▲ 追加ここまで ▲▲
 
 # ==========================================
 # セキュリティ設定
 # ==========================================
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-nhtj$^$miwt^=x$g8_pmtn0f2!^0$!+2!@7(r98xek2x1sa2n0')
-DEBUG = True
+# ③ 直書きを消して、金庫（.env）から取り出すように変更！
+SECRET_KEY = env('SECRET_KEY')
+
+# ④ DEBUGも金庫から取り出すように変更！（万が一読み込めない時は安全のためFalseになる設定）
+DEBUG = env.bool('DEBUG', default=False)
 
 # ★今回変更：'*'（すべて許可）から、セキュリティを高めつつ新しいドメインを許可する形に変更しました
 ALLOWED_HOSTS = [

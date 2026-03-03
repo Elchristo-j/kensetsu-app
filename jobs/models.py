@@ -226,4 +226,29 @@ class Broadcast(models.Model):
                 send_mass_mail(messages, fail_silently=True)
 
     def __str__(self):
-        return self.title   
+        return self.title
+
+# jobs/models.py の一番下などに追記
+
+class News(models.Model):
+    CATEGORY_CHOICES = (
+        ('info', 'お知らせ'),
+        ('update', 'アップデート'),
+        ('maintenance', 'メンテナンス'),
+        ('campaign', 'キャンペーン'),
+    )
+    
+    title = models.CharField('タイトル', max_length=100)
+    content = models.TextField('本文')
+    category = models.CharField('カテゴリー', max_length=20, choices=CATEGORY_CHOICES, default='info')
+    is_published = models.BooleanField('公開する', default=True)
+    created_at = models.DateTimeField('作成日時', auto_now_add=True)
+    updated_at = models.DateTimeField('更新日時', auto_now=True)
+
+    class Meta:
+        verbose_name = 'お知らせ'
+        verbose_name_plural = 'お知らせ一覧'
+        ordering = ['-created_at'] # 新しい順に並べる
+
+    def __str__(self):
+        return self.title       
