@@ -3,3 +3,5 @@ db.sqlite3
 vendor/bundle/
 venv/
 *.sqlite3
+.DS_Store
+**/.DS_Store
