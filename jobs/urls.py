@@ -6,6 +6,9 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('search/', views.job_list, name='job_list'),
 
+    # ▼ これを追記（お知らせ詳細へのURL）
+    path('news/<int:news_id>/', views.news_detail, name='news_detail'),
+
     # 案件詳細・作成・編集
     path('job/<int:job_id>/', views.job_detail, name='job_detail'),
     path('job/create/', views.create_job, name='create_job'),

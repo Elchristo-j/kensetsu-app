@@ -124,7 +124,7 @@
                         {{ news.get_category_display }}
                     </span>
                     <span class="text-muted small me-2">{{ news.created_at|date:"Y.m.d" }}</span>
-                    <span class="text-dark small">{{ news.title }}</span>
+                    <a href="{% url 'news_detail' news.id %}" class="text-dark small fw-bold text-decoration-none text-primary-hover">{{ news.title }}</a>
                 </li>
                 {% empty %}
                 <li class="text-muted small">現在、新しいお知らせはありません。</li>

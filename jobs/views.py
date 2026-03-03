@@ -592,3 +592,9 @@ def unblock_user(request, user_id):
     Block.objects.filter(blocker=request.user, blocked=target).delete()
     messages.success(request, f"{target.username}さんのブロックを解除しました。")
     return redirect('blocked_list')
+
+# ▼▼ 一番下などに追記 ▼▼
+def news_detail(request, news_id):
+    # urlから渡されたIDのニュースを探す（公開設定になっているものだけ）
+    news = get_object_or_404(News, pk=news_id, is_published=True)
+    return render(request, 'jobs/news_detail.html', {'news': news})

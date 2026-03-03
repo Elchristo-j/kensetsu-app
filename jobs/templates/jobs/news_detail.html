@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5" style="max-width: 800px;">
+    <div class="mb-3">
+        <a href="{% url 'home' %}" class="text-decoration-none text-muted">
+            <i class="bi bi-arrow-left"></i> トップページへ戻る
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+        
+        <div class="d-flex align-items-center mb-3">
+            <span class="badge 
+                {% if news.category == 'info' %}bg-success
+                {% elif news.category == 'update' %}bg-primary
+                {% elif news.category == 'maintenance' %}bg-secondary
+                {% elif news.category == 'campaign' %}bg-warning text-dark
+                {% endif %} me-3 fs-6 px-3 py-2">
+                {{ news.get_category_display }}
+            </span>
+            <span class="text-muted fw-bold">{{ news.created_at|date:"Y年m月d日" }}</span>
+        </div>
+
+        <h2 class="fw-bold mb-4 border-bottom pb-3">{{ news.title }}</h2>
+
+        <div class="news-content" style="line-height: 1.8; font-size: 1.05rem;">
+            {{ news.content|linebreaksbr }}
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
