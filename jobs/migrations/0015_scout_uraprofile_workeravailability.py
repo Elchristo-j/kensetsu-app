@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ('target_job', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='scouts', to='jobs.job', verbose_name='誘いたい表案件')),
                 ('worker', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='scouts_received', to=settings.AUTH_USER_MODEL, verbose_name='スカウトされた人（ワーカー）')),
             ],
-        ),
+        ), 
         migrations.CreateModel(
             name='UraProfile',
             fields=[
