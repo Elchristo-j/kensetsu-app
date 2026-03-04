@@ -62,4 +62,10 @@ urlpatterns = [
     path('unblock/<int:user_id>/', views.unblock_user, name='unblock_user'),
 
     path('favorite-search/', views.favorite_search_view, name='favorite_search_view'),
+
+    # ▼ これを追記（裏プロフィール編集ページへのURL）
+    path('ura-profile/edit/', views.edit_ura_profile, name='edit_ura_profile'),
+
+    # ▼ これを追記（カレンダー編集ページへのURL）
+    path('ura-profile/calendar/', views.edit_availability, name='edit_availability'),
 ]

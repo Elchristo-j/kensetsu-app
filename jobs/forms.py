@@ -1,6 +1,8 @@
 from django import forms
 from .models import Job, Message
 from .models import Contact
+# ▼ jobs/forms.py の一番上あたり
+from .models import Job, Application, News, UraProfile  # ← UraProfile を追加
 
 class JobForm(forms.ModelForm):
     class Meta:
@@ -60,3 +62,28 @@ class ContactForm(forms.ModelForm):
             'subject': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '件名'}),
             'message': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'お問い合わせ内容を入力してください'}),
         }
+
+# ▼▼ jobs/forms.py の一番下に追記 ▼▼
+
+class UraProfileForm(forms.ModelForm):
+    class Meta:
+        model = UraProfile
+        fields = [
+            'is_published', 'main_occupation', 'sub_occupations', 
+            'base_location', 'experience_years', 'good_at', 'bad_at', 
+            'desired_daily_wage', 'self_introduction'
+        ]
+        labels = {
+            'is_published': 'この裏プロフィールを公開してスカウトを受け付ける',
+        }
+        widgets = {
+            'is_published': forms.CheckboxInput(attrs={'class': 'form-check-input', 'style': 'transform: scale(1.5); margin-right: 10px;'}),
+            'main_occupation': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例: 電気工'}),
+            'sub_occupations': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例: 空調・手元'}),
+            'base_location': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例: 徳島県徳島市'}),
+            'experience_years': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例: 25年'}),
+            'good_at': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': '例: 木造建築物の配線、ボード開口など'}),
+            'bad_at': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': '例: 汚水、浄化槽、高所作業など'}),
+            'desired_daily_wage': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例: 20,000円+交通費'}),
+            'self_introduction': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': '自由に自己アピールを書いてください！'}),
+        }        

@@ -251,4 +251,64 @@ class News(models.Model):
         ordering = ['-created_at'] # 新しい順に並べる
 
     def __str__(self):
-        return self.title       
+        return self.title
+
+    # ▼▼ ここから下を jobs/models.py の一番下に追記 ▼▼
+
+class UraProfile(models.Model):
+    """裏案件（ワーカーアピール）用のプロフィール"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='ura_profile')
+    is_published = models.BooleanField(default=False, verbose_name='裏案件を公開する（ON/OFF）')
+    
+    # 職種や経歴
+    main_occupation = models.CharField(max_length=50, verbose_name='職種（メイン）', help_text='例: 電気工')
+    sub_occupations = models.CharField(max_length=100, blank=True, null=True, verbose_name='職種（サブ2種まで）', help_text='例: 空調・手元')
+    base_location = models.CharField(max_length=50, verbose_name='主な活動拠点', help_text='例: 徳島県徳島市')
+    experience_years = models.CharField(max_length=20, verbose_name='経験年数', help_text='例: 25年')
+    
+    # 詳細な希望
+    good_at = models.TextField(blank=True, null=True, verbose_name='得意な工事（現場）', help_text='例: 木造建築物')
+    bad_at = models.TextField(blank=True, null=True, verbose_name='不得手な工事（現場）', help_text='例: 汚水、浄化槽')
+    desired_daily_wage = models.CharField(max_length=50, verbose_name='希望する日当額', help_text='例: 20,000円+交通費')
+    self_introduction = models.TextField(blank=True, null=True, verbose_name='自己紹介')
+    
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username}の裏プロフィール"
+
+
+class WorkerAvailability(models.Model):
+    """ワーカーのカレンダー（空き状況）"""
+    STATUS_CHOICES = (
+        ('available', '◎ 空き'),
+        ('negotiable', '△ 要相談'),
+        ('unavailable', '× 不可'),
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='availabilities')
+    date = models.DateField(verbose_name='日付')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available', verbose_name='ステータス')
+
+    class Meta:
+        unique_together = ('user', 'date') # 同じ日に2つ以上の予定を作れないようにする
+
+    def __str__(self):
+        return f"{self.user.username} - {self.date} ({self.get_status_display()})"
+
+
+class Scout(models.Model):
+    """スカウト送信履歴"""
+    STATUS_CHOICES = (
+        ('pending', '返答待ち'),
+        ('accepted', '承諾（チャットへ）'),
+        ('declined', '辞退'),
+    )
+    employer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='scouts_sent', verbose_name='スカウトした人（雇い主）')
+    worker = models.ForeignKey(User, on_delete=models.CASCADE, related_name='scouts_received', verbose_name='スカウトされた人（ワーカー）')
+    target_job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='scouts', verbose_name='誘いたい表案件')
+    message = models.TextField(verbose_name='スカウトメッセージ')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.employer.username} から {self.worker.username} へのスカウト"           

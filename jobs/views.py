@@ -1,5 +1,8 @@
+# ==========================================
+# jobs/views.py の完全版コード
+# ==========================================
 import stripe
-from datetime import timedelta
+from datetime import timedelta, date
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -10,11 +13,16 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-# モデル・フォームのインポート
+# アカウント関連のモデル・フォーム
 from accounts.models import Profile, FavoriteArea, PREFECTURES, Block
 from accounts.forms import ProfileForm
-from .models import Job, Application, Message, Notification, JOB_CATEGORIES, Review,News
-from .forms import JobForm, MessageForm, ContactForm
+
+# ジョブ関連のモデル・フォーム（ここで一括インポートしています！カンマなし！）
+from .models import (
+    Job, Application, Message, Notification, Review, News, 
+    WorkerAvailability, UraProfile, JOB_CATEGORIES
+)
+from .forms import JobForm, MessageForm, ContactForm, UraProfileForm
 
 # --- ヘルパー関数 ---
 
@@ -22,9 +30,7 @@ def get_blocked_user_ids(user):
     """ブロックしている・されているユーザーIDのリストを返す"""
     if not user.is_authenticated:
         return []
-    # 自分がブロックしている相手
     blocking = Block.objects.filter(blocker=user).values_list('blocked_id', flat=True)
-    # 自分をブロックしている相手
     blocked_by = Block.objects.filter(blocked=user).values_list('blocker_id', flat=True)
     return list(blocking) + list(blocked_by)
 
@@ -85,9 +91,8 @@ def contact(request):
 def home(request):
     expiration_date = timezone.now() - timedelta(days=31)
     jobs = Job.objects.filter(is_closed=False, created_at__gte=expiration_date).order_by('-created_at')
-    # ▼これを足す（公開されているお知らせを最新順に3件取得）
     news_list = News.objects.filter(is_published=True).order_by('-created_at')[:3]
-    # ブロック判定
+    
     if request.user.is_authenticated:
         ignore_ids = get_blocked_user_ids(request.user)
         if ignore_ids:
@@ -103,13 +108,11 @@ def job_list(request):
     expiration_date = timezone.now() - timedelta(days=31)
     jobs = Job.objects.filter(created_at__gte=expiration_date, is_closed=False).order_by('-created_at')
 
-    # ブロック判定
     if request.user.is_authenticated:
         ignore_ids = get_blocked_user_ids(request.user)
         if ignore_ids:
             jobs = jobs.exclude(created_by__id__in=ignore_ids)
 
-    # 検索機能
     query = request.GET.get('q')
     prefecture = request.GET.get('prefecture')
     category = request.GET.get('category')
@@ -132,7 +135,7 @@ def favorite_search_view(request):
     favorite_areas = request.user.favorite_areas.all()
     if not favorite_areas.exists():
         messages.info(request, "お気に入りエリアが登録されていません。")
-        return redirect('mypage') # マイページにリダイレクト
+        return redirect('mypage')
     
     query = Q()
     for area in favorite_areas:
@@ -141,7 +144,6 @@ def favorite_search_view(request):
     
     jobs = Job.objects.filter(query).filter(is_closed=False).order_by('-id')
 
-    # ブロック判定
     ignore_ids = get_blocked_user_ids(request.user)
     if ignore_ids:
         jobs = jobs.exclude(created_by__id__in=ignore_ids)
@@ -153,7 +155,6 @@ def favorite_search_view(request):
 def job_detail(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     
-    # ブロック判定
     if request.user.is_authenticated:
         if Block.objects.filter(blocker=request.user, blocked=job.created_by).exists() or \
            Block.objects.filter(blocker=job.created_by, blocked=request.user).exists():
@@ -184,7 +185,7 @@ def job_detail(request, job_id):
     context = {
         'job': job, 
         'is_applied': is_applied, 
-        'application': application,  # ← これがチャットボタンへのリンクに使えます
+        'application': application,
         'can_apply': can_apply, 
         'limit_info': limit_info
     }
@@ -244,22 +245,18 @@ def cancel_application(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     app = Application.objects.filter(job=job, applicant=request.user).first()
     if app:
-        # この応募に関連するチャット通知などを削除
         chat_link_part = f"/application/{app.id}/"
         Notification.objects.filter(link__contains=chat_link_part).delete()
         
-        # ▼▼ 修正：審査中であっても削除せず、必ず「辞退」ステータスとして残す ▼▼
         app.status = 'canceled'
         app.save()
-        # 相手（発注者）に辞退したことを通知する
         create_notification(job.created_by, f"案件「{job.title}」で{request.user.username}さんが辞退しました。", f"/application/{app.id}/chat/")
             
         messages.info(request, "応募を辞退しました。")
     return redirect('job_detail', job_id=job.id)
 
-# --- 3. Management & Contract Flow (★契約・完了・評価) ---
+# --- 3. Management & Contract Flow ---
 
-# ▼▼ 復活：消えていた応募者リスト表示の処理 ▼▼
 @login_required
 def job_applicants(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
@@ -278,7 +275,7 @@ def adopt_applicant(request, application_id):
 def reject_applicant(request, application_id):
     app = get_object_or_404(Application, pk=application_id)
     if request.user == app.job.created_by:
-        app.status = 'rejected'  # ←見送りステータスに変更
+        app.status = 'rejected'
         app.save()
     return redirect('job_applicants', job_id=app.job.id)
 
@@ -286,7 +283,6 @@ def reject_applicant(request, application_id):
 def contract_application(request, application_id):
     app = get_object_or_404(Application, pk=application_id)
     if request.user == app.job.created_by: 
-        # 相手が辞退していないかチェックする
         if app.status == 'canceled':
             messages.error(request, "この応募者はすでに辞退しています。契約はできません。")
             return redirect('chat_room', application_id=app.id)
@@ -297,13 +293,10 @@ def contract_application(request, application_id):
             create_notification(app.applicant, f"案件「{app.job.title}」の契約が成立しました！", f"/application/{app.id}/chat/")
             messages.success(request, "契約が成立しました。業務を開始できます。")
 
-            # ▼▼▼ 魔法：枠が埋まったら他の人を自動でお祈り（見送り）にする ▼▼▼
             job = app.job
             filled_count = job.applications.filter(status__in=['contracted', 'completed']).count()
             
-            # もし募集枠が完全に埋まったら…
             if filled_count >= job.headcount:
-                # ▼▼ 追加：枠が埋まったら自動で募集終了にして一覧から消す！ ▼▼
                 job.is_closed = True
                 job.save()
                 
@@ -317,7 +310,6 @@ def contract_application(request, application_id):
                         f"案件「{job.title}」は募集枠が埋まったため、今回は見送りとなりました。またの機会にお願いいたします。", 
                         f"/job/{job.id}/"
                     )
-            # ▲▲▲ 魔法ここまで ▲▲▲
             
     return redirect('chat_room', application_id=app.id)
 
@@ -429,7 +421,6 @@ def mypage(request):
     worker_stats = calculate_stats_for_user(request.user, 'employer_to_worker')
     employer_stats = calculate_stats_for_user(request.user, 'worker_to_employer')
 
-    # プラン情報の取得 (必要な場合)
     limit_jobs = profile.posting_limit
     limit_apps = profile.monthly_limit
 
@@ -451,7 +442,6 @@ def profile_detail(request, user_id):
     """他人から見たプロフィール"""
     target_user = get_object_or_404(User, pk=user_id)
     
-    # ブロック判定
     if request.user.is_authenticated:
         if Block.objects.filter(blocker=request.user, blocked=target_user).exists() or \
            Block.objects.filter(blocker=target_user, blocked=request.user).exists():
@@ -593,8 +583,64 @@ def unblock_user(request, user_id):
     messages.success(request, f"{target.username}さんのブロックを解除しました。")
     return redirect('blocked_list')
 
-# ▼▼ 一番下などに追記 ▼▼
 def news_detail(request, news_id):
-    # urlから渡されたIDのニュースを探す（公開設定になっているものだけ）
     news = get_object_or_404(News, pk=news_id, is_published=True)
     return render(request, 'jobs/news_detail.html', {'news': news})
+
+# --- 裏案件（スカウト）機能 ---
+
+@login_required
+def edit_ura_profile(request):
+    # 【ここを追加！】IRONランクは弾く
+    if request.user.profile.rank == 'iron':
+        messages.error(request, '裏案件（スカウト機能）を利用するには、本人確認が必要です。')
+        return redirect('mypage')
+        
+    ura_profile, created = UraProfile.objects.get_or_create(user=request.user)
+    # ... 以下そのまま ...
+    
+    if request.method == 'POST':
+        form = UraProfileForm(request.POST, instance=ura_profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '裏プロフィールを更新しました！')
+            return redirect('mypage')
+    else:
+        form = UraProfileForm(instance=ura_profile)
+        
+    return render(request, 'jobs/ura_profile_edit.html', {'form': form})
+
+@login_required
+def edit_availability(request):
+    # 【ここを追加！】IRONランクは弾く
+    if request.user.profile.rank == 'iron':
+        messages.error(request, 'カレンダー機能を利用するには、本人確認が必要です。')
+        return redirect('mypage')
+
+    today = date.today()
+    
+    if request.method == 'POST':
+        for d in dates:
+            date_str = d.strftime('%Y-%m-%d')
+            status = request.POST.get(f'status_{date_str}')
+            if status:
+                WorkerAvailability.objects.update_or_create(
+                    user=request.user,
+                    date=d,
+                    defaults={'status': status}
+                )
+        messages.success(request, 'カレンダー（空き状況）を更新しました！')
+        return redirect('edit_availability')
+        
+    existing_availabilities = WorkerAvailability.objects.filter(user=request.user, date__in=dates)
+    status_map = {ea.date: ea.status for ea in existing_availabilities}
+    
+    calendar_data = []
+    for d in dates:
+        calendar_data.append({
+            'date': d,
+            'date_str': d.strftime('%Y-%m-%d'),
+            'status': status_map.get(d, 'available')
+        })
+        
+    return render(request, 'jobs/availability_edit.html', {'calendar_data': calendar_data})

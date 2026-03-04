@@ -117,6 +117,20 @@
                     <i class="bi bi-pencil-square"></i> プロフィール編集
                 </a>
                 
+            <div class="mt-4 mb-3">
+                <a href="{% url 'edit_ura_profile' %}" class="btn btn-dark w-100 py-3 fw-bold shadow-sm" style="border-radius: 10px;">
+                    <i class="bi bi-incognito me-2"></i> 🕵️‍♂️ 裏プロフィール設定（スカウト受付）
+                </a>
+             <div class="mt-2 mb-4">
+                <a href="{% url 'edit_availability' %}" class="btn btn-outline-dark w-100 py-2 fw-bold" style="border-radius: 10px;">
+                    <i class="bi bi-calendar-check me-2"></i> スケジュール（空き状況）の更新
+                </a>
+            </div>   
+                <p class="text-muted small mt-1 mb-0">
+                ※得意・不得意や希望日当を登録して、特別なスカウトを受け取れます。
+                </p>
+            </div>    
+                
                 <a href="{% url 'blocked_list' %}" class="btn btn-outline-danger rounded-pill fw-bold btn-sm">
                     <i class="bi bi-slash-circle"></i> ブロック管理
                 </a>
