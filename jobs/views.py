@@ -610,14 +610,16 @@ def edit_ura_profile(request):
         
     return render(request, 'jobs/ura_profile_edit.html', {'form': form})
 
+# ▼▼ jobs/views.py の一番下の関数をこれに差し替え ▼▼
+
 @login_required
 def edit_availability(request):
-    # 【ここを追加！】IRONランクは弾く
     if request.user.profile.rank == 'iron':
         messages.error(request, 'カレンダー機能を利用するには、本人確認が必要です。')
         return redirect('mypage')
 
     today = date.today()
+    dates = [today + timedelta(days=i) for i in range(30)]
     
     if request.method == 'POST':
         for d in dates:
@@ -632,8 +634,12 @@ def edit_availability(request):
         messages.success(request, 'カレンダー（空き状況）を更新しました！')
         return redirect('edit_availability')
         
-    existing_availabilities = WorkerAvailability.objects.filter(user=request.user, date__in=dates)
-    status_map = {ea.date: ea.status for ea in existing_availabilities}
+    # ▼▼ ここからが安全対策の変更点 ▼▼
+    try:
+        existing_availabilities = WorkerAvailability.objects.filter(user=request.user, date__in=dates)
+        status_map = {ea.date: ea.status for ea in existing_availabilities}
+    except Exception:
+        status_map = {} # エラーが起きたら空っぽにする
     
     calendar_data = []
     for d in dates:
