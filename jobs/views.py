@@ -409,6 +409,9 @@ def mypage(request):
     my_applications = request.user.applications.all().order_by('-applied_at')
     my_posted_jobs = Job.objects.filter(created_by=request.user).order_by('-created_at')
     
+    # ▼▼ 🌟ここを1行追加！：自分の案件に来た「応募（スカウト承諾含む）」を取得 ▼▼
+    received_applications = Application.objects.filter(job__created_by=request.user).order_by('-applied_at')
+
     now = timezone.now()
     start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
@@ -427,6 +430,7 @@ def mypage(request):
     context = {
         'my_applications': my_applications,
         'my_posted_jobs': my_posted_jobs,
+        'received_applications': received_applications, # ▼▼ 🌟ここも1行追加！画面に渡す ▼▼
         'remaining_apply': remaining_apply,
         'remaining_post': remaining_post,
         'worker_stats': worker_stats,
@@ -774,35 +778,74 @@ def received_scouts(request):
     return render(request, 'jobs/received_scouts.html', context)
 # ▼▼ jobs/views.py の一番下に追加 ▼▼
 
+# ▼▼ jobs/views.py の scout_detail を以下に上書き ▼▼
+
 @login_required
 def scout_detail(request, pk):
-    """受信したスカウトの詳細確認と、承諾/辞退の処理"""
-    # 自分が受信したスカウトだけを開けるようにする（他人の覗き見防止）
+    """受信したスカウトの詳細確認と、交渉（チャット）開始の処理"""
     scout = get_object_or_404(Scout, pk=pk, worker=request.user)
 
     if request.method == 'POST':
         action = request.POST.get('action')
         
         if action == 'accept':
-            # 承諾した場合：自動的にその案件への「応募（Application）」を作成する
+            # 「承認」ではなく「交渉開始」として、いきなりチャットができるステータスにする
             application, created = Application.objects.get_or_create(
                 job=scout.target_job,
                 applicant=request.user,
-                defaults={'status': 'pending'}
+                defaults={'status': 'contracted'} # ← ここを pending から contracted に変更！
             )
-            # 承諾済みのスカウトは一覧から消す（整理整頓のため削除）
+            # もし既に表ルート等で pending として作られていた場合は contracted に上書きしてチャットを解放
+            if not created and application.status == 'pending':
+                application.status = 'contracted'
+                application.save()
+
+            # スカウトの手紙は役目を終えたので削除
             scout.delete()
             
-            messages.success(request, f'【マッチング成立】{scout.employer.username}さんのスカウトを承諾しました！マイページからメッセージを送りましょう。')
-            return redirect('mypage') # 完了後はマイページへ
+            messages.success(request, '交渉ルームが作成されました！まずは相手に挨拶を送ってみましょう。')
+            # 🌟 マイページではなく、いきなりチャットルームへ飛ばす！
+            return redirect('chat_room', application_id=application.id)
             
         elif action == 'decline':
-            # 辞退した場合：スカウトを削除して一覧へ戻る
             scout.delete()
-            messages.info(request, 'スカウトを辞退しました。')
+            messages.info(request, '今回はスカウトを見送りました。')
             return redirect('received_scouts')
 
     context = {
         'scout': scout,
     }
-    return render(request, 'jobs/scout_detail.html', context)       
+    return render(request, 'jobs/scout_detail.html', context)
+
+@login_required
+def chat_room(request, application_id):
+    """マッチング後の当事者専用チャットルーム"""
+    # 対象の応募（マッチング）データを取得
+    application = get_object_or_404(Application, id=application_id)
+    
+    # 🌟 セキュリティ：この案件の「募集者」か「応募者」しか入れないように弾く
+    if request.user != application.job.created_by and request.user != application.applicant:
+        messages.error(request, 'このチャットルームにはアクセスできません。')
+        return redirect('mypage')
+    
+    # この部屋のメッセージ履歴を古い順（上から下へ）に取得
+    chat_messages = Message.objects.filter(application=application).order_by('created_at')
+    
+    # 送信ボタンが押された時の処理
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        if content:
+            # メッセージをデータベースに保存
+            Message.objects.create(
+                application=application,
+                sender=request.user,
+                content=content  # ※もしmodels.pyでの名前が 'text' や 'message' だったら後で直します！
+            )
+            # 送信後は画面をリロード（一番下までスクロールさせるため）
+            return redirect('chat_room', application_id=application.id)
+    
+    context = {
+        'application': application,
+        'chat_messages': chat_messages,
+    }
+    return render(request, 'jobs/chat_room.html', context)           

@@ -327,6 +327,11 @@
                     募集した案件
                 </button>
             </li>
+            <li class="nav-item">
+                <button class="nav-link fw-bold text-dark" id="received-tab" data-bs-toggle="tab" data-bs-target="#received" type="button">
+                    <i class="bi bi-envelope-paper text-warning"></i> 届いた応募・スカウト
+                </button>
+            </li>
         </ul>
 
         <div class="tab-content" id="jobTabContent">
@@ -381,7 +386,47 @@
                     <p class="text-muted text-center py-4">まだ募集していません。<br><a href="{% url 'create_job' %}">案件を作成する</a></p>
                 {% endif %}
             </div>
-        </div>
+
+            <div class="tab-pane fade" id="received">
+                {% if received_applications %}
+                    <div class="list-group">
+                        {% for app in received_applications %}
+                            <div class="list-group-item list-group-item-action border-0 bg-light mb-2 rounded-3 job-card-hover">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1 fw-bold text-dark">
+                                        <a href="{% url 'profile_detail' app.applicant.id %}" class="text-decoration-none text-dark">
+                                            <i class="bi bi-person-fill"></i> {{ app.applicant.username }} さん
+                                        </a>
+                                    </h6>
+                                    <small class="text-muted">{{ app.applied_at|date:"m/d" }}</small>
+                                </div>
+                                <p class="mb-1 small text-secondary">対象案件: <a href="{% url 'job_detail' app.job.id %}" class="text-info">{{ app.job.title }}</a></p>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <span>
+                                        {% if app.status == 'pending' %}
+                                            <span class="badge bg-warning text-dark">確認待ち</span>
+                                        {% elif app.status == 'accepted' %}
+                                            <span class="badge bg-success">マッチング成立！</span>
+                                        {% elif app.status == 'rejected' %}
+                                            <span class="badge bg-secondary">見送り</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ app.get_status_display }}</span>
+                                        {% endif %}
+                                    </span>
+                                    {% if app.status == 'pending' or app.status == 'accepted' %}
+                                        <a href="{% url 'job_applicants' app.job.id %}" class="btn btn-sm btn-warning rounded-pill px-3 fw-bold text-dark">
+                                            詳細・連絡画面へ
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-4">現在、あなたの案件への応募やスカウト承諾はありません。</p>
+                {% endif %}
+            </div>
+            </div>
     </div>
 </div>
 

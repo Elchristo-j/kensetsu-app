@@ -84,4 +84,7 @@ urlpatterns = [
     # ▼ jobs/urls.py の urlpatterns の中に追加
     path('scouts/received/', views.received_scouts, name='received_scouts'),
     path('scouts/<int:pk>/', views.scout_detail, name='scout_detail'), # ←これを追加！
+    
+    # ▼ jobs/urls.py の urlpatterns の中に追加
+    path('chat/<int:application_id>/', views.chat_room, name='chat_room'),
     ]
