@@ -758,4 +758,18 @@ def send_scout(request, pk):
         'scouts_left': scouts_left,
         'monthly_limit': monthly_limit if user_rank != 'platinum' else '無制限',
     }
-    return render(request, 'jobs/send_scout.html', context)    
+    return render(request, 'jobs/send_scout.html', context)
+
+    # ▼▼ jobs/views.py の一番下に追加 ▼▼
+
+@login_required
+def received_scouts(request):
+    """受信したスカウト一覧（職人側の画面）"""
+    # データベースの「分配箱」から、受取人(worker)が自分のものだけを新しい順に取り出す
+    scouts = Scout.objects.filter(worker=request.user).order_by('-created_at')
+    
+    context = {
+        'scouts': scouts,
+    }
+    return render(request, 'jobs/received_scouts.html', context)
+       

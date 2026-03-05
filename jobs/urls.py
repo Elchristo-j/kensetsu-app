@@ -75,5 +75,9 @@ urlpatterns = [
     # ▼ jobs/urls.py の urlpatterns の中に追加
     path('ura-profiles/', views.ura_profile_list, name='ura_profile_list'),
     path('ura-profile/<int:pk>/', views.ura_profile_detail, name='ura_profile_detail'), 
-    path('ura-profile/<int:pk>/scout/', views.send_scout, name='send_scout'), # ←これを追加！
+    path('ura-profile/<int:pk>/scout/', views.send_scout, name='send_scout'),  # ←これを追加！
+    
+    # ▼ jobs/urls.py の urlpatterns の中に追加
+    path('ura-profile/<int:pk>/scout/', views.send_scout, name='send_scout'),
+    path('scouts/received/', views.received_scouts, name='received_scouts'),
     ]
