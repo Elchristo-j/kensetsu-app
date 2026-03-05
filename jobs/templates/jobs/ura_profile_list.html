@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-light"><i class="fas fa-user-secret me-2"></i>職人・協力業者 闇市</h2>
+        <span class="badge bg-warning text-dark">BRONZE以上限定エリア</span>
+    </div>
+
+    <p class="text-secondary mb-4">
+        ※ここでは、直接交渉（スカウト）を受け付けている職人のプロフィールを確認できます。<br>
+        気になる職人がいれば、詳細ページから直接メッセージを送って相談が可能です。
+    </p>
+
+    <div class="row g-4">
+        {% for ura in ura_profiles %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 bg-dark text-light border-secondary shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title text-warning mb-0">{{ ura.main_occupation }}</h5>
+                        <span class="badge border border-secondary text-secondary">{{ ura.base_location }}</span>
+                    </div>
+
+                    {% if ura.sub_occupations %}
+                    <p class="small text-info mb-2">
+                        <i class="fas fa-tags me-1"></i>{{ ura.sub_occupations }}
+                    </p>
+                    {% endif %}
+
+                    <hr class="border-secondary">
+
+                    <div class="mb-3">
+                        <div class="row g-0 mb-1">
+                            <div class="col-5 text-secondary small">経験年数:</div>
+                            <div class="col-7">{{ ura.experience_years }}</div>
+                        </div>
+                        <div class="row g-0">
+                            <div class="col-5 text-secondary small">希望日当:</div>
+                            <div class="col-7 text-success fw-bold">{{ ura.desired_daily_wage }}</div>
+                        </div>
+                    </div>
+
+                    <p class="card-text small text-secondary mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        {{ ura.self_introduction|default:"自己紹介はまだありません。" }}
+                    </p>
+
+                    <div class="d-grid mt-auto">
+                        <a href="#" class="btn btn-outline-warning btn-sm disabled">
+                            詳細・スカウト（開発中）
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer border-secondary bg-transparent">
+                    <small class="text-muted">最終更新: {{ ura.updated_at|date:"Y/m/d" }}</small>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <p class="text-secondary">現在、公開されている職人はまだいません。</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    /* 闇市専用の渋いスタイル */
+    body {
+        background-color: #121212; /* 全体をより深い黒に */
+    }
+    .card {
+        transition: transform 0.2s, border-color 0.2s;
+        background: linear-gradient(145deg, #1e1e1e, #252525);
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        border-color: #ffc107 !important; /* ホバーでゴールドに光る */
+    }
+</style>
+{% endblock %}

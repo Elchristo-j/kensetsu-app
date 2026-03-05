@@ -63,6 +63,9 @@ urlpatterns = [
 
     path('favorite-search/', views.favorite_search_view, name='favorite_search_view'),
 
+    # ▼ jobs/urls.py の urlpatterns の中に追加
+    path('ura-profiles/', views.ura_profile_list, name='ura_profile_list'),
+
     # ▼ これを追記（裏プロフィール編集ページへのURL）
     path('ura-profile/edit/', views.edit_ura_profile, name='edit_ura_profile'),
 

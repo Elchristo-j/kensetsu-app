@@ -650,3 +650,24 @@ def edit_availability(request):
         })
         
     return render(request, 'jobs/availability_edit.html', {'calendar_data': calendar_data})
+
+ # ▼▼ jobs/views.py の一番下に追加 ▼▼
+
+@login_required
+def ura_profile_list(request):
+    """闇市（裏プロフィール公開者の一覧）"""
+    # 1. IRONランクは完全立ち入り禁止（門前払い）
+    if request.user.profile.rank == 'iron':
+        messages.error(request, '闇市（裏案件リスト）を見るには、本人確認（BRONZE以上）が必要です。')
+        return redirect('mypage')
+
+    # 2. 公開設定(is_published=True)にしている裏プロフィールだけを取得
+    # ※ただし、自分自身のプロフィールは一覧から除外する
+    ura_profiles = UraProfile.objects.filter(is_published=True).exclude(user=request.user).order_by('-updated_at')
+
+    context = {
+        'ura_profiles': ura_profiles,
+    }
+    return render(request, 'jobs/ura_profile_list.html', context)
+
+    
