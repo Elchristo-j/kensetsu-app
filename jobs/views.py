@@ -14,6 +14,9 @@ from django.views.decorators.csrf import csrf_exempt
 from accounts.models import Profile, FavoriteArea, PREFECTURES, Block
 from accounts.forms import ProfileForm
 
+# ▼▼ 魔法の1行（不足していた profile_edit も完全網羅して呼び寄せます！） ▼▼
+from accounts.views import mypage, profile_detail, profile_edit
+
 # ジョブ関連のモデル・フォーム
 from .models import (
     Job, Application, Message, Notification, Review, News, 
@@ -392,9 +395,6 @@ def notifications(request):
     request.user.notifications.filter(is_read=False).update(is_read=True)
     return render(request, 'jobs/notifications.html', {'notifications': request.user.notifications.all().order_by('-created_at')})
 
-# --- 4. Profile & Settings ---
-# ※ jobs/views.py の mypage と profile_detail は accounts/views.py で管理しているため削除（もしくはそのまま放置）
-# エラー防止のため、使用されていない mypage 等は削除してスッキリさせています。
 
 @login_required
 def add_favorite_area(request):
