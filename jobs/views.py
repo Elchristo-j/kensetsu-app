@@ -1,6 +1,3 @@
-# ==========================================
-# jobs/views.py の完全版コード
-# ==========================================
 import stripe
 from datetime import timedelta, date
 from django.conf import settings
@@ -17,7 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from accounts.models import Profile, FavoriteArea, PREFECTURES, Block
 from accounts.forms import ProfileForm
 
-# ジョブ関連のモデル・フォーム（ここで一括インポートしています！カンマなし！）
+# ジョブ関連のモデル・フォーム
 from .models import (
     Job, Application, Message, Notification, Review, News, 
     WorkerAvailability, UraProfile, JOB_CATEGORIES, Scout
@@ -25,9 +22,7 @@ from .models import (
 from .forms import JobForm, MessageForm, ContactForm, UraProfileForm, ScoutForm
 
 # --- ヘルパー関数 ---
-
 def get_blocked_user_ids(user):
-    """ブロックしている・されているユーザーIDのリストを返す"""
     if not user.is_authenticated:
         return []
     blocking = Block.objects.filter(blocker=user).values_list('blocked_id', flat=True)
@@ -41,7 +36,6 @@ def is_staff_user(user):
     return user.is_authenticated and user.is_staff
 
 def calculate_stats_for_user(user, review_type):
-    """評価統計を計算するヘルパー関数"""
     if review_type == 'employer_to_worker':
         reviews = Review.objects.filter(reviewee=user, review_type='employer_to_worker')
         if not reviews.exists(): return None
@@ -87,7 +81,6 @@ def contact(request):
     return render(request, 'jobs/contact.html', {'form': form})
 
 # --- 1. Home & Search ---
-
 def home(request):
     expiration_date = timezone.now() - timedelta(days=31)
     jobs = Job.objects.filter(is_closed=False, created_at__gte=expiration_date).order_by('-created_at')
@@ -101,7 +94,7 @@ def home(request):
     favorites = []
     if request.user.is_authenticated:
         favorites = request.user.favorite_areas.all()
-    context = {'jobs': jobs, 'prefectures': PREFECTURES, 'categories': JOB_CATEGORIES, 'favorites': favorites, 'news_list': news_list, }
+    context = {'jobs': jobs, 'prefectures': PREFECTURES, 'categories': JOB_CATEGORIES, 'favorites': favorites, 'news_list': news_list}
     return render(request, 'jobs/home.html', context)
 
 def job_list(request):
@@ -151,7 +144,6 @@ def favorite_search_view(request):
     return render(request, 'jobs/home.html', {'jobs': jobs, 'favorites': favorite_areas, 'prefectures': PREFECTURES, 'categories': JOB_CATEGORIES, 'page_title': 'お気に入りエリアの案件'})
 
 # --- 2. Job Detail & Actions ---
-
 def job_detail(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     
@@ -256,7 +248,6 @@ def cancel_application(request, job_id):
     return redirect('job_detail', job_id=job.id)
 
 # --- 3. Management & Contract Flow ---
-
 @login_required
 def job_applicants(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
@@ -362,6 +353,7 @@ def submit_review(request, application_id):
 
 @login_required
 def chat_room(request, application_id):
+    """【本物のチャットルーム（1つに統合）】マッチング後の当事者専用チャット"""
     try:
         app = Application.objects.get(pk=application_id)
     except Application.DoesNotExist:
@@ -401,87 +393,8 @@ def notifications(request):
     return render(request, 'jobs/notifications.html', {'notifications': request.user.notifications.all().order_by('-created_at')})
 
 # --- 4. Profile & Settings ---
-
-@login_required
-def mypage(request):
-    """自分専用のダッシュボード"""
-    profile = request.user.profile
-    my_applications = request.user.applications.all().order_by('-applied_at')
-    my_posted_jobs = Job.objects.filter(created_by=request.user).order_by('-created_at')
-    
-    # ▼▼ 🌟ここを1行追加！：自分の案件に来た「応募（スカウト承諾含む）」を取得 ▼▼
-    received_applications = Application.objects.filter(job__created_by=request.user).order_by('-applied_at')
-
-    # ▼▼ 🌟ここを新規追加！：自分（職人）宛てに届いている未対応のスカウトを取得 ▼▼
-    pending_scouts = Scout.objects.filter(worker=request.user).order_by('-created_at')
-
-    now = timezone.now()
-    start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    
-    current_apply = request.user.applications.filter(applied_at__gte=start_of_month).count()
-    remaining_apply = max(0, profile.monthly_limit - current_apply)
-    
-    current_post = Job.objects.filter(created_by=request.user, created_at__gte=start_of_month).count()
-    remaining_post = max(0, profile.posting_limit - current_post)
-
-    worker_stats = calculate_stats_for_user(request.user, 'employer_to_worker')
-    employer_stats = calculate_stats_for_user(request.user, 'worker_to_employer')
-
-    limit_jobs = profile.posting_limit
-    limit_apps = profile.monthly_limit
-
-    context = {
-        'my_applications': my_applications,
-        'my_posted_jobs': my_posted_jobs,
-        'received_applications': received_applications,
-        'pending_scouts': pending_scouts, # ▼▼ 🌟ここも新規追加！画面に渡す ▼▼
-        'remaining_apply': remaining_apply,
-        'remaining_post': remaining_post,
-        'worker_stats': worker_stats,
-        'employer_stats': employer_stats,
-        'limit_jobs': limit_jobs,
-        'limit_apps': limit_apps,
-        'prefectures': PREFECTURES,
-    }
-    return render(request, 'accounts/mypage.html', context)
-
-@login_required
-def profile_detail(request, user_id):
-    """他人から見たプロフィール"""
-    target_user = get_object_or_404(User, pk=user_id)
-    
-    if request.user.is_authenticated:
-        if Block.objects.filter(blocker=request.user, blocked=target_user).exists() or \
-           Block.objects.filter(blocker=target_user, blocked=request.user).exists():
-            messages.warning(request, "このユーザーのプロフィールは表示できません。")
-            return redirect('home')
-
-    jobs = Job.objects.filter(created_by=target_user).order_by('-id')
-    
-    worker_stats = calculate_stats_for_user(target_user, 'employer_to_worker')
-    employer_stats = calculate_stats_for_user(target_user, 'worker_to_employer')
-    
-    context = {
-        'target_user': target_user, 
-        'jobs': jobs, 
-        'prefectures': PREFECTURES,
-        'worker_stats': worker_stats,
-        'employer_stats': employer_stats,
-    }
-    return render(request, 'accounts/profile_detail.html', context)
-
-@login_required
-def profile_edit(request):
-    profile, _ = Profile.objects.get_or_create(user=request.user)
-    if request.method == 'POST':
-        form = ProfileForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid(): 
-            form.save()
-            messages.success(request, 'プロフィールを更新しました。')
-            return redirect('mypage')
-    else: 
-        form = ProfileForm(instance=profile)
-    return render(request, 'accounts/profile_edit.html', {'form': form})
+# ※ jobs/views.py の mypage と profile_detail は accounts/views.py で管理しているため削除（もしくはそのまま放置）
+# エラー防止のため、使用されていない mypage 等は削除してスッキリさせています。
 
 @login_required
 def add_favorite_area(request):
@@ -498,7 +411,6 @@ def delete_favorite_area(request, area_id):
     return redirect('mypage')
 
 # --- 5. Admin & Static & New Pages ---
-
 @user_passes_test(is_staff_user)
 def admin_dashboard(request):
     p = Profile.objects.filter(is_verified=False, id_card_image__isnull=False).exclude(id_card_image='')
@@ -508,10 +420,8 @@ def admin_dashboard(request):
 def approve_profile(request, user_id):
     p = get_object_or_404(User, pk=user_id).profile
     p.is_verified = True
-
     if p.rank == 'iron':
         p.rank = 'bronze'
-
     p.save()
     return redirect('admin_dashboard')
 
@@ -532,14 +442,11 @@ def subscription_plans(request):
     if not request.user.is_authenticated:
         messages.warning(request, "プランの確認・変更にはログインが必要です。")
         return redirect('login')
-
     if request.user.profile.rank == 'iron':
         return render(request, 'accounts/verification_required.html')
-
     return render(request, 'jobs/subscription_plans.html')
 
 # --- 6. Stripe Payment ---
-
 @csrf_exempt
 def stripe_webhook(request):
     payload = request.body
@@ -579,13 +486,11 @@ def payment_success(request):
 
 @login_required
 def blocked_list(request):
-    """ブロックしているユーザーの一覧"""
     blocks = Block.objects.filter(blocker=request.user).select_related('blocked')
     return render(request, 'jobs/blocked_list.html', {'blocks': blocks})
 
 @login_required
 def unblock_user(request, user_id):
-    """ブロック解除処理"""
     target = get_object_or_404(User, id=user_id)
     Block.objects.filter(blocker=request.user, blocked=target).delete()
     messages.success(request, f"{target.username}さんのブロックを解除しました。")
@@ -596,16 +501,13 @@ def news_detail(request, news_id):
     return render(request, 'jobs/news_detail.html', {'news': news})
 
 # --- 裏案件（スカウト）機能 ---
-
 @login_required
 def edit_ura_profile(request):
-    # 【ここを追加！】IRONランクは弾く
     if request.user.profile.rank == 'iron':
         messages.error(request, '裏案件（スカウト機能）を利用するには、本人確認が必要です。')
         return redirect('mypage')
         
     ura_profile, created = UraProfile.objects.get_or_create(user=request.user)
-    # ... 以下そのまま ...
     
     if request.method == 'POST':
         form = UraProfileForm(request.POST, instance=ura_profile)
@@ -617,8 +519,6 @@ def edit_ura_profile(request):
         form = UraProfileForm(instance=ura_profile)
         
     return render(request, 'jobs/ura_profile_edit.html', {'form': form})
-
-# ▼▼ jobs/views.py の一番下の関数をこれに差し替え ▼▼
 
 @login_required
 def edit_availability(request):
@@ -642,12 +542,11 @@ def edit_availability(request):
         messages.success(request, 'カレンダー（空き状況）を更新しました！')
         return redirect('edit_availability')
         
-    # ▼▼ ここからが安全対策の変更点 ▼▼
     try:
         existing_availabilities = WorkerAvailability.objects.filter(user=request.user, date__in=dates)
         status_map = {ea.date: ea.status for ea in existing_availabilities}
     except Exception:
-        status_map = {} # エラーが起きたら空っぽにする
+        status_map = {}
     
     calendar_data = []
     for d in dates:
@@ -659,43 +558,26 @@ def edit_availability(request):
         
     return render(request, 'jobs/availability_edit.html', {'calendar_data': calendar_data})
 
- # ▼▼ jobs/views.py の一番下に追加 ▼▼
-
 @login_required
 def ura_profile_list(request):
-    """闇市（裏プロフィール公開者の一覧）"""
-    # 1. IRONランクは完全立ち入り禁止（門前払い）
     if request.user.profile.rank == 'iron':
         messages.error(request, '闇市（裏案件リスト）を見るには、本人確認（BRONZE以上）が必要です。')
         return redirect('mypage')
 
-    # 2. 公開設定(is_published=True)にしている裏プロフィールだけを取得
-    # ※ただし、自分自身のプロフィールは一覧から除外する
     ura_profiles = UraProfile.objects.filter(is_published=True).exclude(user=request.user).order_by('-updated_at')
-
-    context = {
-        'ura_profiles': ura_profiles,
-    }
+    context = {'ura_profiles': ura_profiles}
     return render(request, 'jobs/ura_profile_list.html', context)
-
-    # ▼▼ jobs/views.py の一番下に追加 ▼▼
 
 @login_required
 def ura_profile_detail(request, pk):
-    """闇市の職人詳細ページ（カレンダー確認とスカウト画面）"""
-    # 1. IRONランクは弾く
     if request.user.profile.rank == 'iron':
         messages.error(request, '詳細を見るには本人確認（BRONZE以上）が必要です。')
         return redirect('mypage')
 
-    # 2. 相手の裏プロフィールを取得（公開されているものだけ）
     ura_profile = get_object_or_404(UraProfile, pk=pk, is_published=True)
-    
-    # ※自分自身の詳細ページには入れないようにする
     if ura_profile.user == request.user:
         return redirect('ura_profile_list')
 
-    # 3. 相手のカレンダー（空き状況）を取得（今日から30日分）
     today = date.today()
     availabilities = WorkerAvailability.objects.filter(
         user=ura_profile.user,
@@ -709,41 +591,25 @@ def ura_profile_detail(request, pk):
     }
     return render(request, 'jobs/ura_profile_detail.html', context)
     
-    # ▼▼ jobs/views.py の一番下に追加 ▼▼
-
 @login_required
 def send_scout(request, pk):
-    """スカウト送信画面と回数制限のチェック"""
-    # 1. 相手の裏プロフィールを取得
     ura_profile = get_object_or_404(UraProfile, pk=pk, is_published=True)
     worker_user = ura_profile.user
     employer_user = request.user
 
-    # 2. ランクによる回数制限の設定（IRON, BRONZEは0回）
     user_rank = employer_user.profile.rank
-    limit_map = {
-        'iron': 0,
-        'bronze': 0,
-        'silver': 3,
-        'gold': 10,
-        'platinum': 999999 # 無制限
-    }
+    limit_map = {'iron': 0, 'bronze': 0, 'silver': 3, 'gold': 10, 'platinum': 999999}
     monthly_limit = limit_map.get(user_rank, 0)
 
-    # 3. 今月の送信数をカウント
     now = timezone.now()
     scouts_this_month = Scout.objects.filter(
-        employer=employer_user,
-        created_at__year=now.year,
-        created_at__month=now.month
+        employer=employer_user, created_at__year=now.year, created_at__month=now.month
     ).count()
 
-    # 4. 上限チェック！
     if scouts_this_month >= monthly_limit and user_rank != 'platinum':
         messages.error(request, f'今月のスカウト送信上限（{monthly_limit}回）に達しています。プランをアップグレードしてください。')
         return redirect('ura_profile_detail', pk=pk)
 
-    # 5. フォームの送信処理
     if request.method == 'POST':
         form = ScoutForm(request.POST, employer=employer_user)
         if form.is_valid():
@@ -754,12 +620,9 @@ def send_scout(request, pk):
             messages.success(request, f'{ura_profile.main_occupation}さんにスカウトを送信しました！')
             return redirect('ura_profile_detail', pk=pk)
     else:
-        # まだ送信ボタンを押していない時（入力画面を開いた時）
         form = ScoutForm(employer=employer_user)
 
-    # あと何回送れるかを計算（無制限の場合は文字にする）
     scouts_left = monthly_limit - scouts_this_month if user_rank != 'platinum' else '無制限'
-
     context = {
         'ura_profile': ura_profile,
         'form': form,
@@ -768,47 +631,31 @@ def send_scout(request, pk):
     }
     return render(request, 'jobs/send_scout.html', context)
 
-    # ▼▼ jobs/views.py の一番下に追加 ▼▼
-
 @login_required
 def received_scouts(request):
-    """受信したスカウト一覧（職人側の画面）"""
-    # データベースの「分配箱」から、受取人(worker)が自分のものだけを新しい順に取り出す
     scouts = Scout.objects.filter(worker=request.user).order_by('-created_at')
-    
-    context = {
-        'scouts': scouts,
-    }
+    context = {'scouts': scouts}
     return render(request, 'jobs/received_scouts.html', context)
-# ▼▼ jobs/views.py の一番下に追加 ▼▼
-
-# ▼▼ jobs/views.py の scout_detail を以下に上書き ▼▼
 
 @login_required
 def scout_detail(request, pk):
-    """受信したスカウトの詳細確認と、交渉（チャット）開始の処理"""
     scout = get_object_or_404(Scout, pk=pk, worker=request.user)
 
     if request.method == 'POST':
         action = request.POST.get('action')
         
         if action == 'accept':
-            # 「承認」ではなく「交渉開始」として、いきなりチャットができるステータスにする
             application, created = Application.objects.get_or_create(
                 job=scout.target_job,
                 applicant=request.user,
-                defaults={'status': 'contracted'} # ← ここを pending から contracted に変更！
+                defaults={'status': 'contracted'}
             )
-            # もし既に表ルート等で pending として作られていた場合は contracted に上書きしてチャットを解放
             if not created and application.status == 'pending':
                 application.status = 'contracted'
                 application.save()
 
-            # スカウトの手紙は役目を終えたので削除
             scout.delete()
-            
             messages.success(request, '交渉ルームが作成されました！まずは相手に挨拶を送ってみましょう。')
-            # 🌟 マイページではなく、いきなりチャットルームへ飛ばす！
             return redirect('chat_room', application_id=application.id)
             
         elif action == 'decline':
@@ -816,40 +663,5 @@ def scout_detail(request, pk):
             messages.info(request, '今回はスカウトを見送りました。')
             return redirect('received_scouts')
 
-    context = {
-        'scout': scout,
-    }
+    context = {'scout': scout}
     return render(request, 'jobs/scout_detail.html', context)
-
-@login_required
-def chat_room(request, application_id):
-    """マッチング後の当事者専用チャットルーム"""
-    # 対象の応募（マッチング）データを取得
-    application = get_object_or_404(Application, id=application_id)
-    
-    # 🌟 セキュリティ：この案件の「募集者」か「応募者」しか入れないように弾く
-    if request.user != application.job.created_by and request.user != application.applicant:
-        messages.error(request, 'このチャットルームにはアクセスできません。')
-        return redirect('mypage')
-    
-    # この部屋のメッセージ履歴を古い順（上から下へ）に取得
-    chat_messages = Message.objects.filter(application=application).order_by('created_at')
-    
-    # 送信ボタンが押された時の処理
-    if request.method == 'POST':
-        content = request.POST.get('content')
-        if content:
-            # メッセージをデータベースに保存
-            Message.objects.create(
-                application=application,
-                sender=request.user,
-                content=content  # ※もしmodels.pyでの名前が 'text' や 'message' だったら後で直します！
-            )
-            # 送信後は画面をリロード（一番下までスクロールさせるため）
-            return redirect('chat_room', application_id=application.id)
-    
-    context = {
-        'application': application,
-        'chat_messages': chat_messages,
-    }
-    return render(request, 'jobs/chat_room.html', context)           

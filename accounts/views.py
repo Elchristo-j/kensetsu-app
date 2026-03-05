@@ -14,13 +14,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Avg
 
 from .forms import CustomUserCreationForm, ProfileForm
-from jobs.models import Job, Application, Review
+# ▼▼ ここに Scout を追加しました ▼▼
+from jobs.models import Job, Application, Review, Scout
 
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
-
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -91,38 +91,32 @@ def calculate_stats(user, review_type):
     }
 
 # --- ビュー定義 ---
-
 def signup(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            # 1. ユーザーを「仮登録（無効）」状態で保存
             user = form.save(commit=False)
             user.is_active = False
             user.save()
 
-            # 2. 認証用URLの作成
             domain = request.get_host()
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
             protocol = 'https' if request.is_secure() else 'http'
             activation_url = f"{protocol}://{domain}/accounts/activate/{uid}/{token}/"
 
-            # 3. メールの作成と送信
             subject = "【エルクリスト】本登録を完了してください"
             message = f"{user.username} 様\n\nエルクリストへの仮登録ありがとうございます。\n以下のURLをクリックして、本登録を完了してください。\n\n{activation_url}\n\n※このURLは1回のみ有効です。\n※心当たりがない場合は、このメールを破棄してください。"
             
             from_email = settings.EMAIL_HOST_USER if hasattr(settings, 'EMAIL_HOST_USER') else 'no-reply@elchristo.com'
             send_mail(subject, message, from_email, [user.email])
             
-            # 4. 案内メッセージを出してログイン画面へ
             messages.success(request, '仮登録が完了しました。ご入力いただいたメールアドレスに認証メールを送信しました。メール内のURLをクリックして本登録を完了させてください。')
             return redirect('login')
     else:
         form = CustomUserCreationForm()
     return render(request, 'accounts/signup.html', {'form': form})
 
-# メール内のURLがクリックされた時の処理（新規追加）
 def activate(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -131,7 +125,6 @@ def activate(request, uidb64, token):
         user = None
 
     if user is not None and default_token_generator.check_token(user, token):
-        # トークンが正しければユーザーを有効化（本登録）してログイン
         user.is_active = True
         user.save()
         from django.contrib.auth import login
@@ -139,7 +132,6 @@ def activate(request, uidb64, token):
         messages.success(request, 'メール認証が完了し、本登録されました！ようこそエルクリストへ！')
         return redirect('home')
     else:
-        # トークンが無効な場合
         messages.error(request, '認証リンクが無効か、すでに有効期限切れです。お手数ですがもう一度最初から登録をお試しください。')
         return redirect('signup')
 
@@ -159,25 +151,23 @@ def profile_edit(request):
 def mypage(request):
     profile = request.user.profile
     
-    # 1. 評価データの計算
     worker_stats = calculate_stats(request.user, 'employer_to_worker')
     employer_stats = calculate_stats(request.user, 'worker_to_employer')
     
-    # 2. 案件データの取得
     my_posted = Job.objects.filter(created_by=request.user).order_by('-created_at')[:5]
     my_applied = Application.objects.filter(applicant=request.user).order_by('-applied_at')[:5]
 
-    # ▼▼▼ 修正：「進行中案件（やることリスト）」の取得 ▼▼▼
+    # ▼▼▼ 🌟追加：届いたスカウトと、自分の案件への応募（スカウト承諾含む） ▼▼▼
+    pending_scouts = Scout.objects.filter(worker=request.user).order_by('-created_at')
+    received_applications = Application.objects.filter(job__created_by=request.user).order_by('-applied_at')
+    # ▲▲▲ 追加ここまで ▲▲▲
+
     # 【ワーカーとして】
     raw_worker_apps = Application.objects.filter(applicant=request.user, status__in=['contracted', 'completed']).order_by('-applied_at')
     active_worker_apps = []
     for app in raw_worker_apps:
-        # 自分（ワーカー）から発注者への評価が存在するか
         worker_reviewed = Review.objects.filter(job=app.job, reviewer=app.applicant, reviewee=app.job.created_by).exists()
-        # 相手（発注者）から自分への評価が存在するか
         employer_reviewed = Review.objects.filter(job=app.job, reviewer=app.job.created_by, reviewee=app.applicant).exists()
-        
-        # 両方の評価が終わっていなければ（片方だけ、または両方未完了なら）リストに残す
         if not (worker_reviewed and employer_reviewed):
             active_worker_apps.append(app)
 
@@ -185,24 +175,17 @@ def mypage(request):
     raw_employer_apps = Application.objects.filter(job__created_by=request.user, status__in=['contracted', 'completed']).order_by('-applied_at')
     active_employer_apps = []
     for app in raw_employer_apps:
-        # 相手（ワーカー）から自分への評価が存在するか
         worker_reviewed = Review.objects.filter(job=app.job, reviewer=app.applicant, reviewee=app.job.created_by).exists()
-        # 自分（発注者）からワーカーへの評価が存在するか
         employer_reviewed = Review.objects.filter(job=app.job, reviewer=app.job.created_by, reviewee=app.applicant).exists()
-        
-        # 両方の評価が終わっていなければリストに残す
         if not (worker_reviewed and employer_reviewed):
             active_employer_apps.append(app)
-    # ▲▲▲ 修正ここまで ▲▲▲
 
-    # 3. 今月の利用状況の集計
     now = timezone.now()
     start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
     used_jobs = Job.objects.filter(created_by=request.user, created_at__gte=start_of_month).count()
     used_apps = Application.objects.filter(applicant=request.user, applied_at__gte=start_of_month).count()
 
-    # ランクごとの上限設定
     LIMITS = {
         'iron':     {'job': 0,  'app': 3},
         'bronze':   {'job': 0,  'app': 10},
@@ -215,27 +198,26 @@ def mypage(request):
     remaining_jobs = max(0, my_limits['job'] - used_jobs)
     remaining_apps = max(0, my_limits['app'] - used_apps)
 
-    # 4. コンテキストの作成（全てのデータをまとめる）
     context = {
         'user': request.user,
         'profile': profile,
-        'worker_stats': worker_stats,     # ★重要: これがチャート用データ
-        'employer_stats': employer_stats, # ★重要: これがチャート用データ
+        'worker_stats': worker_stats,
+        'employer_stats': employer_stats,
         'my_posted_jobs': my_posted,
         'my_applications': my_applied,
         
-        'active_worker_apps': active_worker_apps,    # ←★追加（やることリスト用）
-        'active_employer_apps': active_employer_apps, # ←★追加（やることリスト用）
+        'active_worker_apps': active_worker_apps,
+        'active_employer_apps': active_employer_apps,
 
-        'remaining_post': remaining_jobs,  # HTML側で使用
-        'remaining_apply': remaining_apps, # HTML側で使用
+        'pending_scouts': pending_scouts,           # ←★画面に渡す！
+        'received_applications': received_applications, # ←★画面に渡す！
+
+        'remaining_post': remaining_jobs,
+        'remaining_apply': remaining_apps,
         'limit_jobs': my_limits['job'],
         'limit_apps': my_limits['app'],
-
         'prefectures': PREFECTURES,
     }
-    
-    # 5. レンダリング（returnはこれ1回のみ）
     return render(request, 'accounts/mypage.html', context)
 
 def profile_detail(request, user_id):
@@ -245,33 +227,19 @@ def profile_detail(request, user_id):
     employer_stats = calculate_stats(target, 'worker_to_employer')
     jobs = Job.objects.filter(created_by=target).order_by('-created_at')
 
-    # ▼▼▼ 追加：「今見ているユーザー」と「ターゲット」の間に契約関係があるか判定 ▼▼▼
     is_contracted_partner = False
-
-    # 未ログインユーザーはエラーになるので、ログイン済かチェック
     if request.user.is_authenticated:
         if request.user == target:
-            # 自分自身のプロフィールを見る場合は全て表示
             is_contracted_partner = True
         else:
-            # パターン1: 自分がワーカーで、相手(target)が発注者の案件が「契約成立」or「業務完了」か
             as_worker = Application.objects.filter(
-                applicant=request.user,
-                job__created_by=target,
-                status__in=['contracted', 'completed']
+                applicant=request.user, job__created_by=target, status__in=['contracted', 'completed']
             ).exists()
-            
-            # パターン2: 自分が発注者で、相手(target)がワーカーの案件が「契約成立」or「業務完了」か
             as_employer = Application.objects.filter(
-                applicant=target,
-                job__created_by=request.user,
-                status__in=['contracted', 'completed']
+                applicant=target, job__created_by=request.user, status__in=['contracted', 'completed']
             ).exists()
-
-            # どちらかの関係が成り立っていれば、詳細開示フラグをTrueにする
             if as_worker or as_employer:
                 is_contracted_partner = True
-    # ▲▲▲ 追加ここまで ▲▲▲
 
     context = {
         'target_user': target, 
@@ -280,9 +248,10 @@ def profile_detail(request, user_id):
         'employer_stats': employer_stats,
         'jobs': jobs, 
         'prefectures': PREFECTURES,
-        'is_contracted_partner': is_contracted_partner,  # ← ★HTMLに判定結果を渡す
+        'is_contracted_partner': is_contracted_partner,
     }
     return render(request, 'accounts/profile_detail.html', context)
+
 @login_required
 def add_favorite_area(request):
     if request.method == 'POST':
@@ -374,8 +343,6 @@ def account_delete(request):
         return redirect('home')
     return render(request, 'accounts/account_delete_confirm.html')
 
-# accounts/views.py の一番下あたりに追加
 @login_required
 def delete_guide_only(request):
-    # ここはIronランクでも誰でも見られるように制限はかけません
     return render(request, 'accounts/delete_guide_only.html')
