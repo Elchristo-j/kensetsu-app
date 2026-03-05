@@ -1,5 +1,5 @@
 from django import forms
-from .models import Job, Message
+from .models import Job, Message, Scout
 from .models import Contact
 # ▼ jobs/forms.py の一番上あたり
 from .models import Job, Application, News, UraProfile  # ← UraProfile を追加
@@ -86,4 +86,28 @@ class UraProfileForm(forms.ModelForm):
             'bad_at': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': '例: 汚水、浄化槽、高所作業など'}),
             'desired_daily_wage': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例: 20,000円+交通費'}),
             'self_introduction': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': '自由に自己アピールを書いてください！'}),
-        }        
+        }
+ # ▼ jobs/forms.py の一番下に追加
+class ScoutForm(forms.ModelForm):
+    class Meta:
+        model = Scout
+        fields = ['target_job', 'message']
+        labels = {
+            'target_job': '誘いたい案件（あなたが募集中の案件）',
+            'message': 'スカウトメッセージ',
+        }
+        widgets = {
+            'message': forms.Textarea(attrs={
+                'rows': 5, 
+                'placeholder': '例：プロフィールを拝見し、ぜひ弊社の現場にお力添えいただきたくご連絡しました。日当などの条件は柔軟にご相談可能です。'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        # viewから渡された送り主（employer）の情報を受け取る
+        employer = kwargs.pop('employer', None)
+        super().__init__(*args, **kwargs)
+        if employer:
+            # プルダウンの選択肢を「自分が現在募集中の案件（is_closed=False）」だけに絞り込む
+            self.fields['target_job'].queryset = Job.objects.filter(created_by=employer, is_closed=False)
+               

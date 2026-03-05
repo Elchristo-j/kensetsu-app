@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card bg-dark text-light border-warning shadow-lg">
+                <div class="card-header border-warning bg-transparent">
+                    <h4 class="mb-0 text-warning"><i class="fas fa-envelope-open-text me-2"></i>スカウトメッセージを作成</h4>
+                </div>
+                <div class="card-body">
+                    <p class="mb-4">
+                        <strong>{{ ura_profile.main_occupation }}</strong> さんへ、直接スカウトを送ります。<br>
+                        <span class="text-secondary small">
+                            （今月の残り送信可能回数：<span class="text-warning fw-bold fs-5">{{ scouts_left }}</span> 回 / 上限：{{ monthly_limit }} 回）
+                        </span>
+                    </p>
+
+                    <form method="post" action="">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label for="{{ form.target_job.id_for_label }}" class="form-label text-light fw-bold">{{ form.target_job.label }}</label>
+                            {{ form.target_job }}
+                            {% if form.target_job.errors %}
+                                <div class="text-danger small mt-1">{{ form.target_job.errors }}</div>
+                            {% endif %}
+                            <div class="form-text text-secondary mt-1">※あなたが現在募集中の案件から選択してください。</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.message.id_for_label }}" class="form-label text-light fw-bold">{{ form.message.label }}</label>
+                            {{ form.message }}
+                            {% if form.message.errors %}
+                                <div class="text-danger small mt-1">{{ form.message.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'ura_profile_detail' ura_profile.pk %}" class="btn btn-outline-secondary me-md-2">
+                                キャンセルして戻る
+                            </a>
+                            <button type="submit" class="btn btn-warning fw-bold text-dark">
+                                <i class="fas fa-paper-plane me-1"></i>この内容でスカウトを送信！
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ダークモード用の入力欄カスタマイズ */
+    body { background-color: #121212; }
+    select, textarea {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        background-color: #212529;
+        color: #fff;
+        border: 1px solid #6c757d;
+        border-radius: 0.375rem;
+        font-size: 1rem;
+    }
+    select:focus, textarea:focus {
+        background-color: #2b3035;
+        color: #fff;
+        border-color: #ffc107;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+    }
+</style>
+{% endblock %}

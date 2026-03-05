@@ -20,9 +20,9 @@ from accounts.forms import ProfileForm
 # ジョブ関連のモデル・フォーム（ここで一括インポートしています！カンマなし！）
 from .models import (
     Job, Application, Message, Notification, Review, News, 
-    WorkerAvailability, UraProfile, JOB_CATEGORIES
+    WorkerAvailability, UraProfile, JOB_CATEGORIES, Scout
 )
-from .forms import JobForm, MessageForm, ContactForm, UraProfileForm
+from .forms import JobForm, MessageForm, ContactForm, UraProfileForm, ScoutForm
 
 # --- ヘルパー関数 ---
 
@@ -701,4 +701,61 @@ def ura_profile_detail(request, pk):
     }
     return render(request, 'jobs/ura_profile_detail.html', context)
     
-      
+    # ▼▼ jobs/views.py の一番下に追加 ▼▼
+
+@login_required
+def send_scout(request, pk):
+    """スカウト送信画面と回数制限のチェック"""
+    # 1. 相手の裏プロフィールを取得
+    ura_profile = get_object_or_404(UraProfile, pk=pk, is_published=True)
+    worker_user = ura_profile.user
+    employer_user = request.user
+
+    # 2. ランクによる回数制限の設定（IRON, BRONZEは0回）
+    user_rank = employer_user.profile.rank
+    limit_map = {
+        'iron': 0,
+        'bronze': 0,
+        'silver': 3,
+        'gold': 10,
+        'platinum': 999999 # 無制限
+    }
+    monthly_limit = limit_map.get(user_rank, 0)
+
+    # 3. 今月の送信数をカウント
+    now = timezone.now()
+    scouts_this_month = Scout.objects.filter(
+        employer=employer_user,
+        created_at__year=now.year,
+        created_at__month=now.month
+    ).count()
+
+    # 4. 上限チェック！
+    if scouts_this_month >= monthly_limit and user_rank != 'platinum':
+        messages.error(request, f'今月のスカウト送信上限（{monthly_limit}回）に達しています。プランをアップグレードしてください。')
+        return redirect('ura_profile_detail', pk=pk)
+
+    # 5. フォームの送信処理
+    if request.method == 'POST':
+        form = ScoutForm(request.POST, employer=employer_user)
+        if form.is_valid():
+            scout = form.save(commit=False)
+            scout.employer = employer_user
+            scout.worker = worker_user
+            scout.save()
+            messages.success(request, f'{ura_profile.main_occupation}さんにスカウトを送信しました！')
+            return redirect('ura_profile_detail', pk=pk)
+    else:
+        # まだ送信ボタンを押していない時（入力画面を開いた時）
+        form = ScoutForm(employer=employer_user)
+
+    # あと何回送れるかを計算（無制限の場合は文字にする）
+    scouts_left = monthly_limit - scouts_this_month if user_rank != 'platinum' else '無制限'
+
+    context = {
+        'ura_profile': ura_profile,
+        'form': form,
+        'scouts_left': scouts_left,
+        'monthly_limit': monthly_limit if user_rank != 'platinum' else '無制限',
+    }
+    return render(request, 'jobs/send_scout.html', context)    
