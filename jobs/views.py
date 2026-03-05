@@ -772,4 +772,37 @@ def received_scouts(request):
         'scouts': scouts,
     }
     return render(request, 'jobs/received_scouts.html', context)
-       
+# ▼▼ jobs/views.py の一番下に追加 ▼▼
+
+@login_required
+def scout_detail(request, pk):
+    """受信したスカウトの詳細確認と、承諾/辞退の処理"""
+    # 自分が受信したスカウトだけを開けるようにする（他人の覗き見防止）
+    scout = get_object_or_404(Scout, pk=pk, worker=request.user)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'accept':
+            # 承諾した場合：自動的にその案件への「応募（Application）」を作成する
+            application, created = Application.objects.get_or_create(
+                job=scout.target_job,
+                applicant=request.user,
+                defaults={'status': 'pending'}
+            )
+            # 承諾済みのスカウトは一覧から消す（整理整頓のため削除）
+            scout.delete()
+            
+            messages.success(request, f'【マッチング成立】{scout.employer.username}さんのスカウトを承諾しました！マイページからメッセージを送りましょう。')
+            return redirect('mypage') # 完了後はマイページへ
+            
+        elif action == 'decline':
+            # 辞退した場合：スカウトを削除して一覧へ戻る
+            scout.delete()
+            messages.info(request, 'スカウトを辞退しました。')
+            return redirect('received_scouts')
+
+    context = {
+        'scout': scout,
+    }
+    return render(request, 'jobs/scout_detail.html', context)       

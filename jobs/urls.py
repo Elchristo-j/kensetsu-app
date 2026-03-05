@@ -80,4 +80,8 @@ urlpatterns = [
     # ▼ jobs/urls.py の urlpatterns の中に追加
     path('ura-profile/<int:pk>/scout/', views.send_scout, name='send_scout'),
     path('scouts/received/', views.received_scouts, name='received_scouts'),
+
+    # ▼ jobs/urls.py の urlpatterns の中に追加
+    path('scouts/received/', views.received_scouts, name='received_scouts'),
+    path('scouts/<int:pk>/', views.scout_detail, name='scout_detail'), # ←これを追加！
     ]

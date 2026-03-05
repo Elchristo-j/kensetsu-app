@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="mb-3">
+        <a href="{% url 'received_scouts' %}" class="text-secondary text-decoration-none">
+            <i class="fas fa-arrow-left me-1"></i>受信一覧へ戻る
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card bg-dark text-light border-warning shadow-lg">
+                <div class="card-header border-warning bg-transparent">
+                    <h4 class="mb-0 text-warning"><i class="fas fa-envelope-open-text me-2"></i>スカウトの詳細</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4 p-3 rounded" style="background-color: #212529; border: 1px solid #6c757d;">
+                        <div class="row mb-2">
+                            <div class="col-sm-4 text-secondary small">送り主の業者様</div>
+                            <div class="col-sm-8 fw-bold">{{ scout.employer.username }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4 text-secondary small">誘われている案件</div>
+                            <div class="col-sm-8 text-info fw-bold">{{ scout.target_job.title }}</div>
+                        </div>
+                    </div>
+
+                    <h6 class="text-secondary border-bottom border-secondary pb-2 mb-3">メッセージ本文</h6>
+                    <p class="card-text mb-5" style="white-space: pre-wrap; font-size: 1.1rem; line-height: 1.8;">{{ scout.message }}</p>
+
+                    <hr class="border-secondary">
+
+                    <h5 class="text-center text-light mb-4">このスカウトを受けますか？</h5>
+                    
+                    <div class="d-grid gap-3 d-md-flex justify-content-md-center">
+                        <form method="post" action="" class="d-inline w-100">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="decline">
+                            <button type="submit" class="btn btn-outline-secondary w-100 py-3" onclick="return confirm('本当にこのスカウトを辞退しますか？（元には戻せません）');">
+                                <i class="fas fa-times me-2"></i>今回は見送る（辞退）
+                            </button>
+                        </form>
+
+                        <form method="post" action="" class="d-inline w-100">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="accept">
+                            <button type="submit" class="btn btn-warning w-100 py-3 fw-bold text-dark" onclick="return confirm('スカウトを承諾し、この案件に正式に応募しますか？');">
+                                <i class="fas fa-handshake me-2"></i>スカウトを受ける！（応募）
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body { background-color: #121212; }
+</style>
+{% endblock %}
