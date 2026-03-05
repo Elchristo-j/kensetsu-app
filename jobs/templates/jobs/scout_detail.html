@@ -47,7 +47,11 @@
                             {% csrf_token %}
                             <input type="hidden" name="action" value="accept">
                             <button type="submit" class="btn btn-warning w-100 py-3 fw-bold text-dark" onclick="return confirm('相手と直接チャットで詳細の交渉を開始しますか？');">
-                                <i class="fas fa-comments me-2"></i>まずは話を聞いてみる（交渉・チャットへ）
+                                <i class="fas fa-handshake me-2"></i>まずは話を聞いてみる（交渉・チャットへ）
+                            </button>
+
+                            <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm">
+                                <i class="fas fa-comments me-2"></i>チャットで詳細を交渉する
                             </button>
                         </form>
                     </div>

@@ -166,19 +166,20 @@ def mypage(request):
     raw_worker_apps = Application.objects.filter(applicant=request.user, status__in=['contracted', 'completed']).order_by('-applied_at')
     active_worker_apps = []
     for app in raw_worker_apps:
-        worker_reviewed = Review.objects.filter(job=app.job, reviewer=app.applicant, reviewee=app.job.created_by).exists()
-        employer_reviewed = Review.objects.filter(job=app.job, reviewer=app.job.created_by, reviewee=app.applicant).exists()
-        if not (worker_reviewed and employer_reviewed):
+        # 自分が相手（発注者）を評価したかだけを確認
+        worker_reviewed = Review.objects.filter(job=app.job, reviewer=request.user, reviewee=app.job.created_by).exists()
+        if not worker_reviewed:
             active_worker_apps.append(app)
 
     # 【発注者として】
     raw_employer_apps = Application.objects.filter(job__created_by=request.user, status__in=['contracted', 'completed']).order_by('-applied_at')
     active_employer_apps = []
     for app in raw_employer_apps:
-        worker_reviewed = Review.objects.filter(job=app.job, reviewer=app.applicant, reviewee=app.job.created_by).exists()
-        employer_reviewed = Review.objects.filter(job=app.job, reviewer=app.job.created_by, reviewee=app.applicant).exists()
-        if not (worker_reviewed and employer_reviewed):
+       # 自分が相手（ワーカー）を評価したかだけを確認
+        employer_reviewed = Review.objects.filter(job=app.job, reviewer=request.user, reviewee=app.applicant).exists()
+        if not employer_reviewed:
             active_employer_apps.append(app)
+    # ▲▲▲ 修正ここまで ▲▲▲
 
     now = timezone.now()
     start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
