@@ -412,6 +412,9 @@ def mypage(request):
     # ▼▼ 🌟ここを1行追加！：自分の案件に来た「応募（スカウト承諾含む）」を取得 ▼▼
     received_applications = Application.objects.filter(job__created_by=request.user).order_by('-applied_at')
 
+    # ▼▼ 🌟ここを新規追加！：自分（職人）宛てに届いている未対応のスカウトを取得 ▼▼
+    pending_scouts = Scout.objects.filter(worker=request.user).order_by('-created_at')
+
     now = timezone.now()
     start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
@@ -430,7 +433,8 @@ def mypage(request):
     context = {
         'my_applications': my_applications,
         'my_posted_jobs': my_posted_jobs,
-        'received_applications': received_applications, # ▼▼ 🌟ここも1行追加！画面に渡す ▼▼
+        'received_applications': received_applications,
+        'pending_scouts': pending_scouts, # ▼▼ 🌟ここも新規追加！画面に渡す ▼▼
         'remaining_apply': remaining_apply,
         'remaining_post': remaining_post,
         'worker_stats': worker_stats,
