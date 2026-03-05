@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Job, Application, Message, Notification, Review, Contact, Broadcast, News # ← 最後にNewsを追加しました！
+from .models import Job, Application, Message, Notification, Review, Contact, Broadcast, News, Scout# ← 最後にScoutを追加しました！
 
 class JobAdmin(admin.ModelAdmin):
     list_display = ('title', 'created_by', 'created_at', 'is_closed')
@@ -27,4 +27,10 @@ class ContactAdmin(admin.ModelAdmin):
 class NewsAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'is_published', 'created_at') # 一覧画面で見える項目
     list_filter = ('category', 'is_published') # 横の絞り込みメニュー
-    search_fields = ('title', 'content') # 検索窓の対象
+    search_fields = ('title', 'content')  # 検索窓の対象
+    
+@admin.register(Scout)
+class ScoutAdmin(admin.ModelAdmin):
+    list_display = ('employer', 'worker', 'target_job', 'created_at') # 一覧に表示する項目
+    list_filter = ('created_at',)  # 日付で絞り込めるようにする
+       
