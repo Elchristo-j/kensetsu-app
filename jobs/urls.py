@@ -71,4 +71,8 @@ urlpatterns = [
 
     # ▼ これを追記（カレンダー編集ページへのURL）
     path('ura-profile/calendar/', views.edit_availability, name='edit_availability'),
-]
+
+    # ▼ jobs/urls.py の urlpatterns の中に追加
+    path('ura-profiles/', views.ura_profile_list, name='ura_profile_list'),
+    path('ura-profile/<int:pk>/', views.ura_profile_detail, name='ura_profile_detail'), # ←これを追加！
+    ]

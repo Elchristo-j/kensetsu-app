@@ -670,4 +670,35 @@ def ura_profile_list(request):
     }
     return render(request, 'jobs/ura_profile_list.html', context)
 
+    # ▼▼ jobs/views.py の一番下に追加 ▼▼
+
+@login_required
+def ura_profile_detail(request, pk):
+    """闇市の職人詳細ページ（カレンダー確認とスカウト画面）"""
+    # 1. IRONランクは弾く
+    if request.user.profile.rank == 'iron':
+        messages.error(request, '詳細を見るには本人確認（BRONZE以上）が必要です。')
+        return redirect('mypage')
+
+    # 2. 相手の裏プロフィールを取得（公開されているものだけ）
+    ura_profile = get_object_or_404(UraProfile, pk=pk, is_published=True)
     
+    # ※自分自身の詳細ページには入れないようにする
+    if ura_profile.user == request.user:
+        return redirect('ura_profile_list')
+
+    # 3. 相手のカレンダー（空き状況）を取得（今日から30日分）
+    today = date.today()
+    availabilities = WorkerAvailability.objects.filter(
+        user=ura_profile.user,
+        date__gte=today,
+        date__lte=today + timedelta(days=30)
+    ).order_by('date')
+
+    context = {
+        'ura_profile': ura_profile,
+        'availabilities': availabilities,
+    }
+    return render(request, 'jobs/ura_profile_detail.html', context)
+    
+      

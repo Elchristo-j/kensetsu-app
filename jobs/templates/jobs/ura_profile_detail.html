@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="mb-3">
+        <a href="{% url 'ura_profile_list' %}" class="text-secondary text-decoration-none">
+            <i class="fas fa-arrow-left me-1"></i>闇市一覧へ戻る
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-7">
+            <div class="card bg-dark text-light border-secondary shadow-lg h-100">
+                <div class="card-header border-secondary bg-transparent d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0 text-warning">{{ ura_profile.main_occupation }}</h4>
+                    <span class="badge border border-secondary text-secondary fs-6">{{ ura_profile.base_location }}</span>
+                </div>
+                <div class="card-body">
+                    {% if ura_profile.sub_occupations %}
+                    <div class="mb-4">
+                        <h6 class="text-secondary border-bottom border-secondary pb-2">対応可能なサブ職種</h6>
+                        <p class="text-info"><i class="fas fa-tags me-1"></i>{{ ura_profile.sub_occupations }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="row mb-4">
+                        <div class="col-sm-6 mb-3 mb-sm-0">
+                            <h6 class="text-secondary border-bottom border-secondary pb-2">経験年数</h6>
+                            <p class="fs-5">{{ ura_profile.experience_years }}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <h6 class="text-secondary border-bottom border-secondary pb-2">希望日当</h6>
+                            <p class="text-success fw-bold fs-5">{{ ura_profile.desired_daily_wage }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-sm-6 mb-3 mb-sm-0">
+                            <h6 class="text-secondary border-bottom border-secondary pb-2">得意な現場・工事</h6>
+                            <p>{{ ura_profile.good_at|default:"未設定"|linebreaksbr }}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <h6 class="text-secondary border-bottom border-secondary pb-2">不得手な現場・工事</h6>
+                            <p>{{ ura_profile.bad_at|default:"未設定"|linebreaksbr }}</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h6 class="text-secondary border-bottom border-secondary pb-2">自己紹介</h6>
+                        <p class="card-text" style="white-space: pre-wrap;">{{ ura_profile.self_introduction|default:"自己紹介はまだありません。" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card bg-dark text-light border-warning shadow-lg sticky-top" style="top: 20px;">
+                <div class="card-header border-warning bg-transparent text-center">
+                    <h5 class="mb-0 text-warning"><i class="fas fa-handshake me-2"></i>直接スカウト</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-sm text-secondary mb-4">
+                        あなたの現在のランク：<strong class="text-light">{{ user.profile.get_rank_display }}</strong><br>
+                        <small>※SILVER: 月3回 / GOLD: 月10回 / PLATINUM: 無制限</small>
+                    </p>
+                    
+                    <div class="d-grid mb-4">
+                        <a href="#" class="btn btn-warning btn-lg fw-bold text-dark">
+                            <i class="fas fa-paper-plane me-2"></i>この職人をスカウトする
+                        </a>
+                    </div>
+
+                    <hr class="border-secondary">
+
+                    <h6 class="text-secondary mb-3"><i class="far fa-calendar-alt me-1"></i>直近30日の空き状況</h6>
+                    
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-dark table-sm table-bordered border-secondary text-center mb-0">
+                            <thead class="position-sticky top-0 bg-dark" style="z-index: 1;">
+                                <tr>
+                                    <th style="width: 50%;">日付</th>
+                                    <th style="width: 50%;">状況</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for avail in availabilities %}
+                                <tr>
+                                    <td class="align-middle">{{ avail.date|date:"m/d (D)" }}</td>
+                                    <td class="align-middle">
+                                        {% if avail.status == 'available' %}
+                                            <span class="text-success fw-bold">◎ 空き</span>
+                                        {% elif avail.status == 'negotiable' %}
+                                            <span class="text-warning">△ 要相談</span>
+                                        {% else %}
+                                            <span class="text-secondary">× 不可</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-muted py-3">スケジュールの登録がありません。</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body { background-color: #121212; }
+    /* スクロールバーのカッコいいカスタマイズ（カレンダー部分） */
+    .table-responsive::-webkit-scrollbar { width: 8px; }
+    .table-responsive::-webkit-scrollbar-track { background: #1e1e1e; }
+    .table-responsive::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+    .table-responsive::-webkit-scrollbar-thumb:hover { background: #ffc107; }
+</style>
+{% endblock %}
