@@ -6,8 +6,8 @@
         <div class="card-header bg-sumi text-white py-3 text-center">
             <h4 class="mb-0">🏗️ ログイン</h4>
         </div>
-        <div class="card-body p-4">
-            <form method="post">
+       <div class="card-body p-4">
+            <form method="post" onsubmit="let btn = this.querySelector('button[type=submit]'); btn.disabled = true; btn.innerText = 'ログイン処理中...';">
                 {% csrf_token %}
                 {% for field in form %}
                     <div class="mb-3">
@@ -29,8 +29,8 @@
                     お手数ですが、<a href="{% url 'contact' %}" class="text-decoration-underline fw-bold text-sumi">お問い合わせフォーム</a>より「パスワード再発行希望」とご連絡ください。<br>
                     運営者が本人確認の上、手動で再設定いたします。
                 </div>
-                </form>
-        </div>
+            </form>
+            </div>
         <div class="card-footer text-center bg-light border-0 py-3">
             <span class="text-muted small">アカウントをお持ちでない方は</span><br>
             <a href="{% url 'signup' %}" class="text-sumi fw-bold text-decoration-none">新規会員登録はこちら</a>
