@@ -1,6 +1,32 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+    /* フォームの入力欄にBootstrapの装飾を強制適用 */
+    input[type="text"], input[type="password"] {
+        display: block;
+        width: 100%;
+        padding: 0.6rem 1rem;
+        font-size: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        background-color: #f8f9fa;
+    }
+    input:focus {
+        background-color: #fff;
+        border-color: #15151a;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(21, 21, 26, 0.1);
+    }
+
+    /* ▼▼ スワイプ戻り強制有効化 CSS ▼▼ */
+    html, body {
+        overscroll-behavior-x: auto !important;
+        touch-action: manipulation !important;
+        overflow-x: visible !important; /* iOSでのエッジスワイプ無効化を防止 */
+    }
+</style>
+
 <div class="container my-5" style="max-width: 500px;">
     <div class="card shadow border-0 overflow-hidden rounded-4">
         <div class="card-header bg-sumi text-white py-3 text-center">
@@ -42,23 +68,4 @@
         </a>
     </div>
 </div>
-
-<style>
-    /* フォームの入力欄にBootstrapの装飾を強制適用 */
-    input[type="text"], input[type="password"] {
-        display: block;
-        width: 100%;
-        padding: 0.6rem 1rem;
-        font-size: 1rem;
-        border: 1px solid #dee2e6;
-        border-radius: 0.5rem;
-        background-color: #f8f9fa;
-    }
-    input:focus {
-        background-color: #fff;
-        border-color: #15151a;
-        outline: 0;
-        box-shadow: 0 0 0 0.25rem rgba(21, 21, 26, 0.1);
-    }
-</style>
 {% endblock %}
