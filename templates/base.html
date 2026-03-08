@@ -9,6 +9,20 @@
     
     <style>
         :root { --sumi-color: #15151a; --rankup-blue: #0066ff; }
+        /* ▼▼ スマホアプリのスワイプ戻り（エッジジェスチャー）を復活・維持する設定 ▼▼ */
+        html {
+            overscroll-behavior-x: auto !important; /* OS標準のスワイプを許可 */
+        }
+        body {
+            max-width: 100%;
+            /* hiddenはiOSのスワイプを殺すため、必ず clip を使います */
+            overflow-x: clip !important; 
+            overscroll-behavior-x: auto !important;
+            font-family: "Hiragino Sans", "Meiryo", sans-serif; 
+            background-color: #f4f5f7; 
+            color: var(--sumi-color); 
+        }
+        /* ▲▲ ここまで ▲▲ */
         body { font-family: "Hiragino Sans", "Meiryo", sans-serif; background-color: #f4f5f7; color: var(--sumi-color); }
         
         .bg-sumi { background-color: var(--sumi-color) !important; }
