@@ -72,7 +72,7 @@
                 <span class="badge rounded-pill px-3 py-2 epoint-badge fs-6">
                     <i class="bi bi-coin me-1"></i> {{ user.profile.e_points|intcomma }} E pt
                 </span>
-                </div>
+            </div>
             
             {% if pending_scouts %}
 <div class="alert alert-warning shadow-sm border-warning mb-4" role="alert" style="border-radius: 15px; background: linear-gradient(135deg, #fff3cd 0%, #ffecb5 100%);">
@@ -97,12 +97,12 @@
         
         {% for app in active_employer_apps %}
         <div class="list-group-item p-4 bg-light job-card-hover card-rank-{{ app.applicant.profile.display_rank|lower }}">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
                 <span class="badge bg-primary px-3 py-2 rounded-pill shadow-sm">📢 発注した仕事</span>
                 {% if app.status == 'contracted' %}
-                    <span class="badge bg-info text-dark px-3 py-2 rounded-pill shadow-sm">🤝 契約進行中（作業待ち）</span>
+                    <span class="badge bg-info text-dark px-3 py-2 rounded-pill shadow-sm text-wrap text-start">🤝 契約進行中（作業待ち）</span>
                 {% elif app.status == 'completed' %}
-                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm">🟡 業務完了（相互評価へ）</span>
+                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm text-wrap text-start">🟡 業務完了（相互評価へ）</span>
                 {% endif %}
             </div>
             <h5 class="fw-bold mb-2">
@@ -120,12 +120,12 @@
 
         {% for app in active_worker_apps %}
         <div class="list-group-item p-4 bg-light job-card-hover card-rank-{{ app.job.created_by.profile.display_rank|lower }}">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
                 <span class="badge bg-success px-3 py-2 rounded-pill shadow-sm">🛠 受注した仕事</span>
                 {% if app.status == 'contracted' %}
-                    <span class="badge bg-info text-dark px-3 py-2 rounded-pill shadow-sm">🤝 契約進行中（作業をお願いします）</span>
+                    <span class="badge bg-info text-dark px-3 py-2 rounded-pill shadow-sm text-wrap text-start">🤝 契約進行中（作業をお願いします）</span>
                 {% elif app.status == 'completed' %}
-                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm">🟡 業務完了（相互評価へ）</span>
+                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm text-wrap text-start">🟡 業務完了（相互評価へ）</span>
                 {% endif %}
             </div>
             <h5 class="fw-bold mb-2">
@@ -501,7 +501,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 scales: {
                     r: {
                         min: 0,
-                        max: 10,  // ★profile_detailに合わせて10点満点に設定
+                        max: 10,
                         ticks: { stepSize: 2, display: false },
                         grid: { circular: true, color: 'rgba(0, 0, 0, 0.3)' },
                         angleLines: { color: 'rgba(0, 0, 0, 0.3)' },
@@ -513,23 +513,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    // ワーカーチャート描画 (データがある場合のみ)
     {% if worker_stats.exists %}
         createChart(
             'pChartWorker', 
             {{ worker_stats.chart_data|safe }}, 
             {{ worker_stats.labels|safe }}, 
-            '#0d6efd' // 青色
+            '#0d6efd' 
         );
     {% endif %}
 
-    // 発注者チャート描画 (データがある場合のみ)
     {% if employer_stats.exists %}
         createChart(
             'pChartEmployer', 
             {{ employer_stats.chart_data|safe }}, 
             {{ employer_stats.labels|safe }}, 
-            '#198754' // 緑色
+            '#198754' 
         );
     {% endif %}
 });
