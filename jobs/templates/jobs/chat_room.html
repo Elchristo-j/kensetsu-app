@@ -15,7 +15,7 @@
                 <h5 class="mb-1 fw-bold"><i class="bi bi-briefcase"></i> {{ application.job.title }}</h5>
                 <span class="badge 
                     {% if application.status == 'applied' %}bg-secondary
-                    {% elif application.status == 'accepted' %}bg-info
+                    {% elif application.status == 'accepted' %}bg-info text-dark
                     {% elif application.status == 'contracted' %}bg-primary
                     {% elif application.status == 'completed' %}bg-success
                     {% elif application.status == 'reviewed' %}bg-dark
@@ -44,15 +44,17 @@
                             <i class="bi bi-pen"></i> 契約成立にする
                         </a>
                     {% else %}
-                        <button class="btn btn-secondary" disabled>契約待ち</button>
+                        <button class="btn btn-secondary fw-bold" disabled>発注者の契約完了待ち</button>
                     {% endif %}
-
-                {% elif application.status == 'contracted' %}
-                    <a href="{% url 'complete_job_work' application.id %}" class="btn btn-success fw-bold">
-                        <i class="bi bi-check-circle"></i> 業務完了にする
-                    </a>
-
-                {% elif application.status == 'completed' %}
+                    {% elif application.status == 'contracted' %}
+                    {% if request.user == application.job.created_by %}
+                        <a href="{% url 'complete_job_work' application.id %}" class="btn btn-success fw-bold" onclick="return confirm('本当に業務完了（検収）として処理しますか？');">
+                            <i class="bi bi-check-circle"></i> 業務完了にする
+                        </a>
+                    {% else %}
+                        <button class="btn btn-outline-secondary fw-bold" disabled>作業中（発注者の完了報告待ち）</button>
+                    {% endif %}
+                    {% elif application.status == 'completed' %}
                     {% if not has_reviewed %}
                         <button type="button" class="btn btn-warning fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#reviewModal">
                             <i class="bi bi-star"></i> 評価を入力する
@@ -95,7 +97,7 @@
             </form>
         </div>
         {% endif %}
-        </div>
+    </div>
 </div>
 
 <div class="modal fade" id="reviewModal" tabindex="-1">
@@ -108,108 +110,3 @@
             <form action="{% url 'submit_review' application.id %}" method="post">
                 {% csrf_token %}
                 <div class="modal-body">
-                    <p class="alert alert-info small mb-3"><i class="bi bi-info-circle"></i> 10段階（10が最高）で評価してください。</p>
-                    
-                    {% if request.user == application.job.created_by %}
-                        <div class="mb-3">
-                            <label class="fw-bold mb-1">能力 (技術・知識)</label>
-                            <select name="p1" class="form-select">
-                                <option value="10">10 (最高)</option><option value="9">9</option><option value="8">8</option><option value="7">7</option><option value="6">6</option>
-                                <option value="5" selected>5 (普通)</option>
-                                <option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="fw-bold mb-1">協調性 (チームワーク)</label>
-                            <select name="p2" class="form-select">
-                                <option value="10">10 (最高)</option><option value="9">9</option><option value="8">8</option><option value="7">7</option><option value="6">6</option>
-                                <option value="5" selected>5 (普通)</option>
-                                <option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="fw-bold mb-1">勤勉性 (真面目さ)</label>
-                            <select name="p3" class="form-select">
-                                <option value="10">10 (最高)</option><option value="9">9</option><option value="8">8</option><option value="7">7</option><option value="6">6</option>
-                                <option value="5" selected>5 (普通)</option>
-                                <option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="fw-bold mb-1">人間性 (マナー)</label>
-                            <select name="p4" class="form-select">
-                                <option value="10">10 (最高)</option><option value="9">9</option><option value="8">8</option><option value="7">7</option><option value="6">6</option>
-                                <option value="5" selected>5 (普通)</option>
-                                <option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="fw-bold mb-1">有用性 (コスパ)</label>
-                            <select name="p5" class="form-select">
-                                <option value="10">10 (最高)</option><option value="9">9</option><option value="8">8</option><option value="7">7</option><option value="6">6</option>
-                                <option value="5" selected>5 (普通)</option>
-                                <option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
-                            </select>
-                        </div>
-
-                    {% else %}
-                        <div class="mb-3">
-                            <label class="fw-bold mb-1">作業時間 (予定通りか)</label>
-                            <select name="p1" class="form-select">
-                                <option value="10">10 (最高)</option><option value="9">9</option><option value="8">8</option><option value="7">7</option><option value="6">6</option>
-                                <option value="5" selected>5 (普通)</option>
-                                <option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="fw-bold mb-1">報酬 (適正・支払い)</label>
-                            <select name="p2" class="form-select">
-                                <option value="10">10 (最高)</option><option value="9">9</option><option value="8">8</option><option value="7">7</option><option value="6">6</option>
-                                <option value="5" selected>5 (普通)</option>
-                                <option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="fw-bold mb-1">仕事内容 (説明通りか)</label>
-                            <select name="p3" class="form-select">
-                                <option value="10">10 (最高)</option><option value="9">9</option><option value="8">8</option><option value="7">7</option><option value="6">6</option>
-                                <option value="5" selected>5 (普通)</option>
-                                <option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="fw-bold mb-1">段取り (準備・指示)</label>
-                            <select name="p4" class="form-select">
-                                <option value="10">10 (最高)</option><option value="9">9</option><option value="8">8</option><option value="7">7</option><option value="6">6</option>
-                                <option value="5" selected>5 (普通)</option>
-                                <option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="fw-bold mb-1">信用性 (信頼・対応)</label>
-                            <select name="p5" class="form-select">
-                                <option value="10">10 (最高)</option><option value="9">9</option><option value="8">8</option><option value="7">7</option><option value="6">6</option>
-                                <option value="5" selected>5 (普通)</option>
-                                <option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
-                            </select>
-                        </div>
-                    {% endif %}
-
-                    <div class="mt-4">
-                        <label class="fw-bold mb-1">コメント（任意）</label>
-                        <textarea name="comment" class="form-control" rows="3" placeholder="お礼や感想を一言"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">評価を送信して完了</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<script>
-    var chatBox = document.getElementById('chat-box');
-    chatBox.scrollTop = chatBox.scrollHeight;
-</script>
-{% endblock %}

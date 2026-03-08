@@ -13,11 +13,9 @@ from django.views.decorators.csrf import csrf_exempt
 # アカウント関連のモデル・フォーム
 from accounts.models import Profile, FavoriteArea, PREFECTURES, Block
 from accounts.forms import ProfileForm
-
-# ▼▼ 魔法の1行（不足していた profile_edit も完全網羅して呼び寄せます！） ▼▼
 from accounts.views import mypage, profile_detail, profile_edit
 
-# ▼▼ ジョブ関連のモデル・フォーム（EPointHistory を追加！） ▼▼
+# ジョブ関連のモデル・フォーム
 from .models import (
     Job, Application, Message, Notification, Review, News, 
     WorkerAvailability, UraProfile, JOB_CATEGORIES, Scout, EPointHistory
@@ -285,7 +283,7 @@ def contract_application(request, application_id):
             app.status = 'contracted'
             app.save()
 
-            # ▼▼▼ Eポイント付与（発注者に +1pt） ▼▼▼
+            # Eポイント付与（発注者に +1pt）
             EPointHistory.objects.create(
                 user=app.job.created_by,
                 action_type='job_contracted',
@@ -294,7 +292,6 @@ def contract_application(request, application_id):
                 related_job=app.job,
                 related_application=app
             )
-            # ▲▲▲ Eポイント付与 ここまで ▲▲▲
 
             create_notification(app.applicant, f"案件「{app.job.title}」の契約が成立しました！", f"/application/{app.id}/chat/")
             messages.success(request, "契約が成立しました。業務を開始できます。Eポイントを1pt獲得しました！")
@@ -322,28 +319,28 @@ def contract_application(request, application_id):
 @login_required
 def complete_job_work(request, application_id):
     app = get_object_or_404(Application, pk=application_id)
+    
+    # ▼▼▼ 修正: 業務完了ボタンの処理を「発注者のみ」に制限 ▼▼▼
+    if request.user != app.job.created_by:
+        messages.error(request, "業務完了の手続きは発注者（依頼主）のみが行えます。")
+        return redirect('chat_room', application_id=app.id)
+
     if app.status == 'contracted':
         app.status = 'completed'
         app.save()
 
-        # ▼▼▼ Eポイント付与（発注者に +3pt） ▼▼▼
-        if request.user == app.job.created_by:
-            EPointHistory.objects.create(
-                user=app.job.created_by,
-                action_type='job_completed',
-                points=3,
-                description=f"案件「{app.job.title}」の業務完了",
-                related_job=app.job,
-                related_application=app
-            )
-            messages.success(request, "業務を完了しました。Eポイントを3pt獲得しました！相互評価を行ってください。")
-        else:
-            # ワーカーがボタンを押した場合は今回は付与なしの設計
-            messages.success(request, "業務を完了しました。相互評価を行ってください。")
-        # ▲▲▲ Eポイント付与 ここまで ▲▲▲
+        # 発注者にEポイント付与 (+3pt)
+        EPointHistory.objects.create(
+            user=app.job.created_by,
+            action_type='job_completed',
+            points=3,
+            description=f"案件「{app.job.title}」の業務完了",
+            related_job=app.job,
+            related_application=app
+        )
+        messages.success(request, "業務を完了としました。Eポイントを3pt獲得しました！相互評価を行ってください。")
 
         create_notification(app.applicant, f"案件「{app.job.title}」が完了しました。評価をお願いします。", f"/application/{app.id}/chat/")
-        create_notification(app.job.created_by, f"案件「{app.job.title}」が完了しました。評価をお願いします。", f"/application/{app.id}/chat/")
         
     return redirect('chat_room', application_id=app.id)
 
@@ -380,8 +377,6 @@ def submit_review(request, application_id):
             comment=comment
         )
 
-        # ▼▼▼ Eポイント付与（評価した人に+1pt、された人に+1pt） ▼▼▼
-        # 評価した人（reviewer）
         EPointHistory.objects.create(
             user=request.user,
             action_type='review_given',
@@ -390,7 +385,6 @@ def submit_review(request, application_id):
             related_job=app.job,
             related_application=app
         )
-        # 評価された人（reviewee）
         EPointHistory.objects.create(
             user=reviewee,
             action_type='review_received',
@@ -399,7 +393,6 @@ def submit_review(request, application_id):
             related_job=app.job,
             related_application=app
         )
-        # ▲▲▲ Eポイント付与 ここまで ▲▲▲
 
         messages.success(request, "評価を送信し、Eポイントを1pt獲得しました！")
     
@@ -407,7 +400,6 @@ def submit_review(request, application_id):
 
 @login_required
 def chat_room(request, application_id):
-    """【本物のチャットルーム（1つに統合）】マッチング後の当事者専用チャット"""
     try:
         app = Application.objects.get(pk=application_id)
     except Application.DoesNotExist:
@@ -696,16 +688,17 @@ def scout_detail(request, pk):
         action = request.POST.get('action')
         
         if action == 'accept':
+            # ▼▼▼ 修正: ステータスを 'contracted'(契約成立) から 'accepted'(交渉中) に変更 ▼▼▼
             application, created = Application.objects.get_or_create(
                 job=scout.target_job,
                 applicant=request.user,
-                defaults={'status': 'contracted'}
+                defaults={'status': 'accepted'}
             )
             if not created and application.status == 'pending':
-                application.status = 'contracted'
+                application.status = 'accepted'
                 application.save()
 
-            # ▼▼▼ Eポイント付与（スカウト承諾による契約成立：発注者に+2pt） ▼▼▼
+            # Eポイント付与（スカウト承諾により発注者に+2pt）
             EPointHistory.objects.create(
                 user=scout.employer,
                 action_type='scout_accepted',
@@ -714,7 +707,6 @@ def scout_detail(request, pk):
                 related_job=scout.target_job,
                 related_application=application
             )
-            # ▲▲▲ Eポイント付与 ここまで ▲▲▲
 
             scout.delete()
             messages.success(request, '交渉ルームが作成されました！まずは相手に挨拶を送ってみましょう。')
