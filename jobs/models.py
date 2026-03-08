@@ -311,4 +311,55 @@ class Scout(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.employer.username} から {self.worker.username} へのスカウト"           
+        return f"{self.employer.username} から {self.worker.username} へのスカウト"
+
+ # ▼▼▼ ここから下を追加：Eポイントの履歴（通帳）モデル ▼▼▼
+
+class EPointHistory(models.Model):
+    """
+    Eポイントの獲得・消費履歴（通帳）
+    後から不正がないか、どのような行動でポイントを得たかを確認するための重要テーブル
+    """
+    ACTION_CHOICES = (
+        ('job_contracted', '案件契約成立'), # 1pt
+        ('job_completed', '業務完了報告'),  # 3pt
+        ('scout_accepted', 'スカウト承諾'), # 2pt
+        ('review_given', '評価を送信'),     # 1pt
+        ('review_received', '評価を受信'),  # 1pt
+        ('other', 'その他（調整など）'),
+    )
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='epoint_histories', verbose_name='ユーザー')
+    action_type = models.CharField(max_length=50, choices=ACTION_CHOICES, verbose_name='アクション種別')
+    points = models.IntegerField(verbose_name='増減ポイント', help_text='獲得はプラス、消費はマイナス')
+    description = models.CharField(max_length=255, verbose_name='詳細', help_text='例: 案件「〇〇」の契約成立')
+    
+    # どの案件や評価に紐づくポイントか（後で追跡できるようにしておく）
+    related_job = models.ForeignKey(Job, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    related_application = models.ForeignKey(Application, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='発生日時')
+
+    class Meta:
+        verbose_name = 'Eポイント履歴'
+        verbose_name_plural = 'Eポイント履歴一覧'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        sign = "+" if self.points > 0 else ""
+        return f"{self.user.username} | {self.get_action_type_display()} ({sign}{self.points}pt)"
+
+    def save(self, *args, **kwargs):
+        """
+        履歴が保存された瞬間、ユーザーの Profile の e_points にも自動で足し算・引き算を行う
+        """
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        
+        if is_new:
+            # プロフィールを取得してポイントを合算
+            profile = self.user.profile
+            profile.e_points += self.points
+            profile.save()
+
+# ▲▲▲ 追加ここまで ▲▲▲              

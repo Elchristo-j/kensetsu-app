@@ -46,7 +46,7 @@ class Profile(models.Model):
     real_name = models.CharField(max_length=50, blank=True, verbose_name="担当者名（本名）")
     phone_number = models.CharField(max_length=20, blank=True, verbose_name="電話番号")
     line_id = models.CharField(max_length=50, blank=True, verbose_name="LINE ID")
-    contact_email = models.EmailField(max_length=255, blank=True, verbose_name="連絡用メールアドレス") # ←★これを追加
+    contact_email = models.EmailField(max_length=255, blank=True, verbose_name="連絡用メールアドレス")
     # ========================================================
 
     # 職種（メイン・サブ）
@@ -57,13 +57,10 @@ class Profile(models.Model):
     bio = models.TextField(blank=True, verbose_name="自己紹介")
     
     # 画像
-    # アバターは今まで通り（デフォルトのCloudinaryへ）
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name="アバター画像")
-
-    # 本人確認書類のみ、S3（PrivateS3Storage）を指定
     id_card_image = models.ImageField(
         upload_to='id_cards/', 
-        storage=PrivateS3Storage(),  # ← これを追加
+        storage=PrivateS3Storage(),
         blank=True, 
         null=True, 
         verbose_name="本人確認書類"
@@ -77,6 +74,10 @@ class Profile(models.Model):
     
     is_founding_member = models.BooleanField(default=False, verbose_name="創設メンバー")
 
+    # ▼▼▼ 今回追加：Eポイントの金庫 ▼▼▼
+    e_points = models.IntegerField(default=0, verbose_name="保有Eポイント")
+    # ▲▲▲ 追加ここまで ▲▲▲
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -84,52 +85,36 @@ class Profile(models.Model):
     def monthly_limit(self):
         """今月の応募可能数"""
         r = str(self.rank).lower() if self.rank else 'iron'
-        # Silver以上は無制限
-        if r in ['silver', 'gold', 'platinum']: 
-            return 999999
-        # Bronze: 10回
-        if r == 'bronze': 
-            return 10
-        # Iron: 3回
+        if r in ['silver', 'gold', 'platinum']: return 999999
+        if r == 'bronze': return 10
         return 3
 
     @property
     def posting_limit(self):
         """今月の募集投稿可能数"""
         r = str(self.rank).lower() if self.rank else 'iron'
-        # Gold以上は無制限
-        if r in ['gold', 'platinum']: 
-            return 999999
-        # Silver: 3件
-        if r == 'silver': 
-            return 3
-        # Iron, Bronze: 投稿不可(0件)
+        if r in ['gold', 'platinum']: return 999999
+        if r == 'silver': return 3
         return 0
 
     def can_apply(self):
         """今月応募できるか判定"""
         from jobs.models import Application 
-        
         limit = self.monthly_limit
-        if limit >= 999999: return True # 無制限
-
+        if limit >= 999999: return True
         now = timezone.now()
         start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        
         count = Application.objects.filter(applicant=self.user, applied_at__gte=start_of_month).count()
         return count < limit
 
     def can_post_job(self):
         """今月募集投稿できるか判定"""
         from jobs.models import Job
-        
         limit = self.posting_limit
         if limit == 0: return False
-        if limit >= 999999: return True # 無制限
-
+        if limit >= 999999: return True
         now = timezone.now()
         start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        
         count = Job.objects.filter(created_by=self.user, created_at__gte=start_of_month).count()
         return count < limit
 
@@ -147,16 +132,13 @@ class FavoriteArea(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.prefecture}{self.city}"
 
-# ブロック機能
 class Block(models.Model):
     blocker = models.ForeignKey(User, related_name='blocking', on_delete=models.CASCADE)
     blocked = models.ForeignKey(User, related_name='blocked_by', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-
     class Meta:
         unique_together = ('blocker', 'blocked')
 
-# 通報機能
 class Report(models.Model):
     reporter = models.ForeignKey(User, related_name='reports_made', on_delete=models.CASCADE)
     target = models.ForeignKey(User, related_name='reports_received', on_delete=models.CASCADE)
