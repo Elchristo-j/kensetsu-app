@@ -173,7 +173,7 @@ def job_detail(request, job_id):
             messages.success(request, '応募が完了しました！')
             return redirect('job_detail', job_id=job.id)
         else:
-            messages.error(request, '応募できませんでした（制限超過または応募済み）')
+            messages.error(request, '応募できませんでした（制限超過、すでに応募済み、または募集終了）')
 
     context = {
         'job': job, 
@@ -222,13 +222,32 @@ def delete_job(request, job_id):
     if job.created_by == request.user: job.delete()
     return redirect('home')
 
+# ▼▼▼ 追加：手動で募集を終了し、トップ画面から消すための処理 ▼▼▼
+@login_required
+def close_job(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    if job.created_by == request.user:
+        job.is_closed = True
+        job.save()
+        messages.success(request, '案件の募集を終了しました。トップ画面からも非表示になります。')
+    return redirect('job_detail', job_id=job.id)
+# ▲▲▲ 追加ここまで ▲▲▲
+
 @login_required
 def apply_job(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
+
+    # ▼▼▼ 修正：募集終了した案件への直接応募をシステム側で完全ブロック ▼▼▼
+    if job.is_closed:
+        messages.error(request, "この案件はすでに募集を終了しているため、応募できません。")
+        return redirect('job_detail', job_id=job.id)
+    # ▲▲▲ 修正ここまで ▲▲▲
+
     if not request.user.profile.can_apply():
         l = request.user.profile.monthly_limit
         messages.error(request, f"応募上限です。現在のランクの枠は月{l}件です。")
         return redirect('job_detail', job_id=job.id)
+        
     Application.objects.get_or_create(job=job, applicant=request.user)
     create_notification(job.created_by, f"「{job.title}」に応募がありました。", f"/job/{job.id}/applicants/")
     return redirect('job_detail', job_id=job.id)
@@ -283,7 +302,6 @@ def contract_application(request, application_id):
             app.status = 'contracted'
             app.save()
 
-            # Eポイント付与（発注者に +1pt）
             EPointHistory.objects.create(
                 user=app.job.created_by,
                 action_type='job_contracted',
@@ -320,7 +338,6 @@ def contract_application(request, application_id):
 def complete_job_work(request, application_id):
     app = get_object_or_404(Application, pk=application_id)
     
-    # ▼▼▼ 修正: 業務完了ボタンの処理を「発注者のみ」に制限 ▼▼▼
     if request.user != app.job.created_by:
         messages.error(request, "業務完了の手続きは発注者（依頼主）のみが行えます。")
         return redirect('chat_room', application_id=app.id)
@@ -329,7 +346,6 @@ def complete_job_work(request, application_id):
         app.status = 'completed'
         app.save()
 
-        # 発注者にEポイント付与 (+3pt)
         EPointHistory.objects.create(
             user=app.job.created_by,
             action_type='job_completed',
@@ -408,6 +424,16 @@ def chat_room(request, application_id):
         
     if request.user != app.applicant and request.user != app.job.created_by:
         return redirect('home')
+
+    # ▼▼▼ 修正：無効なチャットルームに入ろうとした時の500エラーを撃退 ▼▼▼
+    if app.status in ['canceled', 'rejected']:
+        messages.error(request, "この応募は見送り、またはキャンセルされたため、チャットルームは利用できません。")
+        return redirect('job_detail', job_id=app.job.id)
+
+    if app.job.is_closed and app.status not in ['contracted', 'completed']:
+        messages.error(request, "この案件はすでに募集が終了しています。")
+        return redirect('job_detail', job_id=app.job.id)
+    # ▲▲▲ 修正ここまで ▲▲▲
 
     if request.method == 'POST' and 'content' in request.POST:
         form = MessageForm(request.POST)
@@ -688,7 +714,6 @@ def scout_detail(request, pk):
         action = request.POST.get('action')
         
         if action == 'accept':
-            # ▼▼▼ 修正: ステータスを 'contracted'(契約成立) から 'accepted'(交渉中) に変更 ▼▼▼
             application, created = Application.objects.get_or_create(
                 job=scout.target_job,
                 applicant=request.user,
@@ -698,7 +723,6 @@ def scout_detail(request, pk):
                 application.status = 'accepted'
                 application.save()
 
-            # Eポイント付与（スカウト承諾により発注者に+2pt）
             EPointHistory.objects.create(
                 user=scout.employer,
                 action_type='scout_accepted',
