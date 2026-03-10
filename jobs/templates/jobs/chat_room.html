@@ -110,3 +110,32 @@
             <form action="{% url 'submit_review' application.id %}" method="post">
                 {% csrf_token %}
                 <div class="modal-body">
+                    <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">評価（星1〜5）</label>
+                        <select name="rating" class="form-select" required>
+                            <option value="5">★★★★★ (5 - 大変良い)</option>
+                            <option value="4">★★★★☆ (4 - 良い)</option>
+                            <option value="3">★★★☆☆ (3 - 普通)</option>
+                            <option value="2">★★☆☆☆ (2 - 悪い)</option>
+                            <option value="1">★☆☆☆☆ (1 - 大変悪い)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">コメント</label>
+                        <textarea name="comment" class="form-control" rows="3" placeholder="取引の感想を入力してください" required></textarea>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="submit" class="btn btn-warning fw-bold text-dark">
+                        <i class="bi bi-send"></i> 評価を送信
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
