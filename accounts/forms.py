@@ -30,6 +30,14 @@ class CustomUserCreationForm(UserCreationForm):
             except IndexError:
                 raise forms.ValidationError("正しいメールアドレスを入力してください。")
         return email
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        
+        # データベースに同じメールアドレスがすでに存在するかチェック
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("このメールアドレスはすでに登録されています。")
+            
+        return email
 
 class ProfileForm(forms.ModelForm):
     """
