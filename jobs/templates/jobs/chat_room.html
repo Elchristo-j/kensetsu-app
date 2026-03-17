@@ -48,9 +48,10 @@
                     {% endif %}
                     {% elif application.status == 'contracted' %}
                     {% if request.user == application.job.created_by %}
-                        <a href="{% url 'complete_job_work' application.id %}" class="btn btn-success fw-bold" onclick="return confirm('本当に業務完了（検収）として処理しますか？');">
+                        <!-- confirm()をカスタムモーダルに変更 -->
+                        <button class="btn btn-success fw-bold" onclick="document.getElementById('completeModal').style.display='flex'">
                             <i class="bi bi-check-circle"></i> 業務完了にする
-                        </a>
+                        </button>
                     {% else %}
                         <button class="btn btn-outline-secondary fw-bold" disabled>作業中（発注者の完了報告待ち）</button>
                     {% endif %}
@@ -100,6 +101,26 @@
     </div>
 </div>
 
+<!-- 業務完了確認モーダル（confirm()の代替） -->
+<div id="completeModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:16px; padding:32px; margin:20px; max-width:400px; width:100%; text-align:center; box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+        <div style="font-size:48px; margin-bottom:16px;">✅</div>
+        <h5 style="font-weight:bold; margin-bottom:12px;">業務完了の確認</h5>
+        <p style="color:#666; margin-bottom:28px; line-height:1.6;">本当に業務完了（検収）として<br>処理しますか？</p>
+        <div style="display:flex; gap:12px; justify-content:center;">
+            <button onclick="document.getElementById('completeModal').style.display='none'"
+                    style="padding:12px 28px; border:1px solid #ccc; border-radius:50px; background:#fff; cursor:pointer; font-size:15px;">
+                キャンセル
+            </button>
+            <a href="{% url 'complete_job_work' application.id %}"
+               style="padding:12px 28px; border-radius:50px; background:#198754; color:#fff; text-decoration:none; cursor:pointer; font-size:15px; font-weight:bold;">
+                完了にする
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 評価モーダル -->
 <div class="modal fade" id="reviewModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -110,7 +131,7 @@
             <form action="{% url 'submit_review' application.id %}" method="post">
                 {% csrf_token %}
                 <div class="modal-body">
-                                  {% if request.user == application.job.created_by %}
+                    {% if request.user == application.job.created_by %}
                         <div class="mb-3">
                             <label class="fw-bold mb-1">能力 (技術・知識)</label>
                             <select name="p1" class="form-select">
@@ -151,7 +172,6 @@
                                 <option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
                             </select>
                         </div>
-
                     {% else %}
                         <div class="mb-3">
                             <label class="fw-bold mb-1">作業時間 (予定通りか)</label>
@@ -212,4 +232,4 @@
     var chatBox = document.getElementById('chat-box');
     chatBox.scrollTop = chatBox.scrollHeight;
 </script>
-{% endblock %}                     
+{% endblock %}
