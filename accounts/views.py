@@ -2,6 +2,7 @@ from django.utils import timezone
 import os
 import stripe
 import datetime
+import urllib.parse
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -94,6 +95,26 @@ def calculate_stats(user, review_type):
 def signup(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
+        
+        # reCAPTCHA検証
+        recaptcha_response = request.POST.get('g-recaptcha-response')
+        import urllib.request
+        import json
+        secret_key = os.environ.get('RECAPTCHA_SECRET_KEY')
+        url = 'https://www.google.com/recaptcha/api/siteverify'
+        values = {
+            'secret': secret_key,
+            'response': recaptcha_response
+        }
+        data = urllib.parse.urlencode(values).encode()
+        req = urllib.request.Request(url, data=data)
+        response = urllib.request.urlopen(req)
+        result = json.loads(response.read().decode())
+        
+        if not result.get('success'):
+            messages.error(request, 'ロボット認証に失敗しました。もう一度お試しください。')
+            return render(request, 'accounts/signup.html', {'form': form})
+        
         if form.is_valid():
             user = form.save(commit=False)
             user.is_active = False
@@ -116,24 +137,6 @@ def signup(request):
     else:
         form = CustomUserCreationForm()
     return render(request, 'accounts/signup.html', {'form': form})
-
-def activate(request, uidb64, token):
-    try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-
-    if user is not None and default_token_generator.check_token(user, token):
-        user.is_active = True
-        user.save()
-        from django.contrib.auth import login
-        login(request, user)
-        messages.success(request, 'メール認証が完了し、本登録されました！ようこそエルクリストへ！')
-        return redirect('home')
-    else:
-        messages.error(request, '認証リンクが無効か、すでに有効期限切れです。お手数ですがもう一度最初から登録をお試しください。')
-        return redirect('signup')
 
 @login_required
 def profile_edit(request):
