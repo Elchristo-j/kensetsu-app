@@ -138,6 +138,24 @@ def signup(request):
         form = CustomUserCreationForm()
     return render(request, 'accounts/signup.html', {'form': form})
 
+def activate(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        from django.contrib.auth import login
+        login(request, user)
+        messages.success(request, 'メール認証が完了し、本登録されました！ようこそエルクリストへ！')
+        return redirect('home')
+    else:
+        messages.error(request, '認証リンクが無効か、すでに有効期限切れです。お手数ですがもう一度最初から登録をお試しください。')
+        return redirect('signup')
+
 @login_required
 def profile_edit(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
