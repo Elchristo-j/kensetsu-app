@@ -90,5 +90,4 @@ urlpatterns = [
 
     path('job/<int:job_id>/close/', views.close_job, name='close_job'),
 
-    path('identity-verification-guide/', views.identity_verification_guide, name='identity_verification_guide'),
 ]
