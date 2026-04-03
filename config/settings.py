@@ -24,7 +24,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = env('SECRET_KEY')
 
 # ④ DEBUGも金庫から取り出すように変更！（万が一読み込めない時は安全のためFalseになる設定）
-DEBUG = env.bool('DEBUG', default=False)
+DEBUG = env.bool('DEBUG', default=True)
 
 # ★今回変更：'*'（すべて許可）から、セキュリティを高めつつ新しいドメインを許可する形に変更しました
 ALLOWED_HOSTS = [
