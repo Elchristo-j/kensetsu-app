@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 
 <style>
     .hero-section {
-        background: linear-gradient(135deg, #15151a 0%, #2c2c3a 100%);
+        background: linear-gradient(135deg, #15151a 0%, #2c3e50 100%);
         padding: 80px 0 60px;
-        margin-top: -20px;
         position: relative;
         overflow: hidden;
     }
@@ -17,35 +17,28 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-image: 
-            linear-gradient(30deg, rgba(255, 255, 255, .05) 12%, transparent 12.5%, transparent 87%, rgba(255, 255, 255, .05) 87.5%, rgba(255, 255, 255, .05)),
-            linear-gradient(150deg, rgba(255, 255, 255, .05) 12%, transparent 12.5%, transparent 87%, rgba(255, 255, 255, .05) 87.5%, rgba(255, 255, 255, .05));
-        background-size: 80px 140px;
-        opacity: 0.3;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
     .text-shadow {
-        text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
-    .card:hover {
-        transform: translateY(-5px);
+    .card {
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    .hero-section .btn-signup {
+        background: linear-gradient(135deg, #ffd700, #ff8c00);
+        border: 3px solid white;
+        color: white;
+        font-weight: bold;
+        font-size: 1.1rem;
+        padding: 12px 40px;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
         transition: all 0.3s ease;
     }
-    .job-card {
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .job-card:hover {
-        transform: scale(1.02);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    }
-    @media (max-width: 768px) {
-        .hero-section { padding: 60px 0 40px; }
-        /* スマホでボタン間にスペース追加 */
-        .btn-mobile-spacing {
-            margin-bottom: 0.75rem;
-        }
-    }
-    .brand-color { background: linear-gradient(45deg, #ff357a, #ff9f43); }
-    img {
+    .hero-section .btn-signup:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
         filter: brightness(1.1);
     }
 </style>
@@ -65,21 +58,13 @@
         
         <p class="lead mb-4 opacity-75">職人・手元のマッチングプラットフォーム</p>
         
-        <!-- ★★★ 修正1: ヘッダーエリア直下の新規登録ボタン(href追加&スマホ対応) ★★★ -->
         {% if not user.is_authenticated %}
         <div class="mb-4">
-            <div class="d-flex flex-column flex-md-row justify-content-center gap-2 gap-md-3">
-                <a href="{% url 'signup' %}" class="btn btn-warning btn-lg text-dark fw-bold rounded-pill px-5 py-3 shadow-lg">
-                    <i class="bi bi-person-plus-fill"></i> 無料で新規登録
-                </a>
-                <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg rounded-pill px-5 py-3">
-                    ログイン
-                </a>
-            </div>
-            <p class="small text-white-50 mt-3 mb-0">※登録は30秒!メールアドレスだけでOK</p>
+            <a href="{% url 'signup' %}" class="btn btn-signup rounded-pill">
+                <i class="bi bi-person-plus-fill me-2"></i>今すぐ無料で始める
+            </a>
         </div>
         {% endif %}
-        <!-- ★★★ 修正ここまで ★★★ -->
         
         <div class="card p-3 border-0 shadow-lg mx-auto" style="max-width: 900px; background: rgba(255,255,255,0.95);">
             <form action="{% url 'job_list' %}" method="get" class="row g-2 align-items-center">
@@ -95,7 +80,7 @@
                     <select name="prefecture" class="form-select border-0 bg-light py-2 fw-bold text-dark">
                         <option value="">📍 全てのエリア</option>
                         {% for p in prefectures %}
-                            {% if p.0 %}<option value="{{ p.0 %}">{{ p.1 }}</option>{% endif %}
+                            {% if p.0 %}<option value="{{ p.0 }}">{{ p.1 }}</option>{% endif %}
                         {% endfor %}
                     </select>
                 </div>
@@ -106,8 +91,8 @@
                 <div class="col-md-2 d-flex flex-column gap-2">
                     <button type="submit" class="btn btn-dark w-100 py-2 fw-bold rounded-pill">検索</button>
                     {% if user.is_authenticated %}
-                    <a href="{% url 'favorite_search_view' %}" class="btn btn-warning w-100 py-2 fw-bold rounded-pill" style="font-size: 0.75rem;">
-                        <i class="bi bi-star-fill"></i> お気に入り検索
+                    <a href="{% url 'favorite_search_view' %}" class="btn btn-warning w-100 py-2 fw-bold rounded-pill" style="font-size: 0.8rem;">
+                        <i class="fas fa-star"></i> お気に入り
                     </a>
                     {% endif %}
                 </div>
@@ -116,188 +101,143 @@
     </div>
 </div>
 
-<!-- ★★★ 追加2: 中段CTAエリア ★★★ -->
 {% if not user.is_authenticated %}
-<div class="container my-5">
-    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-        <div class="card-body p-5 text-center brand-color text-white">
-            <h2 class="fw-bold mb-3">スマホで今すぐ、現場のプロと繋がろう。</h2>
-            <p class="lead mb-4">登録・月額・成約手数料すべて<strong>完全無料</strong>。現場の新しい働き方を今すぐ始めましょう!</p>
-            <a href="{% url 'signup' %}" class="btn btn-light btn-lg text-dark fw-bold rounded-pill px-5 py-3 shadow">
-                <i class="bi bi-rocket-takeoff-fill"></i> 今すぐ無料登録して始める
-            </a>
-            <p class="small mt-3 mb-0 opacity-75">※登録は30秒!メールアドレスだけでOK</p>
+
+<div class="container my-5 pt-3">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold" style="color: #2c3e50;">
+            建設工事現場で<br class="d-md-none">
+            <span style="color: #ff357a;">こんなお悩み</span>ありませんか？
+        </h2>
+        <div class="mx-auto mt-3" style="width: 60px; height: 5px; background: linear-gradient(45deg, #ff357a, #ff9f43); border-radius: 3px;"></div>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 position-relative" style="background-color: #fff4f4; margin-top: 20px;">
+                <div class="position-absolute top-0 start-50 translate-middle text-white rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 64px; height: 64px; background: linear-gradient(135deg, #ff6b6b, #ee5253); border: 4px solid #fff;">
+                    <i class="bi bi-people-fill fs-3"></i>
+                </div>
+                <div class="card-body text-center pt-5 pb-4 px-4">
+                    <h5 class="fw-bold mb-3 text-dark">急な欠員！<br>明日の手元が見つからない</h5>
+                    <p class="text-muted small mb-0 text-start">「明日から入る予定だった職人が急に飛んだ…」「知り合いの業者に電話しても、みんな手一杯で全然捕まらない…」</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 position-relative" style="background-color: #f4f8ff; margin-top: 20px;">
+                <div class="position-absolute top-0 start-50 translate-middle text-white rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 64px; height: 64px; background: linear-gradient(135deg, #48dbfb, #0abde3); border: 4px solid #fff;">
+                    <i class="bi bi-wallet2 fs-3"></i>
+                </div>
+                <div class="card-body text-center pt-5 pb-4 px-4">
+                    <h5 class="fw-bold mb-3 text-dark">中抜きが多くて<br>割に合わない</h5>
+                    <p class="text-muted small mb-0 text-start">「下請けの下請けだから、稼いでも残るのはわずか…」「直接取引できる元請けや現場が見つからない…」</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 position-relative" style="background-color: #fff9f4; margin-top: 20px;">
+                <div class="position-absolute top-0 start-50 translate-middle text-white rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 64px; height: 64px; background: linear-gradient(135deg, #feca57, #ff9ff3); border: 4px solid #fff;">
+                    <i class="bi bi-clock-history fs-3"></i>
+                </div>
+                <div class="card-body text-center pt-5 pb-4 px-4">
+                    <h5 class="fw-bold mb-3 text-dark">単発で働きたいのに<br>情報がない</h5>
+                    <p class="text-muted small mb-0 text-start">「空いた日だけスポットで現場に入りたいけど、募集情報がどこにもない…」「人脈だけが頼りで、新しい仕事が見つからない…」</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<div class="text-center my-5 py-4" style="background: linear-gradient(135deg, #ffd700, #ff8c00);">
+    <div class="container">
+        <h3 class="fw-bold text-white mb-3">
+            <i class="bi bi-arrow-down-circle-fill me-2"></i>
+            その悩み、すべて解決できます
+        </h3>
+        <a href="{% url 'signup' %}" class="btn btn-light btn-lg rounded-pill px-5 shadow-lg fw-bold" style="color: #ff8c00;">
+            無料で今すぐ始める <i class="bi bi-arrow-right-circle-fill ms-2"></i>
+        </a>
+    </div>
+</div>
+
 {% endif %}
-<!-- ★★★ 追加ここまで ★★★ -->
 
-<!-- 建設工事現場でこんなお悩みありませんか? -->
-<div class="container my-5">
-    <h2 class="text-center fw-bold mb-4">建設工事現場で <span class="text-danger">こんなお悩み</span>ありませんか?</h2>
-    
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 rounded-4 hover-lift">
-                <div class="card-body text-center p-4">
-                    <div class="mb-3">
-                        <i class="bi bi-people-fill text-danger" style="font-size: 3rem;"></i>
-                    </div>
-                    <h5 class="fw-bold mb-3">急な欠員!<br>明日の手元が見つからない</h5>
-                    <p class="text-muted small">
-                        「明日まさかの人手不足で工程がずれそう…」「いつもの手元さんが急に来れなくなった…」みんな募集しても応募がこない…
-                    </p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 rounded-4 hover-lift">
-                <div class="card-body text-center p-4">
-                    <div class="mb-3">
-                        <i class="bi bi-calendar-x text-primary" style="font-size: 3rem;"></i>
-                    </div>
-                    <h5 class="fw-bold mb-3">中抜きが多くて<br>割に合わない</h5>
-                    <p class="text-muted small">
-                        「定期的にもらう仕事はあるけど、どうも割が悪くて給料が上がらない…」「もっと自分のスキルに見合った報酬で働きたい…」
-                    </p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 rounded-4 hover-lift">
-                <div class="card-body text-center p-4">
-                    <div class="mb-3">
-                        <i class="bi bi-graph-up text-success" style="font-size: 3rem;"></i>
-                    </div>
-                    <h5 class="fw-bold mb-3">初めての相手は<br>スキルや支払いが不安</h5>
-                    <p class="text-muted small">
-                        「どんな人が来るか分からないから頼みづらい…」「ちゃんと期日通りに振り込まれるか心配…」スカウトが届いたけど大丈夫かな…
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- そのお悩み、El'christoがすべて解決します! -->
-<div class="container my-5">
-    <h2 class="text-center fw-bold mb-5">そのお悩み、<span class="text-primary">El'christo</span> がすべて解決します!</h2>
-    
-    <div class="row g-4 mb-5">
-        <div class="col-md-4">
-            <div class="card border-0 shadow h-100 rounded-4">
-                <div class="card-body text-center p-4">
-                    <div class="mb-3">
-                        <i class="bi bi-lightning-charge-fill text-warning" style="font-size: 3rem;"></i>
-                    </div>
-                    <h5 class="fw-bold mb-3">スマホで今すぐ、<br>現場のプロと繋がる</h5>
-                    <p class="text-muted small">
-                        募集から採用まで、スマホ一つで完結。急な欠員や突発的な応援要請にも即座に対応できます。
-                    </p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card border-0 shadow h-100 rounded-4">
-                <div class="card-body text-center p-4">
-                    <div class="mb-3">
-                        <i class="bi bi-piggy-bank-fill text-success" style="font-size: 3rem;"></i>
-                    </div>
-                    <h5 class="fw-bold mb-3">仲介手数料 ¥0<br>中抜きなしの直接取引</h5>
-                    <p class="text-muted small">
-                        手数料ゼロの直接契約スタイル。頑張った分だけ、適正な報酬を受け取ることができます。
-                    </p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card border-0 shadow h-100 rounded-4">
-                <div class="card-body text-center p-4">
-                    <div class="mb-3">
-                        <i class="bi bi-shield-check text-primary" style="font-size: 3rem;"></i>
-                    </div>
-                    <h5 class="fw-bold mb-3">安心の評価システム<br>で信頼できる取引</h5>
-                    <p class="text-muted small">
-                        ワーカー・発注者双方の評価が見える化されているため、初めての相手でも安心して取引ができます。
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 新着の募集 -->
 <div class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold mb-0"><i class="bi bi-fire text-danger"></i> 新着の募集</h3>
-        <a href="{% url 'job_list' %}" class="btn btn-outline-dark rounded-pill px-4">もっと見る <i class="bi bi-arrow-right"></i></a>
+        <h3 class="fw-bold mb-0">
+            <i class="bi bi-megaphone-fill me-2" style="color: #ff357a;"></i>新着の募集
+        </h3>
+        <a href="{% url 'job_list' %}" class="btn btn-outline-dark btn-sm rounded-pill px-4">
+            すべて見る <i class="bi bi-arrow-right ms-1"></i>
+        </a>
     </div>
-    
-    <div class="row g-4">
-        {% for job in latest_jobs %}
-        <div class="col-md-4">
-            <a href="{% url 'job_detail' job.pk %}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm job-card h-100 rounded-4">
-                    <div class="card-body p-4">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <span class="badge bg-primary rounded-pill px-3 py-2">{{ job.get_category_display }}</span>
-                            <span class="badge bg-secondary rounded-pill px-3 py-2">{{ job.prefecture }}</span>
-                        </div>
-                        
-                        <h5 class="fw-bold text-dark mb-3">{{ job.title }}</h5>
-                        
-                        <div class="d-flex align-items-center text-muted small mb-2">
-                            <i class="bi bi-building me-2"></i>
-                            <span>{{ job.company.profile.company_name|default:job.company.username }}</span>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-                            <div>
-                                <strong class="text-warning fs-5">¥{{ job.daily_wage|floatformat:0|default:"応相談" }}</strong>
-                                <span class="text-muted small"> / 日給</span>
+
+    {% if latest_jobs %}
+        <div class="row g-3">
+            {% for job in latest_jobs %}
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'job_detail' job.id %}" class="text-decoration-none">
+                    <div class="card h-100 border-0 shadow-sm hover-lift" style="transition: all 0.3s;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-primary rounded-pill small">{{ job.get_category_display }}</span>
+                                <small class="text-muted"><i class="bi bi-geo-alt-fill"></i> {{ job.get_prefecture_display }}</small>
                             </div>
-                            <div class="text-end">
-                                <small class="text-muted d-block">募集 / 募集</small>
-                                <strong class="text-primary">{{ job.current_applicants }} / {{ job.max_workers }}人</strong>
+                            <h5 class="card-title fw-bold mb-2 text-dark" style="min-height: 2.5rem;">{{ job.title }}</h5>
+                            <p class="card-text text-muted small mb-3" style="min-height: 3rem; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                                {{ job.description|truncatewords:15 }}
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="fw-bold text-success">¥{{ job.hourly_wage|floatformat:0 }}</span>
+                                    <small class="text-muted">/時間</small>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar3"></i> {{ job.work_date|date:"n/j" }}
+                                </small>
                             </div>
-                        </div>
-                        
-                        <div class="text-end mt-2">
-                            <small class="text-muted">{{ job.created_at|date:"n月j日" }}投稿</small>
                         </div>
                     </div>
-                </div>
-            </a>
-        </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="alert alert-info text-center rounded-4" role="alert">
-                現在、新着の募集はありません。
+                </a>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
+    {% else %}
+        <div class="alert alert-light text-center py-5">
+            <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+            <p class="text-muted mb-0">現在募集中の案件はありません</p>
+        </div>
+    {% endif %}
 </div>
 
-<!-- ★★★ 追加3: フッター手前の新規登録CTA ★★★ -->
 {% if not user.is_authenticated %}
-<div class="container my-5">
-    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-        <div class="card-body p-5 text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-            <h3 class="text-white fw-bold mb-3">気になる案件がありましたか?</h3>
-            <p class="text-white mb-4 opacity-75">無料登録して、今すぐ応募しましょう!</p>
-            <a href="{% url 'signup' %}" class="btn btn-warning btn-lg fw-bold rounded-pill px-5 py-3 shadow">
-                無料登録して応募する <i class="bi bi-arrow-right"></i>
-            </a>
-        </div>
+<div class="py-5 my-5" style="background: linear-gradient(135deg, #15151a 0%, #2c3e50 100%);">
+    <div class="container text-center text-white">
+        <h2 class="fw-bold mb-4">
+            <i class="bi bi-rocket-takeoff-fill me-2"></i>
+            今すぐ無料で始めませんか？
+        </h2>
+        <p class="lead mb-4 opacity-75">
+            登録は1分で完了。すぐに案件検索・応募ができます。
+        </p>
+        <a href="{% url 'signup' %}" class="btn btn-warning btn-lg rounded-pill px-5 shadow-lg fw-bold" style="font-size: 1.2rem;">
+            <i class="bi bi-person-plus-fill me-2"></i>無料会員登録
+        </a>
+        <p class="small mt-3 opacity-75">
+            ※登録後すぐにご利用いただけます
+        </p>
     </div>
 </div>
 {% endif %}
-<!-- ★★★ 追加ここまで ★★★ -->
+
+<style>
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
+    }
+</style>
 
 {% endblock %}
