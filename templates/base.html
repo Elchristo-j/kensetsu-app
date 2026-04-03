@@ -9,7 +9,7 @@
     
     <style>
         :root { --sumi-color: #15151a; --rankup-blue: #0066ff; }
-        /* ▼▼ スマホアプリのスワイプ戻り（エッジジェスチャー）を復活・維持する設定 ▼▼ */
+        /* ▼▼ スマホアプリのスワイプ戻り(エッジジェスチャー)を復活・維持する設定 ▼▼ */
         html {
             overscroll-behavior-x: auto !important; /* OS標準のスワイプを許可 */
         }
@@ -23,7 +23,6 @@
             color: var(--sumi-color); 
         }
         /* ▲▲ ここまで ▲▲ */
-        body { font-family: "Hiragino Sans", "Meiryo", sans-serif; background-color: #f4f5f7; color: var(--sumi-color); }
         
         .bg-sumi { background-color: var(--sumi-color) !important; }
         .text-sumi { color: var(--sumi-color) !important; }
@@ -47,193 +46,58 @@
         
         /* ▼▼▼ チタンブルーのプラチナバッジ ▼▼▼ */
         .badge-platinum { background: linear-gradient(180deg, #1f5f99, #6bdaff, #1f5f99, #17337a) !important; color: white !important; text-transform: uppercase; }
-        .badge-gold { background: linear-gradient(45deg, #d4af37, #f1c40f) !important; color: white !important; text-transform: uppercase; }
-        .badge-silver { background: linear-gradient(45deg, #bdc3c7, #95a5a6) !important; color: #333 !important; text-transform: uppercase; }
-        .badge-bronze { background-color: #cd7f32 !important; color: white !important; text-transform: lowercase; }
-        .badge-iron { background-color: #6c757d !important; color: white !important; text-transform: lowercase; }
+        .badge-gold { background: linear-gradient(135deg, #ffd700, #ff8c00); color: white; }
+        .badge-silver { background: linear-gradient(135deg, #c0c0c0, #909090); color: white; }
+        .badge-bronze { background: linear-gradient(135deg, #cd7f32, #8b4513); color: white; }
         
-        .notification-dot {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 8px;
-            height: 8px;
-            background-color: #dc3545;
-            border-radius: 50%;
-            border: 1px solid #15151a;
-        }
-
-        .footer-link { color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.2s; }
-        .footer-link:hover { color: #ffffff; text-decoration: underline; }
-
-        /* ▼▼ 全画面共通：ランク別カードの枠線と発光エフェクト ▼▼ */
-        .card-rank-platinum { border: 2px solid #3a7ca5 !important; }
-        .card-rank-gold { border: 2px solid #f1c40f !important; }
-        .card-rank-silver { border: 2px solid #95a5a6 !important; }
-
-        /* ホバーアクションの基本 */
-        .job-card-hover {
-            transition: transform 0.3s ease, box-shadow 0.3s ease; 
-            position: relative;
-            overflow: hidden; /* 光の帯がはみ出ないようにカード内で切り取る */
-        }
-        
-        .job-card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
-            z-index: 5;
-        }
-
-        /* ▼▼ キラッと斜めの光の筋が走るエフェクト（レアカード演出） ▼▼ */
-        .card-rank-gold::before,
-        .card-rank-platinum::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -150%;
-            width: 50%;
-            height: 100%;
-            /* 白く輝く斜めの帯 */
-            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%);
-            transform: skewX(-25deg);
-            z-index: 10;
-            pointer-events: none; /* クリックの邪魔にならないように */
-        }
-
-        /* ゴールドとプラチナのみ、ホバーすると光の筋がサッと走り抜ける */
-        .card-rank-gold.job-card-hover:hover::before,
-        .card-rank-platinum.job-card-hover:hover::before {
-            animation: shineEffect 1.5s infinite; /* 1.5秒間隔で走り続ける */
-        }
-
-        @keyframes shineEffect {
-            0% { left: -100%; }
-            50% { left: 200%; }
-            100% { left: 200%; }
-        }
-
-        /* ▼▼ 影（後光）も呼吸するように明滅させる ▼▼ */
-        .card-rank-gold.job-card-hover:hover {
-            animation: glowGold 1.5s infinite alternate;
-        }
-        .card-rank-platinum.job-card-hover:hover {
-            animation: glowPlatinum 1.5s infinite alternate;
-        }
-
-        @keyframes glowGold {
-            0% { box-shadow: 0 5px 15px rgba(241, 196, 15, 0.4) !important; }
-            100% { box-shadow: 0 15px 35px rgba(241, 196, 15, 0.8) !important; }
-        }
-        @keyframes glowPlatinum {
-            0% { box-shadow: 0 5px 15px rgba(58, 124, 165, 0.4) !important; }
-            100% { box-shadow: 0 15px 35px rgba(58, 124, 165, 0.9) !important; }
-        }
-        /* ▲▲ 追加ここまで ▲▲ */
+        html, body { height: 100%; margin: 0; }
+        body { display: flex; flex-direction: column; }
+        .main-content { flex: 1 0 auto; }
+        footer { flex-shrink: 0; }
     </style>
 </head>
-<body class="d-flex flex-column min-vh-100">
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-sumi sticky-top shadow">
-        <div class="container-fluid px-2 px-md-3">
-            <a class="navbar-brand me-1" href="{% url 'home' %}">
-                <span class="brand-title">建設マッチング</span>
-                <span class="brand-sub">~ エルクリスト ~</span>
+<body>
+    
+    <nav class="navbar navbar-expand-lg navbar-dark bg-sumi sticky-top shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                <span>
+                    <div class="brand-title">建設マッチング</div>
+                    <div class="brand-sub">〜 エルクリスト 〜</div>
+                </span>
             </a>
-
-            {% if user.is_authenticated %}
-                <div class="d-flex align-items-center d-lg-none ms-auto me-1">
-                    <span class="badge badge-{{ user.profile.rank|lower }} me-2" style="font-size: 0.65rem; padding: 0.35em 0.5em;">
-                        {{ user.profile.rank|upper }}
-                    </span>
-                    
-                    <a class="position-relative text-white me-2" href="{% url 'notifications' %}" style="padding: 5px;">
-                        <i class="bi bi-bell-fill" style="font-size: 1.1rem;"></i>
-                        {% if user.profile.has_unread_notifications %}
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem;">!</span>
-                        {% endif %}
-                    </a>
-                </div>
-            {% endif %}
-
-            <button class="navbar-toggler ms-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="padding: 0.25rem 0.5rem; font-size: 0.9rem;">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center pt-3 pt-lg-0">
-                    
+                <ul class="navbar-nav ms-auto align-items-lg-center">
                     {% if user.is_authenticated %}
-                        
-                        <li class="nav-item d-lg-none w-100 border-bottom border-secondary mb-3 pb-3 px-2">
-                            <div class="d-flex align-items-center">
-                                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                    {% if user.profile.avatar %}
-                                        <img src="{{ user.profile.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
-                                    {% else %}
-                                        <span>{{ user.username|slice:":1" }}</span>
-                                    {% endif %}
-                                </div>
-                                <div>
-                                    <small class="text-white-50 d-block" style="font-size: 0.75rem;">お疲れ様です</small>
-                                    <span class="text-white fw-bold">{{ user.username }} 様</span>
-                                </div>
-                            </div>
-                        </li>
-
-                        <li class="nav-item d-none d-lg-flex align-items-center me-3 border-end border-secondary pe-3">
-                            <span class="text-white small me-2">お疲れ様です</span>
-                            <span class="fw-bold text-white d-inline-block text-truncate" style="max-width: 120px;">
-                                {{ user.username }}
-                            </span>
-                            <span class="badge rank-badge badge-{{ user.profile.rank|lower }} ms-2">
-                                {{ user.profile.get_rank_display }}
-                            </span>
-                        </li>
-
-                        <li class="nav-item me-3 d-none d-lg-block">
-                            <a class="nav-link position-relative p-1" href="{% url 'notifications' %}">
-                                <i class="bi bi-bell-fill fs-5"></i>
-                                {% if user.profile.has_unread_notifications %}
-                                    <span class="notification-dot"></span>
-                                {% endif %}
-                            </a>
-                        </li>
-                        
-                        {% if user.is_staff %}
-                        <li class="nav-item">
-                            <a class="nav-link text-warning fw-bold" href="{% url 'admin_dashboard' %}">管理画面</a>
-                        </li>
-                        {% endif %}
-                        
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'job_list' %}"><i class="bi bi-search"></i> 案件を探す</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'create_job' %}"><i class="bi bi-pencil-square"></i> 募集する</a>
+                            <a class="nav-link" href="{% url 'worker_rankings' %}"><i class="bi bi-trophy"></i> 承認率</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" href="{% url 'mypage' %}">
+                                <i class="bi bi-person-circle"></i> マイページ
+                                {% if request.user.profile.membership_tier == 'platinum' %}
+                                    <span class="rank-badge badge-platinum">PLATINUM</span>
+                                {% elif request.user.profile.membership_tier == 'gold' %}
+                                    <span class="rank-badge badge-gold">GOLD</span>
+                                {% elif request.user.profile.membership_tier == 'silver' %}
+                                    <span class="rank-badge badge-silver">SILVER</span>
+                                {% elif request.user.profile.is_verified %}
+                                    <span class="rank-badge badge-bronze">BRONZE</span>
+                                {% endif %}
+                            </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'guide_view' %}"><i class="bi bi-book"></i> ガイド</a>
                         </li>
-                        <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
-                            <a class="btn btn-outline-light btn-sm px-3 rounded-pill w-100 text-center" href="{% url 'mypage' %}">マイページ</a>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">ログアウト</a>
                         </li>
-                        <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
-                            <form action="{% url 'logout' %}" method="post" class="d-inline w-100">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-link nav-link w-100 text-start text-lg-center">ログアウト</button>
-                            </form>
-                        </li>
-                        
-                        {% if not is_ios_app %}
-                            <li class="nav-item ms-lg-2 border-start border-secondary ps-lg-2 mt-2 mt-lg-0">
-                                {% if user.is_authenticated and user.profile.rank == 'iron' %}
-                                    <a class="nav-link nav-link-cancel" href="{% url 'delete_guide_only' %}">解約について</a>
-                                {% else %}
-                                    <a class="nav-link nav-link-cancel" href="{% url 'subscription_plans' %}#cancel-info">解約について</a>
-                                {% endif %}
-                            </li>
-                        {% endif %}
-
                     {% else %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'job_list' %}"><i class="bi bi-search"></i> 案件を探す</a>
@@ -253,10 +117,13 @@
             </div>
         </div>
     </nav>
-    <div class="text-white text-center py-2 shadow-sm" style="background: linear-gradient(45deg, #ff357a, #ff9f43); font-size: 0.9rem;">
+    
+    <!-- ★★★ 修正: py-2 → py-3 に変更(高さを増やす) ★★★ -->
+    <div class="text-white text-center py-3 shadow-sm" style="background: linear-gradient(45deg, #ff357a, #ff9f43); font-size: 0.9rem; line-height: 1.4;">
         <strong>🎉【iOS / Android アプリ正式リリース完了】🎉</strong><br>
-        すべての機能が完全無料でご利用いただけます。現場の新しい繋がりを今すぐ始めましょう！
+        すべての機能が完全無料でご利用いただけます。現場の新しい繋がりを今すぐ始めましょう!
     </div>
+    <!-- ★★★ 修正ここまで ★★★ -->
     
     <div class="main-content flex-grow-1">
         {% if messages %}
@@ -289,20 +156,21 @@
                 </div>
 
                 <div class="col-md-3">
-                    <h6 class="fw-bold text-uppercase mb-3 border-bottom border-secondary pb-2 d-inline-block">Service</h6>
+                    <h6 class="fw-bold mb-3">SERVICE</h6>
                     <ul class="list-unstyled small">
-                        <li class="mb-2"><a href="{% url 'about' %}" class="footer-link">運営者情報・サービス紹介</a></li>
-                        <li class="mb-2"><a href="{% url 'guide_view' %}" class="footer-link">ご利用ガイド</a></li>
-                        <li class="mb-2"><a href="{% url 'contact' %}" class="footer-link text-white-50">お問い合わせ</a></li>
+                        <li class="mb-2"><a href="{% url 'service_info' %}" class="text-white-50 text-decoration-none">サービス紹介</a></li>
+                        <li class="mb-2"><a href="{% url 'about' %}" class="text-white-50 text-decoration-none">運営者情報</a></li>
+                        <li class="mb-2"><a href="{% url 'guide_view' %}" class="text-white-50 text-decoration-none">ご利用ガイド</a></li>
+                        <li class="mb-2"><a href="{% url 'contact' %}" class="text-white-50 text-decoration-none">お問い合わせ</a></li>
                     </ul>
                 </div>
 
                 <div class="col-md-3">
-                    <h6 class="fw-bold text-uppercase mb-3 border-bottom border-secondary pb-2 d-inline-block">Legal</h6>
+                    <h6 class="fw-bold mb-3">LEGAL</h6>
                     <ul class="list-unstyled small">
-                        <li class="mb-2"><a href="{% url 'terms' %}" class="footer-link">利用規約</a></li>
-                        <li class="mb-2"><a href="{% url 'privacy' %}" class="footer-link">プライバシーポリシー</a></li>
-                        <li class="mb-2"><a href="{% url 'law' %}" class="footer-link">特定商取引法に基づく表記</a></li>
+                        <li class="mb-2"><a href="{% url 'terms' %}" class="text-white-50 text-decoration-none">利用規約</a></li>
+                        <li class="mb-2"><a href="{% url 'privacy' %}" class="text-white-50 text-decoration-none">プライバシーポリシー</a></li>
+                        <li class="mb-2"><a href="{% url 'commercial_transaction_act' %}" class="text-white-50 text-decoration-none">特定商取引法に基づく表記</a></li>
                     </ul>
                 </div>
 
