@@ -743,8 +743,4 @@ def scout_detail(request, pk):
 
     context = {'scout': scout}
     return render(request, 'jobs/scout_detail.html', context)
-
-def identity_verification_guide(request):
-    """本人確認ガイドページ"""
-    return render(request, 'jobs/static_pages/identity_verification_guide.html')
     
