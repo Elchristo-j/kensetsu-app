@@ -1,32 +1,27 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5 mb-5">
+<div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square"></i> プロフィール編集</h5>
+        <div class="col-lg-8">
+            
+            <div class="card shadow-sm rounded-4 border-0 mb-4">
+                <div class="card-header bg-sumi text-white py-3">
+                    <h4 class="mb-0 fw-bold"><i class="bi bi-person-circle"></i> プロフィール編集</h4>
                 </div>
+                
                 <div class="card-body p-4">
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         
-                        {% if form.errors %}
-                            <div class="alert alert-danger">
-                                入力内容にエラーがあります。以下の項目を確認してください。
-                                {{ form.errors }}
-                            </div>
-                        {% endif %}
-
                         <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">基本情報</h6>
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">会社名・屋号</label>
+                                <label class="form-label fw-bold">会社名 / 屋号</label>
                                 {{ form.company_name }}
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">役職・部署</label>
+                                <label class="form-label fw-bold">役職</label>
                                 {{ form.position }}
                             </div>
                             <div class="col-md-6">
@@ -34,51 +29,44 @@
                                 {{ form.age_group }}
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">経験年数</label>
-                                {{ form.experience_years }}
-                            </div>
-                        </div>
-
-                        <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">職種・活動エリア</h6>
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">メイン職種 <span class="badge bg-danger">必須</span></label>
+                                <label class="form-label fw-bold">メイン職種</label>
                                 {{ form.occupation_main }}
-                                <div class="form-text">最も自信のある職種を入力してください</div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">サブ職種</label>
                                 {{ form.occupation_sub }}
-                                <div class="form-text">対応可能なその他の職種</div>
                             </div>
-                            <div class="col-12">
-                                <label class="form-label fw-bold">所在地（都道府県）</label>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">活動エリア</label>
                                 {{ form.location }}
                             </div>
                         </div>
 
-                        <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">詳細情報</h6>
+                        <h6 class="fw-bold text-muted border-bottom pb-2 mb-3 mt-4">スキル・経歴</h6>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">自己紹介文</label>
+                            <label class="form-label fw-bold">自己紹介</label>
                             {{ form.bio }}
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">保有資格</label>
-                            {{ form.qualifications }}
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">得意な工事・スキル</label>
-                            {{ form.skills }}
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">インボイス登録番号</label>
-                            {{ form.invoice_num }}
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">経験年数</label>
+                                {{ form.experience_years }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">保有資格</label>
+                                {{ form.qualifications }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">スキル・得意分野</label>
+                                {{ form.skills }}
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">インボイス登録番号</label>
+                                {{ form.invoice_num }}
+                            </div>
                         </div>
 
-                        <h6 class="fw-bold text-primary border-bottom pb-2 mb-3 mt-5"><i class="bi bi-person-lines-fill"></i> 連絡先情報（契約成立後にのみ公開）</h6>
-                        <div class="alert alert-info small mb-3">
-                            <i class="bi bi-info-circle-fill"></i> ここに入力した連絡先は、マッチング契約が成立した相手にのみ開示されます。一般公開はされませんので安心してご入力ください。
-                        </div>
+                        <h6 class="fw-bold text-muted border-bottom pb-2 mb-3 mt-4">連絡先情報（契約者のみ公開）</h6>
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">担当者名（本名）</label>
@@ -97,15 +85,62 @@
                                 {{ form.contact_email }}
                             </div>
                         </div>
+
                         <h6 class="fw-bold text-muted border-bottom pb-2 mb-3 mt-4">画像設定</h6>
                         <div class="mb-3">
                             <label class="form-label fw-bold">プロフィール画像</label>
                             {{ form.avatar }}
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">本人確認書類（非公開）</label>
-                            {{ form.id_card_image }}
+
+                        <!-- ★★★ ここから改善：本人確認書類欄 ★★★ -->
+                        <div class="card border-warning mb-4">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3">
+                                    <i class="bi bi-shield-check text-warning"></i> 本人確認書類（非公開）
+                                </h6>
+                                
+                                {% if user.profile.is_verified %}
+                                    <!-- 本人確認済みの場合 -->
+                                    <div class="alert alert-success mb-3" role="alert">
+                                        <i class="bi bi-check-circle-fill me-2"></i>
+                                        <strong>本人確認が完了しています!</strong>
+                                    </div>
+                                {% else %}
+                                    <!-- 未確認の場合 -->
+                                    <div class="alert alert-warning mb-3" role="alert">
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                        <strong>本人確認がまだ完了していません</strong>
+                                    </div>
+                                    
+                                    <div class="mb-3 p-3 bg-light rounded-3">
+                                        <p class="mb-2 fw-bold">本人確認を完了すると:</p>
+                                        <ul class="small mb-0">
+                                            <li>案件への応募上限がUP</li>
+                                            <li>「本人確認済」バッジが表示されます</li>
+                                            <li>『闇市(特別スカウト)会場』参加資格を獲得</li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="text-center mb-3">
+                                        <a href="{% url 'identity_verification_guide' %}" class="btn btn-outline-primary btn-sm rounded-pill">
+                                            <i class="bi bi-info-circle"></i> 本人確認について詳しく見る
+                                        </a>
+                                    </div>
+                                {% endif %}
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small">アップロード可能な書類:</label>
+                                    <p class="small text-muted mb-2">運転免許証 / マイナンバーカード / パスポート</p>
+                                    {{ form.id_card_image }}
+                                </div>
+
+                                <div class="alert alert-info small mb-0" role="alert">
+                                    <i class="bi bi-lock-fill me-1"></i>
+                                    <strong>セキュリティ:</strong> アップロードされた書類はAmazon AWS(世界最高水準のセキュリティ)で暗号化して保管されます。個人情報は運営以外に公開されません。
+                                </div>
+                            </div>
                         </div>
+                        <!-- ★★★ 改善ここまで ★★★ -->
 
                         <div class="d-grid gap-2 mt-5">
                             <button type="submit" class="btn btn-primary rounded-pill py-2 fw-bold shadow-sm">
