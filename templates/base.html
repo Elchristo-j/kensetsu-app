@@ -9,20 +9,17 @@
     
     <style>
         :root { --sumi-color: #15151a; --rankup-blue: #0066ff; }
-        /* ▼▼ スマホアプリのスワイプ戻り(エッジジェスチャー)を復活・維持する設定 ▼▼ */
         html {
-            overscroll-behavior-x: auto !important; /* OS標準のスワイプを許可 */
+            overscroll-behavior-x: auto !important;
         }
         body {
             max-width: 100%;
-            /* hiddenはiOSのスワイプを殺すため、必ず clip を使います */
             overflow-x: clip !important; 
             overscroll-behavior-x: auto !important;
             font-family: "Hiragino Sans", "Meiryo", sans-serif; 
             background-color: #f4f5f7; 
             color: var(--sumi-color); 
         }
-        /* ▲▲ ここまで ▲▲ */
         
         .bg-sumi { background-color: var(--sumi-color) !important; }
         .text-sumi { color: var(--sumi-color) !important; }
@@ -33,7 +30,6 @@
         .brand-title { font-weight: bold; font-size: 1.1rem; }
         .brand-sub { font-size: 0.65rem; opacity: 0.7; font-weight: normal; margin-top: 1px; }
 
-        /* スマホ用ロゴ調整 */
         @media (max-width: 576px) {
             .brand-title { font-size: 0.9rem; }
             .brand-sub { font-size: 0.55rem; }
@@ -44,7 +40,6 @@
         
         .rank-badge { font-size: 0.75rem; padding: 0.25em 0.6em; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
         
-        /* ▼▼▼ チタンブルーのプラチナバッジ ▼▼▼ */
         .badge-platinum { background: linear-gradient(180deg, #1f5f99, #6bdaff, #1f5f99, #17337a) !important; color: white !important; text-transform: uppercase; }
         .badge-gold { background: linear-gradient(135deg, #ffd700, #ff8c00); color: white; }
         .badge-silver { background: linear-gradient(135deg, #c0c0c0, #909090); color: white; }
@@ -117,13 +112,10 @@
             </div>
         </div>
     </nav>
-    
-    <!-- ★★★ 修正: py-2 → py-3 に変更(高さを増やす) ★★★ -->
-    <div class="text-white text-center py-3 shadow-sm" style="background: linear-gradient(45deg, #ff357a, #ff9f43); font-size: 0.9rem; line-height: 1.4;">
+    <div class="text-white text-center py-2 shadow-sm" style="background: linear-gradient(45deg, #ff357a, #ff9f43); font-size: 0.9rem;">
         <strong>🎉【iOS / Android アプリ正式リリース完了】🎉</strong><br>
-        すべての機能が完全無料でご利用いただけます。現場の新しい繋がりを今すぐ始めましょう!
+        すべての機能が完全無料でご利用いただけます。現場の新しい繋がりを今すぐ始めましょう！
     </div>
-    <!-- ★★★ 修正ここまで ★★★ -->
     
     <div class="main-content flex-grow-1">
         {% if messages %}
@@ -156,17 +148,16 @@
                 </div>
 
                 <div class="col-md-3">
-                    <h6 class="fw-bold mb-3">SERVICE</h6>
+                    <h6 class="fw-bold text-uppercase mb-3 border-bottom border-secondary pb-2 d-inline-block">Service</h6>
                     <ul class="list-unstyled small">
-                        <li class="mb-2"><a href="{% url 'service_info' %}" class="text-white-50 text-decoration-none">サービス紹介</a></li>
-                        <li class="mb-2"><a href="{% url 'about' %}" class="text-white-50 text-decoration-none">運営者情報</a></li>
+                        <li class="mb-2"><a href="{% url 'about' %}" class="text-white-50 text-decoration-none">運営者情報・サービス紹介</a></li>
                         <li class="mb-2"><a href="{% url 'guide_view' %}" class="text-white-50 text-decoration-none">ご利用ガイド</a></li>
                         <li class="mb-2"><a href="{% url 'contact' %}" class="text-white-50 text-decoration-none">お問い合わせ</a></li>
                     </ul>
                 </div>
 
                 <div class="col-md-3">
-                    <h6 class="fw-bold mb-3">LEGAL</h6>
+                    <h6 class="fw-bold text-uppercase mb-3 border-bottom border-secondary pb-2 d-inline-block">Legal</h6>
                     <ul class="list-unstyled small">
                         <li class="mb-2"><a href="{% url 'terms' %}" class="text-white-50 text-decoration-none">利用規約</a></li>
                         <li class="mb-2"><a href="{% url 'privacy' %}" class="text-white-50 text-decoration-none">プライバシーポリシー</a></li>
