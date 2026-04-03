@@ -66,10 +66,10 @@
                             </div>
                         </div>
 
-                        <h6 class="fw-bold text-muted border-bottom pb-2 mb-3 mt-4">連絡先情報（契約者のみ公開）</h6>
+                        <h6 class="fw-bold text-muted border-bottom pb-2 mb-3 mt-4">連絡先情報(契約者のみ公開)</h6>
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">担当者名（本名）</label>
+                                <label class="form-label fw-bold">担当者名(本名)</label>
                                 {{ form.real_name }}
                             </div>
                             <div class="col-md-6">
@@ -92,11 +92,11 @@
                             {{ form.avatar }}
                         </div>
 
-                        <!-- ★★★ ここから改善：本人確認書類欄 ★★★ -->
+                        <!-- ★★★ ここから改善:本人確認書類欄 ★★★ -->
                         <div class="card border-warning mb-4">
                             <div class="card-body">
                                 <h6 class="fw-bold mb-3">
-                                    <i class="bi bi-shield-check text-warning"></i> 本人確認書類（非公開）
+                                    <i class="bi bi-shield-check text-warning"></i> 本人確認書類(非公開)
                                 </h6>
                                 
                                 {% if user.profile.is_verified %}
@@ -122,7 +122,8 @@
                                     </div>
 
                                     <div class="text-center mb-3">
-                                        <a href="{% url 'identity_verification_guide' %}" class="btn btn-outline-primary btn-sm rounded-pill">
+                                        <!-- ★★★ 修正:URLを確認してから設定 ★★★ -->
+                                        <a href="/identity-verification-guide/" class="btn btn-outline-primary btn-sm rounded-pill">
                                             <i class="bi bi-info-circle"></i> 本人確認について詳しく見る
                                         </a>
                                     </div>
