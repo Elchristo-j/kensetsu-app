@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    
+    <div class="text-center mb-5">
+        <h1 class="fw-bold display-5 mb-3">📋 本人確認について</h1>
+        <p class="lead text-muted">安心・安全なマッチングのために</p>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <h3 class="fw-bold mb-3"><i class="bi bi-shield-check text-success"></i> なぜ本人確認が必要?</h3>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>安心・安全なマッチングのため</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>なりすまし防止</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>企業側も安心して依頼できる</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <h3 class="fw-bold mb-4"><i class="bi bi-arrow-right-circle text-primary"></i> 本人確認の流れ</h3>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="text-center p-3 bg-light rounded-3">
+                        <div class="fs-2 fw-bold text-primary mb-2">1</div>
+                        <p class="small mb-0">マイページ<br>→「プロフィール編集」</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 bg-light rounded-3">
+                        <div class="fs-2 fw-bold text-primary mb-2">2</div>
+                        <p class="small mb-0">本人確認書類を<br>アップロード</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 bg-light rounded-3">
+                        <div class="fs-2 fw-bold text-primary mb-2">3</div>
+                        <p class="small mb-0">運営が確認<br>(24時間以内)</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 bg-success text-white rounded-3">
+                        <div class="fs-2 fw-bold mb-2">✓</div>
+                        <p class="small mb-0">ブロンズ会員に<br>昇格!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <h3 class="fw-bold mb-3"><i class="bi bi-file-earmark-text text-warning"></i> 使える書類</h3>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card h-100 border-success">
+                        <div class="card-body text-center">
+                            <i class="bi bi-credit-card-2-front fs-1 text-success mb-2"></i>
+                            <h5 class="fw-bold">運転免許証</h5>
+                            <p class="small text-muted">両面をアップロード</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-success">
+                        <div class="card-body text-center">
+                            <i class="bi bi-person-badge fs-1 text-success mb-2"></i>
+                            <h5 class="fw-bold">マイナンバーカード</h5>
+                            <p class="small text-muted">表面のみ</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-success">
+                        <div class="card-body text-center">
+                            <i class="bi bi-book fs-1 text-success mb-2"></i>
+                            <h5 class="fw-bold">パスポート</h5>
+                            <p class="small text-muted">顔写真ページ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-warning bg-opacity-10">
+        <div class="card-body p-4">
+            <h3 class="fw-bold mb-3"><i class="bi bi-star-fill text-warning"></i> ブロンズ会員の特典</h3>
+            <ul class="list-unstyled">
+                <li class="mb-3">
+                    <i class="bi bi-trophy-fill text-warning me-2"></i>
+                    <strong>案件への応募上限UP</strong>
+                    <p class="ms-4 small text-muted mb-0">より多くの案件に応募できるようになります</p>
+                </li>
+                <li class="mb-3">
+                    <i class="bi bi-patch-check-fill text-warning me-2"></i>
+                    <strong>プロフィールに「本人確認済」バッジ表示</strong>
+                    <p class="ms-4 small text-muted mb-0">信頼度が向上し、選ばれやすくなります</p>
+                </li>
+                <li class="mb-0">
+                    <i class="bi bi-eye-fill text-warning me-2"></i>
+                    <strong>『闇市(特別スカウト)会場』参加資格</strong>
+                    <p class="ms-4 small text-muted mb-0">限定案件や高単価案件にアクセスできます</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <h3 class="fw-bold mb-3"><i class="bi bi-lock-fill text-primary"></i> セキュリティについて</h3>
+            <div class="alert alert-info mb-3" role="alert">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <strong>Amazon AWS(世界最高水準のセキュリティ)で厳重に保管</strong>
+            </div>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="bi bi-shield-lock-fill text-primary me-2"></i>アップロードされた書類はAmazon AWSで暗号化して保存されます</li>
+                <li class="mb-2"><i class="bi bi-eye-slash-fill text-primary me-2"></i>個人情報は運営以外に公開されません</li>
+                <li class="mb-2"><i class="bi bi-lock-fill text-primary me-2"></i>本人確認完了後、書類データは暗号化されて管理されます</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <h3 class="fw-bold mb-3"><i class="bi bi-exclamation-triangle-fill text-danger"></i> 注意事項</h3>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="bi bi-check2 text-danger me-2"></i>書類全体がはっきり写っている画像をアップロードしてください</li>
+                <li class="mb-2"><i class="bi bi-x-circle-fill text-danger me-2"></i>マイナンバーカードは<strong>裏面(マイナンバー)は撮影しないでください</strong></li>
+                <li class="mb-2"><i class="bi bi-calendar-check text-danger me-2"></i>有効期限内の書類をご用意ください</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="text-center mt-5">
+        <a href="{% url 'edit_profile' %}" class="btn btn-warning btn-lg rounded-pill px-5 shadow">
+            <i class="bi bi-camera-fill me-2"></i>今すぐ本人確認をする
+        </a>
+        <p class="small text-muted mt-3">所要時間:約2分</p>
+    </div>
+
+</div>
+{% endblock %}
