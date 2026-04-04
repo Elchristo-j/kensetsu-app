@@ -117,7 +117,8 @@ class Profile(models.Model):
         start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         count = Job.objects.filter(created_by=self.user, created_at__gte=start_of_month).count()
         return count < limit
-
+        
+    @property
     def has_unread_notifications(self):
         return self.user.notifications.filter(is_read=False).exists()
 
