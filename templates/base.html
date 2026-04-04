@@ -59,6 +59,14 @@
                 <ul class="navbar-nav ms-auto align-items-lg-center">
                     {% if user.is_authenticated %}
                         <li class="nav-item">
+                            <a class="nav-link position-relative" href="/notifications/">
+                                <i class="bi bi-bell-fill"></i>
+                                {% if user.profile.has_unread_notifications %}
+                                    <span class="notification-dot"></span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="/search/"><i class="bi bi-search"></i> 案件を探す</a>
                         </li>
                         <li class="nav-item">
