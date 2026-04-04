@@ -72,13 +72,14 @@
                         <li class="nav-item">
                             <a class="nav-link position-relative" href="/mypage/">
                                 <i class="bi bi-person-circle"></i> マイページ
-                                {% if user.profile.membership_tier == 'platinum' %}
+                                
+                                {% if user.profile.rank == 'platinum' %}
                                     <span class="rank-badge badge-platinum">PLATINUM</span>
-                                {% elif user.profile.membership_tier == 'gold' %}
+                                {% elif user.profile.rank == 'gold' %}
                                     <span class="rank-badge badge-gold">GOLD</span>
-                                {% elif user.profile.membership_tier == 'silver' %}
+                                {% elif user.profile.rank == 'silver' %}
                                     <span class="rank-badge badge-silver">SILVER</span>
-                                {% elif user.profile.is_verified %}
+                                {% elif user.profile.rank == 'bronze' %}
                                     <span class="rank-badge badge-bronze">BRONZE</span>
                                 {% endif %}
                             </a>
