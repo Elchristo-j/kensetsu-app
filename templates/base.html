@@ -24,6 +24,22 @@
         .navbar-dark .navbar-nav .nav-link { color: #ffffff !important; font-weight: 600; }
         .main-content { flex: 1 0 auto; }
         footer { flex-shrink: 0; }
+        
+        .rank-badge { font-size: 0.75rem; padding: 0.25em 0.6em; border-radius: 4px; margin-left: 8px; }
+        .badge-platinum { background: linear-gradient(180deg, #1f5f99, #6bdaff, #1f5f99, #17337a) !important; color: white !important; }
+        .badge-gold { background: linear-gradient(135deg, #ffd700, #ff8c00); color: white; }
+        .badge-silver { background: linear-gradient(135deg, #c0c0c0, #909090); color: white; }
+        .badge-bronze { background: linear-gradient(135deg, #cd7f32, #8b4513); color: white; }
+        
+        .notification-dot {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            background-color: #dc3545;
+            border-radius: 50%;
+        }
     </style>
 </head>
 <body>
@@ -46,7 +62,18 @@
                             <a class="nav-link" href="/jobs/"><i class="bi bi-search"></i> 案件を探す</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/mypage/"><i class="bi bi-person-circle"></i> マイページ</a>
+                            <a class="nav-link position-relative" href="/mypage/">
+                                <i class="bi bi-person-circle"></i> マイページ
+                                {% if user.profile.membership_tier == 'platinum' %}
+                                    <span class="rank-badge badge-platinum">PLATINUM</span>
+                                {% elif user.profile.membership_tier == 'gold' %}
+                                    <span class="rank-badge badge-gold">GOLD</span>
+                                {% elif user.profile.membership_tier == 'silver' %}
+                                    <span class="rank-badge badge-silver">SILVER</span>
+                                {% elif user.profile.is_verified %}
+                                    <span class="rank-badge badge-bronze">BRONZE</span>
+                                {% endif %}
+                            </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/guide/"><i class="bi bi-book"></i> ガイド</a>
