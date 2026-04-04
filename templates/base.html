@@ -87,7 +87,10 @@
                             <a class="nav-link" href="/guide/"><i class="bi bi-book"></i> ガイド</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/accounts/logout/">ログアウト</a>
+                            <form action="/accounts/logout/" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="nav-link btn btn-link" style="color:#ffffff !important; font-weight:600;">ログアウト</button>
+                            </form>
                         </li>
                     {% else %}
                         <li class="nav-item">
