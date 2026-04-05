@@ -214,7 +214,7 @@
     <div class="row g-4">
         {% for job in latest_jobs %}
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 border-0 rounded-4 position-relative card-rank-{{ job.created_by.profile.display_rank|lower }} shadow-sm job-card-hover">
+            <div class="card h-100 border-0 rounded-4 position-relative card-rank-{{ job.created_by.profile.rank|lower }} shadow-sm job-card-hover">
                 {% if job.is_new %}
                     <span class="badge-new">NEW!!</span>
                 {% endif %}
@@ -252,8 +252,8 @@
                             </div>
                         {% endif %}
                         <div class="mt-2">
-                            <span class="badge rank-badge badge-{{ job.created_by.profile.display_rank|lower }}">
-                                {{ job.created_by.profile.display_rank }}会員
+                            <span class="badge rank-badge badge-{{ job.created_by.profile.rank|lower }}">
+                                {{ job.created_by.profile.rank }}会員
                             </span>
                         </div>
                     </div>
