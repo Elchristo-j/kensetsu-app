@@ -95,7 +95,7 @@ def home(request):
     favorites = []
     if request.user.is_authenticated:
         favorites = request.user.favorite_areas.all()
-    context = {'jobs': jobs, 'prefectures': PREFECTURES, 'categories': JOB_CATEGORIES, 'favorites': favorites, 'news_list': news_list}
+    context = {'jobs': jobs, 'latest_jobs': jobs, 'prefectures': PREFECTURES, 'categories': JOB_CATEGORIES, 'favorites': favorites, 'news_list': news_list}
     return render(request, 'jobs/home.html', context)
 
 def job_list(request):
