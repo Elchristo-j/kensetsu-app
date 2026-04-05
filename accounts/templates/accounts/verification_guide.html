@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5" style="max-width: 800px;">
+
+    <h2 class="fw-bold mb-2 text-center">本人確認ガイド</h2>
+    <p class="text-muted text-center mb-5">信頼できる現場づくりのために</p>
+
+    <!-- なぜ必要か -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 p-4" style="background: linear-gradient(135deg, #fff9f0, #fff);">
+        <h5 class="fw-bold mb-3"><i class="bi bi-question-circle-fill text-warning me-2"></i>なぜ本人確認が必要なの？</h5>
+        <p class="text-muted mb-0">
+            El'christoは現場の職人・手元と発注者が直接つながるサービスです。<br>
+            本人確認を行うことで、<strong>お互いの安心・信頼を確保</strong>し、
+            安全に取引できる環境を守っています。
+        </p>
+    </div>
+
+    <!-- 4ステップ -->
+    <h5 class="fw-bold mb-3"><i class="bi bi-list-ol text-primary me-2"></i>本人確認の流れ（4ステップ）</h5>
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-primary rounded-pill me-2">1</span>
+                    <strong>マイページを開く</strong>
+                </div>
+                <p class="text-muted small mb-0">ナビバーの「マイページ」からプロフィール編集画面へ進みます。</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-primary rounded-pill me-2">2</span>
+                    <strong>本人確認書類を選ぶ</strong>
+                </div>
+                <p class="text-muted small mb-0">下記の書類からいずれか1点を用意してください。</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-primary rounded-pill me-2">3</span>
+                    <strong>画像をアップロード</strong>
+                </div>
+                <p class="text-muted small mb-0">プロフィール編集画面の「本人確認書類」欄から画像を送信します。</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-success rounded-pill me-2">4</span>
+                    <strong>審査完了 → BRONZE昇格</strong>
+                </div>
+                <p class="text-muted small mb-0">運営が確認後、BRONZEランクに昇格します。通常1〜2営業日以内。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 使える書類 -->
+    <h5 class="fw-bold mb-3"><i class="bi bi-card-list text-success me-2"></i>使える本人確認書類</h5>
+    <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
+        <div class="row g-2">
+            <div class="col-md-4">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <span>運転免許証</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <span>マイナンバーカード</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <span>パスポート</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <span>健康保険証</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <span>在留カード</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BRONZE特典 -->
+    <h5 class="fw-bold mb-3"><i class="bi bi-trophy-fill text-warning me-2"></i>BRONZE会員の特典</h5>
+    <div class="card border-0 shadow-sm rounded-4 mb-4 p-4" style="background: linear-gradient(135deg, #fff8f0, #fff);">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-star-fill text-warning me-2 mt-1"></i>
+                    <div>
+                        <strong>月10件まで応募可能</strong>
+                        <p class="text-muted small mb-0">IRONランクの3件から大幅アップ</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-star-fill text-warning me-2 mt-1"></i>
+                    <div>
+                        <strong>「闇市」へのアクセス</strong>
+                        <p class="text-muted small mb-0">空きスケジュールを公開している職人を直接スカウトできる特別会場</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-star-fill text-warning me-2 mt-1"></i>
+                    <div>
+                        <strong>信頼バッジの表示</strong>
+                        <p class="text-muted small mb-0">プロフィールにBRONZEバッジが表示され信頼度アップ</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- セキュリティ -->
+    <div class="card border-0 shadow-sm rounded-4 mb-5 p-4" style="background: linear-gradient(135deg, #f0f4ff, #fff);">
+        <h5 class="fw-bold mb-3"><i class="bi bi-shield-lock-fill text-primary me-2"></i>書類の安全な管理について</h5>
+        <p class="text-muted mb-0">
+            アップロードされた本人確認書類は、<strong>AWS S3（暗号化ストレージ）</strong>にて厳重に管理しています。
+            審査完了後は運営のみがアクセスでき、第三者に開示されることは一切ありません。
+        </p>
+    </div>
+
+    <!-- CTAボタン -->
+    <div class="text-center">
+        <a href="{% url 'profile_edit' %}" class="btn btn-warning fw-bold rounded-pill px-5 py-3 shadow">
+            <i class="bi bi-person-check-fill me-2"></i>今すぐ本人確認を始める
+        </a>
+    </div>
+
+</div>
+{% endblock %}
