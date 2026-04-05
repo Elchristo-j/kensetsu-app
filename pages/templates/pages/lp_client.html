@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>急な欠員でも翌日から動ける職人が見つかる | 建設マッチング エルクリスト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dark: #8A6A1E;
+    --black: #0D0D0D;
+    --dark: #141414;
+    --dark2: #1C1C1C;
+    --dark3: #242424;
+    --white: #F5F3EE;
+    --gray: #888;
+    --serif: 'Noto Serif JP', serif;
+    --sans: 'Noto Sans JP', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--sans);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  /* ナビ */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    background: rgba(13,13,13,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 0.5px solid rgba(201,168,76,0.2);
+  }
+  .nav-logo {
+    font-family: var(--serif);
+    font-size: 1rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    text-decoration: none;
+  }
+  .nav-cta {
+    background: var(--gold);
+    color: var(--black);
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding: 0.5rem 1.2rem;
+    border-radius: 2px;
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: background 0.2s;
+  }
+  .nav-cta:hover { background: var(--gold-light); }
+
+  /* ヒーロー */
+  .hero {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 7rem 2rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 80% 30%, rgba(201,168,76,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 10% 80%, rgba(201,168,76,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+  }
+  .hero-headline {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 6vw, 3.8rem);
+    font-weight: 900;
+    line-height: 1.25;
+    margin-bottom: 0.5rem;
+  }
+  .hero-headline span {
+    color: var(--gold);
+    border-bottom: 2px solid var(--gold-dark);
+    padding-bottom: 2px;
+  }
+  .hero-sub {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: rgba(245,243,238,0.75);
+    margin-top: 1.25rem;
+    max-width: 480px;
+    line-height: 1.8;
+  }
+  .hero-badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+  .badge {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.9rem;
+    border: 0.5px solid var(--gold-dark);
+    color: var(--gold-light);
+    border-radius: 2px;
+    letter-spacing: 0.05em;
+  }
+  .hero-cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2.5rem;
+  }
+  .btn-primary {
+    background: var(--gold);
+    color: var(--black);
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 1.05rem;
+    padding: 1rem 2.5rem;
+    border-radius: 2px;
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: background 0.2s, transform 0.15s;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .btn-ghost {
+    color: var(--gold);
+    font-size: 0.88rem;
+    text-decoration: none;
+    border-bottom: 0.5px solid var(--gold-dark);
+    padding-bottom: 2px;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+  }
+  .btn-ghost:hover { color: var(--gold-light); }
+  .hero-note {
+    font-size: 0.75rem;
+    color: var(--gray);
+    margin-top: 0.75rem;
+  }
+
+  /* 区切り線 */
+  .divider {
+    border: none;
+    border-top: 0.5px solid rgba(201,168,76,0.15);
+    margin: 0;
+  }
+
+  /* セクション共通 */
+  section { padding: 5rem 2rem; max-width: 800px; margin: 0 auto; }
+  .section-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: var(--serif);
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 1.5rem;
+  }
+
+  /* 課題セクション */
+  .pain-list { list-style: none; display: flex; flex-direction: column; gap: 1.25rem; margin-top: 2rem; }
+  .pain-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: var(--dark2);
+    border-left: 2px solid var(--gold-dark);
+    border-radius: 0 4px 4px 0;
+  }
+  .pain-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .pain-title { font-weight: 700; margin-bottom: 0.25rem; font-size: 0.95rem; }
+  .pain-desc { font-size: 0.88rem; color: rgba(245,243,238,0.65); line-height: 1.6; }
+
+  /* 解決セクション */
+  .solution-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+    margin-top: 2rem;
+  }
+  .solution-card {
+    background: var(--dark2);
+    border: 0.5px solid rgba(201,168,76,0.2);
+    border-radius: 4px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .solution-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold));
+  }
+  .solution-num {
+    font-family: var(--serif);
+    font-size: 2rem;
+    color: rgba(201,168,76,0.2);
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 0.75rem;
+  }
+  .solution-title { font-weight: 700; margin-bottom: 0.5rem; font-size: 0.95rem; }
+  .solution-desc { font-size: 0.83rem; color: rgba(245,243,238,0.6); line-height: 1.6; }
+
+  /* 安心セクション */
+  .trust-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  .trust-item {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    background: var(--dark2);
+    border-radius: 4px;
+    border: 0.5px solid rgba(201,168,76,0.15);
+  }
+  .trust-num {
+    font-family: var(--serif);
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  .trust-label { font-size: 0.8rem; color: rgba(245,243,238,0.6); }
+
+  /* ステップ */
+  .steps { display: flex; flex-direction: column; gap: 0; margin-top: 2rem; }
+  .step {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+    border-bottom: 0.5px solid rgba(201,168,76,0.1);
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: transparent;
+    border: 1.5px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--serif);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+  .step-title { font-weight: 700; margin-bottom: 0.25rem; }
+  .step-desc { font-size: 0.88rem; color: rgba(245,243,238,0.6); }
+
+  /* CTA */
+  .cta-section {
+    padding: 5rem 2rem;
+    text-align: center;
+    background: var(--dark2);
+    border-top: 0.5px solid rgba(201,168,76,0.15);
+    border-bottom: 0.5px solid rgba(201,168,76,0.15);
+  }
+  .cta-section .section-title { margin: 0 auto 0.75rem; }
+  .cta-sub { color: rgba(245,243,238,0.6); margin-bottom: 2.5rem; font-size: 0.92rem; }
+  .cta-note { font-size: 0.75rem; color: var(--gray); margin-top: 0.75rem; }
+
+  /* フッター */
+  footer {
+    text-align: center;
+    padding: 2.5rem 2rem;
+    font-size: 0.8rem;
+    color: var(--gray);
+    border-top: 0.5px solid rgba(201,168,76,0.1);
+  }
+  footer a { color: var(--gold-dark); text-decoration: none; }
+  footer a:hover { color: var(--gold); }
+
+  /* アニメーション */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero-eyebrow { animation: fadeUp 0.6s ease both; }
+  .hero-headline { animation: fadeUp 0.6s 0.1s ease both; }
+  .hero-sub { animation: fadeUp 0.6s 0.2s ease both; }
+  .hero-badge-row { animation: fadeUp 0.6s 0.3s ease both; }
+  .hero-cta-row { animation: fadeUp 0.6s 0.4s ease both; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="https://el-christo.jp" class="nav-logo">El'christo</a>
+  <a href="https://el-christo.jp/accounts/signup/" class="nav-cta">まず登録する</a>
+</nav>
+
+<!-- ヒーロー -->
+<div class="hero">
+  <p class="hero-eyebrow">建設マッチング &mdash; El'christo</p>
+  <h1 class="hero-headline">
+    急な欠員でも、<br>
+    <span>翌日から動ける職人</span>が<br>
+    見つかる。
+  </h1>
+  <p class="hero-sub">
+    電話1本で業者を探す時代は終わり。<br>
+    エルクリストなら、必要な職種・エリアの職人に<br>
+    今すぐ直接アクセスできます。
+  </p>
+  <div class="hero-badge-row">
+    <span class="badge">成約手数料 ¥0</span>
+    <span class="badge">登録無料</span>
+    <span class="badge">月額¥550〜</span>
+    <span class="badge">iOS / Android 対応</span>
+  </div>
+  <div class="hero-cta-row">
+    <a href="https://el-christo.jp/accounts/signup/" class="btn-primary">まず無料で登録する</a>
+    <a href="https://el-christo.jp/search/" class="btn-ghost">職人を検索してみる →</a>
+  </div>
+  <p class="hero-note">※ 登録無料・案件掲載はSILVERプラン（¥550/月）から・成約手数料なし</p>
+</div>
+
+<!-- キャンペーンバナー -->
+<div style="
+  background: linear-gradient(135deg, rgba(201,168,76,0.15) 0%, rgba(201,168,76,0.05) 100%);
+  border-top: 1px solid rgba(201,168,76,0.4);
+  border-bottom: 1px solid rgba(201,168,76,0.4);
+  padding: 1.5rem 2rem;
+  text-align: center;
+">
+  <p style="
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  ">🎁 期間限定キャンペーン &mdash; 5月31日まで</p>
+  <p style="
+    font-family: var(--serif);
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+  ">SILVER・GOLDプランの月額料金が<span style="color: var(--gold);">今だけ無料</span></p>
+  <p style="font-size: 0.83rem; color: rgba(245,243,238,0.6); line-height: 1.7;">
+    通常 SILVER ¥550/月・GOLD ¥2,200/月 → <span style="color: var(--gold-light); font-weight: 700;">¥0</span>（5月31日まで）<br>
+    この機会に、まず無料で案件掲載をお試しください。
+  </p>
+</div>
+
+<hr class="divider">
+
+<!-- 課題 -->
+<section>
+  <p class="section-label">Problem</p>
+  <h2 class="section-title">こんな困りごと、<br>ありませんか？</h2>
+  <ul class="pain-list">
+    <li class="pain-item">
+      <span class="pain-icon">🚨</span>
+      <div>
+        <p class="pain-title">急な欠員に対応できない</p>
+        <p class="pain-desc">「明日から入る予定の職人が急キャン…」電話をかけまくっても誰も捕まらない。</p>
+      </div>
+    </li>
+    <li class="pain-item">
+      <span class="pain-icon">💸</span>
+      <div>
+        <p class="pain-title">中間業者への手数料がかさむ</p>
+        <p class="pain-desc">紹介会社や派遣を使うたびに抜かれる。直接つながれれば、もっとコストを下げられるのに。</p>
+      </div>
+    </li>
+    <li class="pain-item">
+      <span class="pain-icon">🔍</span>
+      <div>
+        <p class="pain-title">特定の職種が全然見つからない</p>
+        <p class="pain-desc">鳶・足場・電気工…人脈が限られていると、必要な職種にたどり着けない。</p>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<hr class="divider">
+
+<!-- 解決 -->
+<section>
+  <p class="section-label">Solution</p>
+  <h2 class="section-title">エルクリストで<br>すべて解決します。</h2>
+  <div class="solution-grid">
+    <div class="solution-card">
+      <div class="solution-num">01</div>
+      <p class="solution-title">直接マッチング</p>
+      <p class="solution-desc">中間業者なし。発注者と職人が直接やり取りするから、手数料ゼロ・スピード最速。</p>
+    </div>
+    <div class="solution-card">
+      <div class="solution-num">02</div>
+      <p class="solution-title">全国の職種に対応</p>
+      <p class="solution-desc">大工・鳶・電気・設備・塗装・クロス…15以上の職種から必要な人材を検索できます。</p>
+    </div>
+    <div class="solution-card">
+      <div class="solution-num">03</div>
+      <p class="solution-title">今すぐ使える</p>
+      <p class="solution-desc">登録1分。案件を出せばすぐに職人側から応募が届きます。スマホアプリでどこでも操作可。</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- 使い方 -->
+<section>
+  <p class="section-label">How it works</p>
+  <h2 class="section-title">たった3ステップで<br>職人が見つかります。</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <p class="step-title">無料登録（1分）</p>
+        <p class="step-desc">メールアドレスで登録完了。まずは職人の検索・閲覧がすぐにできます。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <p class="step-title">SILVERプランへアップグレード</p>
+        <p class="step-desc">¥550/月から案件の掲載が可能に。中間業者への紹介料と比べれば圧倒的にコストが低い。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <p class="step-title">職人から応募が届く</p>
+        <p class="step-desc">マッチした職人から直接連絡。成約手数料は一切かかりません。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- 料金 -->
+<section>
+  <p class="section-label">Pricing</p>
+  <h2 class="section-title">シンプルな料金体系。<br>成約しても追加費用なし。</h2>
+  <p style="color: rgba(245,243,238,0.65); margin-bottom: 1.5rem; font-size:0.92rem;">登録・職人検索・閲覧は無料。案件の掲載・募集はSILVER以上のプランから。</p>
+  <div class="trust-grid">
+    <div class="trust-item">
+      <span class="trust-num">¥0</span>
+      <span class="trust-label">登録費用</span>
+    </div>
+    <div class="trust-item">
+      <span class="trust-num">¥550<span style="font-size:1rem; font-weight:400;">/月〜</span></span>
+      <span class="trust-label">案件掲載（SILVERプラン）</span>
+    </div>
+    <div class="trust-item">
+      <span class="trust-num">¥0</span>
+      <span class="trust-label">成約手数料</span>
+    </div>
+    <div class="trust-item">
+      <span class="trust-num">¥0</span>
+      <span class="trust-label">中間マージン</span>
+    </div>
+  </div>
+  <p style="font-size:0.78rem; color: var(--gray); margin-top:1.25rem;">※ 紹介会社への手数料が1件あたり数万円かかるケースと比べると、月¥550は圧倒的に低コストです。</p>
+  <div style="
+    margin-top: 1.25rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid rgba(201,168,76,0.35);
+    border-radius: 4px;
+    background: rgba(201,168,76,0.06);
+    font-size: 0.85rem;
+    color: var(--gold-light);
+    line-height: 1.7;
+  ">
+    🎁 <strong>5月31日まで：SILVER・GOLDプラン月額無料キャンペーン実施中。</strong><br>
+    <span style="color: rgba(245,243,238,0.6);">今すぐ登録して、無料期間中に案件掲載をお試しください。</span>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <p class="section-label" style="text-align:center;">Get Started</p>
+  <h2 class="section-title">職人探しを、<br>もっとシンプルに。</h2>
+  <p class="cta-sub">まず無料で登録して、職人を検索してみてください</p>
+  <a href="https://el-christo.jp/accounts/signup/" class="btn-primary">無料で登録する</a>
+  <p class="cta-note">🎁 5月31日までSILVER・GOLDプラン月額無料 &ensp;|&ensp; 成約手数料なし</p>
+</div>
+
+<footer>
+  <p style="margin-bottom:0.75rem;">
+    <a href="https://el-christo.jp/about/">運営者情報</a>&ensp;|&ensp;
+    <a href="https://el-christo.jp/terms/">利用規約</a>&ensp;|&ensp;
+    <a href="https://el-christo.jp/privacy/">プライバシーポリシー</a>&ensp;|&ensp;
+    <a href="https://el-christo.jp/contact/">お問い合わせ</a>
+  </p>
+  <p>&copy; 2026 El'christo. All Rights Reserved.</p>
+</footer>
+
+</body>
+</html>

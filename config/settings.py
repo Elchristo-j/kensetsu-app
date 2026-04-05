@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     # ... 自作アプリ ...
     'jobs',
     'accounts',
+    'pages',
 ]
 
 MIDDLEWARE = [

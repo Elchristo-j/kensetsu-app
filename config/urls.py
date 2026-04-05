@@ -20,6 +20,9 @@ urlpatterns = [
     path('operator/reject/<int:user_id>/', job_views.reject_profile, name='reject_profile'),
 
     path('profile/', account_views.mypage, name='mypage'), # ★追加2：マイページへの通路
+
+     # 既存のパターンはそのまま
+    path('', include('pages.urls')),  # ← これを追加
 ]
 
 # 画像表示設定
