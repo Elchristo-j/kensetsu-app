@@ -32,4 +32,6 @@ urlpatterns = [
 
     # accounts/urls.py の urlpatterns の中に追加
     path('guide/cancellation-info/', views.delete_guide_only, name='delete_guide_only'),
+
+    path('verification-guide/', views.verification_guide, name='verification_guide'),
 ]

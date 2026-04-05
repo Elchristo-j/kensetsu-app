@@ -368,3 +368,6 @@ def account_delete(request):
 @login_required
 def delete_guide_only(request):
     return render(request, 'accounts/delete_guide_only.html')
+
+def verification_guide(request):
+    return render(request, 'accounts/verification_guide.html')
