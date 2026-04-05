@@ -203,15 +203,8 @@ if 'RENDER' in os.environ:
 # Stripe設定
 # ==========================================
 
-STRIPE_PUBLISHABLE_KEY = os.environ.get(
-    'STRIPE_PUBLISHABLE_KEY', 
-    'pk_test_51R4us3DADu8qJkAGldBZjQUaJGvQuxfXRlGpDcVjrTrbrpyfDIibFKymQmHYccC9XBIBd7zdZfw0ekDPV92R3hZX009p1pDn4g'
-)
-
-STRIPE_SECRET_KEY = os.environ.get(
-    'STRIPE_SECRET_KEY', 
-    'sk_test_51R4us3DADu8qJkAGUGryys0UPY8HNJCwtIl40CMS3H80S2I5MciV8RmUUzYnxgBZvWeK9a7bkWGFhUzISJUeVZrk000PyPj0UO'
-)
+STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY')
+STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
 
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
 
