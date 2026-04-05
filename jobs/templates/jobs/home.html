@@ -42,6 +42,32 @@
         box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
         filter: brightness(1.1);
     }
+    .card-rank-platinum { border: 2px solid #00d2ff; }
+    .card-rank-gold { border: 2px solid #f1c40f; }
+    .card-rank-silver { border: 2px solid #95a5a6; }
+    .badge-new {
+        position: absolute; top: -10px; left: -10px;
+        background: linear-gradient(45deg, #ff357a, #fff172);
+        color: white; font-weight: bold; padding: 5px 10px;
+        border-radius: 50px; font-size: 0.8rem; z-index: 10;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .company-name { font-size: 0.9rem; color: #333; font-weight: bold; }
+    .job-price { color: #15151a; font-weight: 800; font-size: 1.25rem; }
+    .job-card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .job-card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+        z-index: 5;
+    }
+    .card-rank-gold.job-card-hover:hover {
+        box-shadow: 0 10px 25px rgba(241, 196, 15, 0.5) !important;
+    }
+    .card-rank-platinum.job-card-hover:hover {
+        box-shadow: 0 10px 25px rgba(0, 210, 255, 0.5) !important;
+    }
 </style>
 
 <div class="hero-section text-white">
@@ -177,41 +203,74 @@
     </div>
 
     {% if latest_jobs %}
-        <div class="row g-3">
-            {% for job in latest_jobs %}
-            <div class="col-md-6 col-lg-4">
-                <a href="{% url 'job_detail' job.id %}" class="text-decoration-none">
-                    <div class="card h-100 border-0 shadow-sm hover-lift" style="transition: all 0.3s;">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <span class="badge bg-primary rounded-pill small">{{ job.get_category_display }}</span>
-                                <small class="text-muted"><i class="bi bi-geo-alt-fill"></i> {{ job.get_prefecture_display }}</small>
-                            </div>
-                            <h5 class="card-title fw-bold mb-2 text-dark" style="min-height: 2.5rem;">{{ job.title }}</h5>
-                            <p class="card-text text-muted small mb-3" style="min-height: 3rem; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
-                                {{ job.description|truncatewords:15 }}
-                            </p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <span class="fw-bold text-success">¥{{ job.hourly_wage|floatformat:0 }}</span>
-                                    <small class="text-muted">/時間</small>
-                                </div>
-                                <small class="text-muted">
-                                    <i class="bi bi-calendar3"></i> {{ job.work_date|date:"n/j" }}
-                                </small>
+    <div class="row g-4">
+        {% for job in latest_jobs %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 rounded-4 position-relative card-rank-{{ job.created_by.profile.display_rank|lower }} shadow-sm job-card-hover">
+                {% if job.is_new %}
+                    <span class="badge-new">NEW!!</span>
+                {% endif %}
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-3 align-items-start">
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2">
+                            {{ job.get_category_display }}
+                        </span>
+                        <div class="text-end">
+                            <span class="badge bg-light text-dark border rounded-pill px-2 mb-1">
+                                {{ job.prefecture }}{{ job.city }}
+                            </span>
+                            <div class="text-muted" style="font-size: 0.75rem;">
+                                {{ job.created_at|custom_timesince }}
                             </div>
                         </div>
                     </div>
-                </a>
+                    <h5 class="fw-bold mb-2">
+                        <a href="{% url 'job_detail' job.id %}" class="text-decoration-none text-dark stretched-link">
+                            {{ job.title|truncatechars:20 }}
+                        </a>
+                    </h5>
+                    <div class="mb-3">
+                        <div class="company-name">
+                            <i class="bi bi-building"></i>
+                            {% if job.created_by.profile.company_name %}
+                                {{ job.created_by.profile.company_name }}
+                            {% else %}
+                                {{ job.created_by.username }}
+                            {% endif %}
+                        </div>
+                        {% if job.created_by.profile.position %}
+                            <div class="small text-muted ms-3 border-start ps-2 mt-1" style="font-size: 0.8rem;">
+                                {{ job.created_by.profile.position }}
+                            </div>
+                        {% endif %}
+                        <div class="mt-2">
+                            <span class="badge rank-badge badge-{{ job.created_by.profile.display_rank|lower }}">
+                                {{ job.created_by.profile.display_rank }}会員
+                            </span>
+                        </div>
+                    </div>
+                    <hr class="my-2" style="opacity: 0.1;">
+                    <div class="d-flex justify-content-between align-items-end mt-3">
+                        <div class="job-price">
+                            ¥{{ job.price|intcomma }} <small class="fw-normal fs-6">/ {{ job.get_unit_display }}</small>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted d-block" style="font-size: 0.7rem;">採用 / 募集</small>
+                            <span class="fw-bold">{{ job.recruitment_status }}</span>
+                            <small class="text-muted">人</small>
+                        </div>
+                    </div>
+                </div>
             </div>
-            {% endfor %}
         </div>
-    {% else %}
-        <div class="alert alert-light text-center py-5">
+        {% empty %}
+        <div class="col-12 text-center py-5">
             <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
             <p class="text-muted mb-0">現在募集中の案件はありません</p>
         </div>
-    {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}
 </div>
 
 {% if not user.is_authenticated %}
