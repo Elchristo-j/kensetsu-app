@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中抜きなし・直接取引で稼ぐ | 建設マッチング エルクリスト</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dark: #8A6A1E;
+    --black: #0D0D0D;
+    --dark: #141414;
+    --dark2: #1C1C1C;
+    --dark3: #242424;
+    --white: #F5F3EE;
+    --gray: #888;
+    --serif: 'Noto Serif JP', serif;
+    --sans: 'Noto Sans JP', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--sans);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    background: rgba(13,13,13,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 0.5px solid rgba(201,168,76,0.2);
+  }
+  .nav-logo {
+    font-family: var(--serif);
+    font-size: 1rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    text-decoration: none;
+  }
+  .nav-cta {
+    background: var(--gold);
+    color: var(--black);
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding: 0.5rem 1.2rem;
+    border-radius: 2px;
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: background 0.2s;
+  }
+  .nav-cta:hover { background: var(--gold-light); }
+
+  /* ヒーロー */
+  .hero {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 7rem 2rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse 50% 60% at 90% 20%, rgba(201,168,76,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 40% at 5% 70%, rgba(201,168,76,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+  }
+  .hero-headline {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 6vw, 3.8rem);
+    font-weight: 900;
+    line-height: 1.25;
+    margin-bottom: 0.5rem;
+  }
+  .hero-headline span {
+    color: var(--gold);
+    border-bottom: 2px solid var(--gold-dark);
+    padding-bottom: 2px;
+  }
+  .hero-sub {
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    color: rgba(245,243,238,0.75);
+    margin-top: 1.25rem;
+    max-width: 480px;
+    line-height: 1.85;
+  }
+  .hero-badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+  .badge {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.9rem;
+    border: 0.5px solid var(--gold-dark);
+    color: var(--gold-light);
+    border-radius: 2px;
+    letter-spacing: 0.05em;
+  }
+  .hero-cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2.5rem;
+  }
+  .btn-primary {
+    background: var(--gold);
+    color: var(--black);
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 1.05rem;
+    padding: 1rem 2.5rem;
+    border-radius: 2px;
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: background 0.2s, transform 0.15s;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .btn-ghost {
+    color: var(--gold);
+    font-size: 0.88rem;
+    text-decoration: none;
+    border-bottom: 0.5px solid var(--gold-dark);
+    padding-bottom: 2px;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+  }
+  .btn-ghost:hover { color: var(--gold-light); }
+  .hero-note { font-size: 0.75rem; color: var(--gray); margin-top: 0.75rem; }
+
+  .divider { border: none; border-top: 0.5px solid rgba(201,168,76,0.15); margin: 0; }
+
+  section { padding: 5rem 2rem; max-width: 800px; margin: 0 auto; }
+  .section-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: var(--serif);
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 1.5rem;
+  }
+
+  /* 稼げる仕組み */
+  .merit-list { list-style: none; display: flex; flex-direction: column; gap: 1.25rem; margin-top: 2rem; }
+  .merit-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: var(--dark2);
+    border-left: 2px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+  }
+  .merit-icon { font-size: 1.25rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .merit-title { font-weight: 700; margin-bottom: 0.25rem; font-size: 0.95rem; }
+  .merit-desc { font-size: 0.88rem; color: rgba(245,243,238,0.65); line-height: 1.6; }
+
+  /* 対応業種 */
+  .job-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+  .job-tag {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.85rem;
+    background: var(--dark2);
+    border: 0.5px solid rgba(201,168,76,0.2);
+    border-radius: 2px;
+    color: rgba(245,243,238,0.75);
+    letter-spacing: 0.03em;
+  }
+
+  /* ステップ */
+  .steps { display: flex; flex-direction: column; gap: 0; margin-top: 2rem; }
+  .step {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+    border-bottom: 0.5px solid rgba(201,168,76,0.1);
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: transparent;
+    border: 1.5px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--serif);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+  .step-title { font-weight: 700; margin-bottom: 0.25rem; }
+  .step-desc { font-size: 0.88rem; color: rgba(245,243,238,0.6); }
+
+  /* 比較 */
+  .compare-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; font-size: 0.88rem; }
+  .compare-table th, .compare-table td {
+    padding: 0.85rem 1rem;
+    border-bottom: 0.5px solid rgba(201,168,76,0.1);
+    text-align: center;
+  }
+  .compare-table th { color: var(--gold); font-weight: 500; font-size: 0.8rem; letter-spacing: 0.05em; }
+  .compare-table td:first-child { text-align: left; color: rgba(245,243,238,0.7); }
+  .compare-table .highlight { color: var(--gold); font-weight: 700; }
+  .compare-table .dim { color: var(--gray); }
+  .compare-table thead tr { border-bottom: 1px solid rgba(201,168,76,0.3); }
+
+  /* CTA */
+  .cta-section {
+    padding: 5rem 2rem;
+    text-align: center;
+    background: var(--dark2);
+    border-top: 0.5px solid rgba(201,168,76,0.15);
+    border-bottom: 0.5px solid rgba(201,168,76,0.15);
+  }
+  .cta-section .section-title { margin: 0 auto 0.75rem; }
+  .cta-sub { color: rgba(245,243,238,0.6); margin-bottom: 2.5rem; font-size: 0.92rem; }
+  .cta-note { font-size: 0.75rem; color: var(--gray); margin-top: 0.75rem; }
+
+  footer {
+    text-align: center;
+    padding: 2.5rem 2rem;
+    font-size: 0.8rem;
+    color: var(--gray);
+    border-top: 0.5px solid rgba(201,168,76,0.1);
+  }
+  footer a { color: var(--gold-dark); text-decoration: none; }
+  footer a:hover { color: var(--gold); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero-eyebrow { animation: fadeUp 0.6s ease both; }
+  .hero-headline { animation: fadeUp 0.6s 0.1s ease both; }
+  .hero-sub { animation: fadeUp 0.6s 0.2s ease both; }
+  .hero-badge-row { animation: fadeUp 0.6s 0.3s ease both; }
+  .hero-cta-row { animation: fadeUp 0.6s 0.4s ease both; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="https://el-christo.jp" class="nav-logo">El'christo</a>
+  <a href="https://el-christo.jp/accounts/signup/" class="nav-cta">無料で登録</a>
+</nav>
+
+<!-- ヒーロー -->
+<div class="hero">
+  <p class="hero-eyebrow">建設マッチング &mdash; El'christo</p>
+  <h1 class="hero-headline">
+    頑張った分だけ、<br>
+    <span>ちゃんと手元に残る</span>。<br>
+    中抜きなし、直接取引。
+  </h1>
+  <p class="hero-sub">
+    仲介業者に抜かれ続けるのは終わりにしませんか。<br>
+    エルクリストは元請け・発注者と直接つながれる<br>
+    建設マッチングプラットフォームです。
+  </p>
+  <div class="hero-badge-row">
+    <span class="badge">仲介手数料 ¥0</span>
+    <span class="badge">成約料 ¥0</span>
+    <span class="badge">スポット案件あり</span>
+    <span class="badge">iOS / Android 対応</span>
+  </div>
+  <div class="hero-cta-row">
+    <a href="https://el-christo.jp/accounts/signup/" class="btn-primary">無料でプロフィールを作る</a>
+    <a href="https://el-christo.jp/search/" class="btn-ghost">案件を見てみる →</a>
+  </div>
+  <p class="hero-note">※ 登録・応募・成約すべて無料・本人確認で信頼バッジ取得可</p>
+</div>
+
+<!-- キャンペーンバナー -->
+<div style="
+  background: linear-gradient(135deg, rgba(201,168,76,0.15) 0%, rgba(201,168,76,0.05) 100%);
+  border-top: 1px solid rgba(201,168,76,0.4);
+  border-bottom: 1px solid rgba(201,168,76,0.4);
+  padding: 1.5rem 2rem;
+  text-align: center;
+">
+  <p style="
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  ">🎁 期間限定キャンペーン &mdash; 5月31日まで</p>
+  <p style="
+    font-family: var(--serif);
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+  ">発注者のランクアップが<span style="color: var(--gold);">今だけ無料</span>で実施中</p>
+  <p style="font-size: 0.83rem; color: rgba(245,243,238,0.6); line-height: 1.7;">
+    案件を出す発注者が増えるチャンス。今のうちに登録して案件を探してみてください。
+  </p>
+</div>
+
+<hr class="divider">
+
+<!-- なぜ稼げるか -->
+<section>
+  <p class="section-label">Why El'christo</p>
+  <h2 class="section-title">なぜ、稼げるのか。</h2>
+  <ul class="merit-list">
+    <li class="merit-item">
+      <span class="merit-icon">💰</span>
+      <div>
+        <p class="merit-title">中間マージンがゼロ</p>
+        <p class="merit-desc">紹介会社・派遣会社なし。発注者と1対1の直接取引だから、稼いだ分が全部自分の手に残ります。</p>
+      </div>
+    </li>
+    <li class="merit-item">
+      <span class="merit-icon">📱</span>
+      <div>
+        <p class="merit-title">空いた日だけ、スポットで入れる</p>
+        <p class="merit-desc">単発OK。月単位の契約不要。「この日だけ現場に入りたい」というニーズにも対応しています。</p>
+      </div>
+    </li>
+    <li class="merit-item">
+      <span class="merit-icon">🤝</span>
+      <div>
+        <p class="merit-title">人脈を超えた案件にアクセス</p>
+        <p class="merit-desc">知り合いのつてだけに頼らなくてもいい。エリア・職種で検索すれば、新しい発注者と出会えます。</p>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<hr class="divider">
+
+<!-- 比較 -->
+<section>
+  <p class="section-label">Compare</p>
+  <h2 class="section-title">他の方法と<br>何が違うのか。</h2>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th style="text-align:left;"></th>
+        <th>エルクリスト</th>
+        <th>派遣・紹介会社</th>
+        <th>人脈・口コミ</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>仲介手数料</td>
+        <td class="highlight">¥0</td>
+        <td class="dim">15〜30%引かれる</td>
+        <td class="dim">なし（でも限界がある）</td>
+      </tr>
+      <tr>
+        <td>新しい発注者との出会い</td>
+        <td class="highlight">◎ いつでも</td>
+        <td class="dim">△ 会社経由のみ</td>
+        <td class="dim">△ 人脈頼み</td>
+      </tr>
+      <tr>
+        <td>スポット・単発</td>
+        <td class="highlight">◎ 対応</td>
+        <td class="dim">× 難しいことが多い</td>
+        <td class="dim">△ 場合による</td>
+      </tr>
+      <tr>
+        <td>費用</td>
+        <td class="highlight">登録・応募・成約 無料</td>
+        <td class="dim">場合により有料</td>
+        <td class="dim">無料</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<hr class="divider">
+
+<!-- 対応業種 -->
+<section>
+  <p class="section-label">Job Types</p>
+  <h2 class="section-title">あなたの職種も、<br>きっとあります。</h2>
+  <div class="job-grid">
+    <span class="job-tag">多能工・手元</span>
+    <span class="job-tag">大工（造作・建具）</span>
+    <span class="job-tag">型枠大工・鉄筋工</span>
+    <span class="job-tag">左官・タイル</span>
+    <span class="job-tag">板金・外壁・屋根</span>
+    <span class="job-tag">軽天・ボード貼り</span>
+    <span class="job-tag">電気工・通信・消防</span>
+    <span class="job-tag">配管工・設備・水道</span>
+    <span class="job-tag">空調・ダクト</span>
+    <span class="job-tag">内装（クロス・床）</span>
+    <span class="job-tag">塗装・防水</span>
+    <span class="job-tag">鳶・足場</span>
+    <span class="job-tag">美装</span>
+    <span class="job-tag">現場監督・現場代理人</span>
+    <span class="job-tag">その他</span>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ステップ -->
+<section>
+  <p class="section-label">How it works</p>
+  <h2 class="section-title">登録から仕事まで、<br>3ステップです。</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <p class="step-title">無料登録（1分）</p>
+        <p class="step-desc">メールアドレスだけで登録完了。職種・エリア・対応可能な日程を設定します。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <p class="step-title">案件を検索・応募する</p>
+        <p class="step-desc">エリアと職種で絞り込み。気になる案件に直接応募します。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <p class="step-title">発注者と直接やり取り</p>
+        <p class="step-desc">採用されたら発注者と直接連絡。仲介なしで現場へ。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <p class="section-label" style="text-align:center;">Get Started</p>
+  <h2 class="section-title">あなたの技術を、<br>正当に評価される場所へ。</h2>
+  <p class="cta-sub">登録無料・手数料なし・今すぐ案件を探せる</p>
+  <a href="https://el-christo.jp/accounts/signup/" class="btn-primary">無料でプロフィールを作る</a>
+  <p class="cta-note">※ 登録・応募・成約すべて無料・本人確認で信頼バッジ取得可</p>
+</div>
+
+<footer>
+  <p style="margin-bottom:0.75rem;">
+    <a href="https://el-christo.jp/about/">運営者情報</a>&ensp;|&ensp;
+    <a href="https://el-christo.jp/terms/">利用規約</a>&ensp;|&ensp;
+    <a href="https://el-christo.jp/privacy/">プライバシーポリシー</a>&ensp;|&ensp;
+    <a href="https://el-christo.jp/contact/">お問い合わせ</a>
+  </p>
+  <p>&copy; 2026 El'christo. All Rights Reserved.</p>
+</footer>
+
+</body>
+</html>
