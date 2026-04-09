@@ -66,6 +66,13 @@ class Profile(models.Model):
         verbose_name="本人確認書類"
     )
 
+    address_detail = models.CharField(
+        max_length=255, 
+        blank=True, 
+         verbose_name="住所詳細"
+    )
+
+
     # 詳細プロフィール
     experience_years = models.IntegerField(default=0, verbose_name="経験年数")
     qualifications = models.CharField(max_length=255, blank=True, null=True, verbose_name="保有資格")
