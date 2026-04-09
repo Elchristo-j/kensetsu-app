@@ -134,6 +134,18 @@
                                     <p class="small text-muted mb-2">運転免許証 / マイナンバーカード / パスポート</p>
                                     {{ form.id_card_image }}
                                 </div>
+                                <div class="mt-3">
+                                    <label class="form-label fw-bold small">氏名（本名）<span class="text-danger">※本人確認書類アップロード時は必須</span></label>
+                                    {{ form.real_name }}
+                                </div>
+                                <div class="mt-3">
+                                    <label class="form-label fw-bold small">電話番号<span class="text-danger">※本人確認書類アップロード時は必須</span></label>
+                                    {{ form.phone_number }}
+                                </div>
+                                <div class="mt-3">
+                                    <label class="form-label fw-bold small">住所詳細<span class="text-danger">※本人確認書類アップロード時は必須</span></label>
+                                    {{ form.address_detail }}
+                                </div>
 
                                 <div class="alert alert-info small mb-0" role="alert">
                                     <i class="bi bi-lock-fill me-1"></i>
