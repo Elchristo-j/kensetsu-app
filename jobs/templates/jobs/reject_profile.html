@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4" style="max-width: 600px;">
+    <h4 class="fw-bold mb-4">❌ 本人確認 差し戻し</h4>
+    
+    <div class="card shadow-sm border-0 rounded-4 p-4 mb-4">
+        <h6 class="fw-bold mb-2">対象ユーザー</h6>
+        <p class="mb-0">{{ profile.user.username }}（{{ profile.user.email }}）</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="card shadow-sm border-0 rounded-4 p-4">
+            <div class="mb-4">
+                <label class="form-label fw-bold">不備の理由 <span class="text-danger">※必須</span></label>
+                <select name="reason" class="form-select" required>
+                    <option value="">選択してください</option>
+                    <option value="画像が不鮮明で確認できません。">画像が不鮮明で確認できない</option>
+                    <option value="有効期限切れの書類が提出されています。">有効期限切れの書類</option>
+                    <option value="氏名・住所・電話番号のいずれかが未記入です。">氏名・住所・電話番号の記入漏れ</option>
+                    <option value="対応していない種類の書類が提出されています。運転免許証・マイナンバーカード・パスポートのいずれかをご提出ください。">対応していない書類の種類</option>
+                    <option value="その他（下記詳細をご確認ください）">その他</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-bold">追加メッセージ（任意）</label>
+                <textarea name="custom_message" class="form-control" rows="4" placeholder="詳細や補足があれば記入してください"></textarea>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger rounded-pill fw-bold px-4"
+                    onclick="return confirm('差し戻しメールを送信しますか？')">
+                    送信して差し戻す
+                </button>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary rounded-pill px-4">キャンセル</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

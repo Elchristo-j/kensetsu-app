@@ -497,9 +497,39 @@ def approve_profile(request, user_id):
 @user_passes_test(is_staff_user)
 def reject_profile(request, user_id):
     p = get_object_or_404(User, pk=user_id).profile
-    p.id_card_image.delete()
-    p.save()
-    return redirect('admin_dashboard')
+    if request.method == 'POST':
+        reason = request.POST.get('reason', '')
+        custom_message = request.POST.get('custom_message', '')
+        
+        # メール送信
+        full_message = reason
+        if custom_message:
+            full_message += f'\n\n【詳細】\n{custom_message}'
+        
+        from django.core.mail import send_mail
+        send_mail(
+            subject='【El\'christo】本人確認書類の不備について',
+            message=f'''{p.user.username} 様
+
+本人確認書類を確認しましたが、以下の理由により再提出をお願いいたします。
+
+【不備の理由】
+{full_message}
+
+お手数ですが、プロフィール編集画面から再度書類をアップロードしてください。
+ご不明な点はお問い合わせページからご連絡ください。
+
+建設マッチング El'christo 運営局''',
+            from_email=None,
+            recipient_list=[p.user.email],
+            fail_silently=True,
+        )
+        
+        p.id_card_image.delete()
+        p.save()
+        return redirect('admin_dashboard')
+    
+    return render(request, 'jobs/reject_profile.html', {'profile': p})
 
 def about_view(request): return render(request, 'jobs/static_pages/about.html')
 def terms_view(request): return render(request, 'jobs/static_pages/terms.html')
