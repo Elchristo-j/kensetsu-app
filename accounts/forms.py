@@ -110,3 +110,21 @@ class ProfileForm(forms.ModelForm):
             'line_id': 'LINE ID',
             'contact_email': '連絡用メールアドレス',
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        id_card_image = cleaned_data.get('id_card_image')
+        
+        if id_card_image:
+            real_name = cleaned_data.get('real_name')
+            phone_number = cleaned_data.get('phone_number')
+            address_detail = cleaned_data.get('address_detail')
+            
+            if not real_name:
+                self.add_error('real_name', '本人確認書類をアップロードする場合は氏名（本名）を入力してください。')
+            if not phone_number:
+                self.add_error('phone_number', '本人確認書類をアップロードする場合は電話番号を入力してください。')
+            if not address_detail:
+                self.add_error('address_detail', '本人確認書類をアップロードする場合は住所を入力してください。')
+        
+        return cleaned_data
