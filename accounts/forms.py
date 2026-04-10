@@ -55,6 +55,7 @@ class ProfileForm(forms.ModelForm):
             'bio',
             'avatar',
             'id_card_image',
+            'address_detail',
             'experience_years',
             'qualifications',
             'skills',
@@ -76,6 +77,7 @@ class ProfileForm(forms.ModelForm):
             'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
             'avatar': forms.FileInput(attrs={'class': 'form-control'}),
             'id_card_image': forms.FileInput(attrs={'class': 'form-control'}),
+            'address_detail': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '例: 新宿区〇〇丁目1-2-3 〇〇ビル101'}),  # ← 追加
             'experience_years': forms.NumberInput(attrs={'class': 'form-control'}),
             'qualifications': forms.TextInput(attrs={'class': 'form-control'}),
             'skills': forms.TextInput(attrs={'class': 'form-control'}),
@@ -97,6 +99,7 @@ class ProfileForm(forms.ModelForm):
             'bio': '自己紹介',
             'avatar': 'プロフィール画像',
             'id_card_image': '本人確認書類',
+            'address_detail': '住所詳細',
             'experience_years': '経験年数',
             'qualifications': '保有資格',
             'skills': 'スキル・得意分野',
