@@ -6,14 +6,15 @@ Updated for SSL Email Support & Render Stability.
 from pathlib import Path
 import os
 import dj_database_url
-import environ
+import environ  # ← ① これを追加！
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# .envファイルを読み込む
+# ▼▼ ② ここから追加：.envファイルを読み込む魔法の装置 ▼▼
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+# ▲▲ 追加ここまで ▲▲
 
 # ==========================================
 # セキュリティ設定
