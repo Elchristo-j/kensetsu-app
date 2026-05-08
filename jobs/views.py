@@ -68,6 +68,15 @@ def contact(request):
             if request.user.is_authenticated:
                 contact.user = request.user
             contact.save()
+            # 運営にメール通知
+            from django.core.mail import send_mail
+            send_mail(
+                subject=f'【エルクリスト】お問い合わせが届きました',
+                message=f'名前: {contact.name}\nメール: {contact.email}\n\n{contact.message}',
+                from_email=None,
+                recipient_list=['kma.elchristo@gmail.com'],
+                fail_silently=True,
+            )
             messages.success(request, 'お問い合わせを受け付けました。確認後ご連絡いたします。')
             return redirect('home')
     else:
