@@ -62,6 +62,9 @@ def calculate_stats_for_user(user, review_type):
     
 def contact(request):
     if request.method == 'POST':
+        # ハニーポットチェック
+        if request.POST.get('website'):
+            return redirect('home')
         form = ContactForm(request.POST)
         if form.is_valid():
             contact = form.save(commit=False)

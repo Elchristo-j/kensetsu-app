@@ -362,4 +362,15 @@ class EPointHistory(models.Model):
             profile.e_points += self.points
             profile.save()
 
-# ▲▲▲ 追加ここまで ▲▲▲              
+# ▲▲▲ 追加ここまで ▲▲▲
+
+class BlockedEmail(models.Model):
+    email = models.EmailField(unique=True, verbose_name="ブロックするメールアドレス")
+    reason = models.CharField(max_length=255, blank=True, verbose_name="理由")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email
+
+    class Meta:
+        verbose_name = "ブロックメール"       
