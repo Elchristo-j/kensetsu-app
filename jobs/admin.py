@@ -34,3 +34,5 @@ class ScoutAdmin(admin.ModelAdmin):
     list_display = ('employer', 'worker', 'target_job', 'created_at') # 一覧に表示する項目
     list_filter = ('created_at',)  # 日付で絞り込めるようにする
        
+from .models import BlockedEmail
+admin.site.register(BlockedEmail)      

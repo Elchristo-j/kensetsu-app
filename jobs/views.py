@@ -68,6 +68,11 @@ def contact(request):
         form = ContactForm(request.POST)
         if form.is_valid():
             contact = form.save(commit=False)
+            # ブロックメールチェック
+            from .models import BlockedEmail
+            if BlockedEmail.objects.filter(email=contact.email).exists():
+                messages.warning(request, 'お問い合わせを受け付けました。確認後ご連絡いたします。')
+                return redirect('home')
             if request.user.is_authenticated:
                 contact.user = request.user
             contact.save()
