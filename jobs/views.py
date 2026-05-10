@@ -73,6 +73,17 @@ def contact(request):
             if BlockedEmail.objects.filter(email=contact.email).exists():
                 messages.warning(request, 'お問い合わせを受け付けました。確認後ご連絡いたします。')
                 return redirect('home')
+            # スパムキーワードチェック
+            spam_keywords = [
+                'XEvil', 'xevil', 'ReCaptcha', 'captcha', 'xrumersale',
+                'SEO', 'SMM', '2Captcha', 'antigate', 'RuCaptcha',
+                'anti-captcha', 'hCaptcha', 'CloudFlare',
+            ]
+            message_text = contact.message or ''
+            subject_text = contact.subject if hasattr(contact, 'subject') else ''
+            if any(kw.lower() in (message_text + subject_text).lower() for kw in spam_keywords):
+                messages.success(request, 'お問い合わせを受け付けました。確認後ご連絡いたします。')
+                return redirect('home')
             if request.user.is_authenticated:
                 contact.user = request.user
             contact.save()
