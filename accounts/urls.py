@@ -12,6 +12,9 @@ urlpatterns = [
     path('profile/edit/', views.profile_edit, name='profile_edit'),
     path('profile/<int:user_id>/', views.profile_detail, name='profile_detail'),
 
+    # --- AI自己紹介文生成 ---
+    path('generate-bio/', views.generate_bio, name='generate_bio'),
+
     # --- マイページ・プランアップグレード ---
     path('mypage/', views.mypage, name='mypage'),
     path('upgrade/', views.upgrade_plan_page, name='upgrade_plan_page'),

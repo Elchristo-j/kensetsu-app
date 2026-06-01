@@ -1,5 +1,6 @@
 from django.utils import timezone
 import os
+import json
 import stripe
 import datetime
 import urllib.parse
@@ -10,8 +11,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from .models import Profile, FavoriteArea, PREFECTURES, Block, Report
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django.db.models import Avg
 
 from .forms import CustomUserCreationForm, ProfileForm
@@ -371,3 +373,68 @@ def delete_guide_only(request):
 
 def verification_guide(request):
     return render(request, 'accounts/verification_guide.html')
+
+
+
+# === AI自己紹介文生成API ===
+@login_required
+@require_POST
+def generate_bio(request):
+    """AI自己紹介文生成API"""
+    try:
+        import anthropic
+
+        data = json.loads(request.body)
+        occupation_main = data.get('occupation_main', '')
+        occupation_sub = data.get('occupation_sub', '')
+        experience_years = data.get('experience_years', 0)
+        qualifications = data.get('qualifications', '')
+        skills = data.get('skills', '')
+        age_group = data.get('age_group', '')
+        location = data.get('location', '')
+
+        # 年代の表示変換
+        age_map = {
+            '10s': '10代', '20s': '20代', '30s': '30代',
+            '40s': '40代', '50s': '50代', '60s': '60代以上'
+        }
+        age_display = age_map.get(age_group, '')
+
+        # 入力情報が少なすぎる場合はエラー
+        if not occupation_main and not experience_years:
+            return JsonResponse({'error': 'メイン職種または経験年数を入力してください。'}, status=400)
+
+        prompt = f"""あなたは建設業界で働くプロフェッショナルです。
+以下の情報をもとに、建設マッチングアプリのプロフィール用「自己紹介文」を日本語で書いてください。
+
+【入力情報】
+- メイン職種：{occupation_main or '未入力'}
+- サブ職種：{occupation_sub or 'なし'}
+- 経験年数：{experience_years}年
+- 保有資格：{qualifications or 'なし'}
+- 得意な工事・スキル：{skills or 'なし'}
+- 年代：{age_display or '未入力'}
+- 活動エリア：{location or '未入力'}
+
+【条件】
+- 100〜200文字程度の自然な日本語で書くこと
+- 一人称は「私」を使うこと
+- 「よろしくお願いします」などの締めの言葉で終わること
+- 箇条書きは使わず、文章形式で書くこと
+- 自己紹介文だけを出力し、説明や前置きは一切不要
+"""
+
+        client = anthropic.Anthropic()
+        message = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=400,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+        bio_text = message.content[0].text.strip()
+
+        return JsonResponse({'bio': bio_text})
+
+    except Exception as e:
+        return JsonResponse({'error': f'生成に失敗しました：{str(e)}'}, status=500)

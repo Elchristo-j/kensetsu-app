@@ -45,8 +45,80 @@
                         <h6 class="fw-bold text-muted border-bottom pb-2 mb-3 mt-4">スキル・経歴</h6>
                         <div class="mb-3">
                             <label class="form-label fw-bold">自己紹介</label>
+
+                            <!-- AIボタン -->
+                            <div class="mb-2">
+                                <button type="button" id="generate-bio-btn" class="btn btn-outline-warning btn-sm rounded-pill">
+                                    <span id="generate-btn-icon">✨</span>
+                                    <span id="generate-btn-text"> AIで自己紹介文を生成する</span>
+                                </button>
+                                <small class="text-muted ms-2">上の職種・スキル情報をもとにAIが自動作成します</small>
+                            </div>
+
                             {{ form.bio }}
+
+                            <!-- エラー・成功メッセージ表示エリア -->
+                            <div id="bio-message" class="mt-1 small" style="display:none;"></div>
                         </div>
+
+                        <script>
+                        document.getElementById('generate-bio-btn').addEventListener('click', async function() {
+                            const btn = this;
+                            const icon = document.getElementById('generate-btn-icon');
+                            const text = document.getElementById('generate-btn-text');
+                            const messageEl = document.getElementById('bio-message');
+                            const bioField = document.getElementById('id_bio');
+
+                            // ローディング状態
+                            btn.disabled = true;
+                            icon.textContent = '⏳';
+                            text.textContent = ' 生成中...';
+                            messageEl.style.display = 'none';
+
+                            // フォームから現在の入力値を取得
+                            const payload = {
+                                occupation_main: document.getElementById('id_occupation_main')?.value || '',
+                                occupation_sub: document.getElementById('id_occupation_sub')?.value || '',
+                                experience_years: document.getElementById('id_experience_years')?.value || 0,
+                                qualifications: document.getElementById('id_qualifications')?.value || '',
+                                skills: document.getElementById('id_skills')?.value || '',
+                                age_group: document.getElementById('id_age_group')?.value || '',
+                                location: document.getElementById('id_location')?.value || '',
+                            };
+
+                            try {
+                                const response = await fetch('{% url "generate_bio" %}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRFToken': '{{ csrf_token }}',
+                                    },
+                                    body: JSON.stringify(payload),
+                                });
+
+                                const result = await response.json();
+
+                                if (response.ok && result.bio) {
+                                    bioField.value = result.bio;
+                                    messageEl.textContent = '✅ 自己紹介文を生成しました。内容を確認・編集してから保存してください。';
+                                    messageEl.className = 'mt-1 small text-success';
+                                    messageEl.style.display = 'block';
+                                } else {
+                                    messageEl.textContent = '❌ ' + (result.error || '生成に失敗しました。職種や経験年数を入力してから試してください。');
+                                    messageEl.className = 'mt-1 small text-danger';
+                                    messageEl.style.display = 'block';
+                                }
+                            } catch (e) {
+                                messageEl.textContent = '❌ 通信エラーが発生しました。再度お試しください。';
+                                messageEl.className = 'mt-1 small text-danger';
+                                messageEl.style.display = 'block';
+                            } finally {
+                                btn.disabled = false;
+                                icon.textContent = '✨';
+                                text.textContent = ' AIで自己紹介文を生成する';
+                            }
+                        });
+                        </script>
                         <div class="row g-3 mb-4">
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">経験年数</label>
