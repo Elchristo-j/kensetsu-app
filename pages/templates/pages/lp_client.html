@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -16,7 +17,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
     --gold: #C9A84C;
     --gold-light: #E8C97A;
@@ -30,9 +30,7 @@
     --serif: 'Noto Serif JP', serif;
     --sans: 'Noto Sans JP', sans-serif;
   }
-
   html { scroll-behavior: smooth; }
-
   body {
     background: var(--black);
     color: var(--white);
@@ -40,7 +38,6 @@
     line-height: 1.7;
     font-size: 16px;
   }
-
   /* ナビ */
   nav {
     position: fixed;
@@ -73,7 +70,6 @@
     transition: background 0.2s;
   }
   .nav-cta:hover { background: var(--gold-light); }
-
   /* ヒーロー */
   .hero {
     min-height: 100svh;
@@ -170,14 +166,12 @@
     color: var(--gray);
     margin-top: 0.75rem;
   }
-
   /* 区切り線 */
   .divider {
     border: none;
     border-top: 0.5px solid rgba(201,168,76,0.15);
     margin: 0;
   }
-
   /* セクション共通 */
   section { padding: 5rem 2rem; max-width: 800px; margin: 0 auto; }
   .section-label {
@@ -194,7 +188,6 @@
     line-height: 1.4;
     margin-bottom: 1.5rem;
   }
-
   /* 課題セクション */
   .pain-list { list-style: none; display: flex; flex-direction: column; gap: 1.25rem; margin-top: 2rem; }
   .pain-item {
@@ -212,7 +205,6 @@
   }
   .pain-title { font-weight: 700; margin-bottom: 0.25rem; font-size: 0.95rem; }
   .pain-desc { font-size: 0.88rem; color: rgba(245,243,238,0.65); line-height: 1.6; }
-
   /* 解決セクション */
   .solution-grid {
     display: grid;
@@ -245,7 +237,6 @@
   }
   .solution-title { font-weight: 700; margin-bottom: 0.5rem; font-size: 0.95rem; }
   .solution-desc { font-size: 0.83rem; color: rgba(245,243,238,0.6); line-height: 1.6; }
-
   /* 安心セクション */
   .trust-grid {
     display: grid;
@@ -269,7 +260,6 @@
     margin-bottom: 0.25rem;
   }
   .trust-label { font-size: 0.8rem; color: rgba(245,243,238,0.6); }
-
   /* ステップ */
   .steps { display: flex; flex-direction: column; gap: 0; margin-top: 2rem; }
   .step {
@@ -296,7 +286,6 @@
   }
   .step-title { font-weight: 700; margin-bottom: 0.25rem; }
   .step-desc { font-size: 0.88rem; color: rgba(245,243,238,0.6); }
-
   /* CTA */
   .cta-section {
     padding: 5rem 2rem;
@@ -308,7 +297,6 @@
   .cta-section .section-title { margin: 0 auto 0.75rem; }
   .cta-sub { color: rgba(245,243,238,0.6); margin-bottom: 2.5rem; font-size: 0.92rem; }
   .cta-note { font-size: 0.75rem; color: var(--gray); margin-top: 0.75rem; }
-
   /* フッター */
   footer {
     text-align: center;
@@ -319,7 +307,6 @@
   }
   footer a { color: var(--gold-dark); text-decoration: none; }
   footer a:hover { color: var(--gold); }
-
   /* アニメーション */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
@@ -333,12 +320,10 @@
 </style>
 </head>
 <body>
-
 <nav>
   <a href="https://el-christo.jp" class="nav-logo">El'christo</a>
   <a href="https://el-christo.jp/accounts/signup/" class="nav-cta">まず登録する</a>
 </nav>
-
 <!-- ヒーロー -->
 <div class="hero">
   <p class="hero-eyebrow">建設マッチング &mdash; El'christo</p>
@@ -364,8 +349,7 @@
   </div>
   <p class="hero-note">※ 登録無料・案件掲載はSILVERプラン（¥550/月）から・成約手数料なし</p>
 </div>
-
-<!-- キャンペーンバナー -->
+<!-- 初月無料バナー -->
 <div style="
   background: linear-gradient(135deg, rgba(201,168,76,0.15) 0%, rgba(201,168,76,0.05) 100%);
   border-top: 1px solid rgba(201,168,76,0.4);
@@ -380,7 +364,7 @@
     text-transform: uppercase;
     margin-bottom: 0.5rem;
     font-weight: 500;
-  ">🎁 期間限定キャンペーン &mdash; 5月31日まで</p>
+  ">🎁 新規登録限定</p>
   <p style="
     font-family: var(--serif);
     font-size: clamp(1.1rem, 3vw, 1.5rem);
@@ -388,15 +372,13 @@
     color: var(--white);
     line-height: 1.5;
     margin-bottom: 0.5rem;
-  ">SILVER・GOLDプランの月額料金が<span style="color: var(--gold);">今だけ無料</span></p>
+  ">SILVER・GOLDプランが<span style="color: var(--gold);">初月無料</span></p>
   <p style="font-size: 0.83rem; color: rgba(245,243,238,0.6); line-height: 1.7;">
-    通常 SILVER ¥550/月・GOLD ¥2,200/月 → <span style="color: var(--gold-light); font-weight: 700;">¥0</span>（5月31日まで）<br>
-    この機会に、まず無料で案件掲載をお試しください。
+    通常 SILVER ¥550/月・GOLD ¥2,200/月 → <span style="color: var(--gold-light); font-weight: 700;">初月¥0</span><br>
+    まず無料で案件掲載をお試しください。
   </p>
 </div>
-
 <hr class="divider">
-
 <!-- 課題 -->
 <section>
   <p class="section-label">Problem</p>
@@ -425,9 +407,7 @@
     </li>
   </ul>
 </section>
-
 <hr class="divider">
-
 <!-- 解決 -->
 <section>
   <p class="section-label">Solution</p>
@@ -450,9 +430,7 @@
     </div>
   </div>
 </section>
-
 <hr class="divider">
-
 <!-- 使い方 -->
 <section>
   <p class="section-label">How it works</p>
@@ -481,9 +459,7 @@
     </div>
   </div>
 </section>
-
 <hr class="divider">
-
 <!-- 料金 -->
 <section>
   <p class="section-label">Pricing</p>
@@ -518,20 +494,41 @@
     color: var(--gold-light);
     line-height: 1.7;
   ">
-    🎁 <strong>5月31日まで：SILVER・GOLDプラン月額無料キャンペーン実施中。</strong><br>
-    <span style="color: rgba(245,243,238,0.6);">今すぐ登録して、無料期間中に案件掲載をお試しください。</span>
+    🎁 <strong>新規登録限定：SILVER・GOLDプラン初月無料。</strong><br>
+    <span style="color: rgba(245,243,238,0.6);">今すぐ登録して、初月無料で案件掲載をお試しください。</span>
   </div>
 </section>
-
 <!-- CTA -->
 <div class="cta-section">
   <p class="section-label" style="text-align:center;">Get Started</p>
   <h2 class="section-title">職人探しを、<br>もっとシンプルに。</h2>
   <p class="cta-sub">まず無料で登録して、職人を検索してみてください</p>
   <a href="https://el-christo.jp/accounts/signup/" class="btn-primary">無料で登録する</a>
-  <p class="cta-note">🎁 5月31日までSILVER・GOLDプラン月額無料 &ensp;|&ensp; 成約手数料なし</p>
+  <p class="cta-note">🎁 新規登録限定・SILVER・GOLDプラン初月無料 &ensp;|&ensp; 成約手数料なし</p>
+  <!-- LINE公式アカウント -->
+  <div style="
+    margin-top: 2.5rem;
+    padding: 1.5rem 2rem;
+    border: 1px solid rgba(6,199,85,0.35);
+    border-radius: 8px;
+    background: rgba(6,199,85,0.05);
+    display: inline-block;
+    text-align: center;
+  ">
+    <p style="font-size: 0.72rem; letter-spacing: 0.15em; color: #06C755; margin-bottom: 0.5rem; font-weight: 600;">LINE公式アカウント</p>
+    <p style="font-size: 0.88rem; color: rgba(245,243,238,0.7); margin-bottom: 1rem; line-height: 1.6;">
+      お知らせ・新着案件情報を<br>LINEで受け取れます
+    </p>
+    <img src="{% static 'images/M_gainfriends_2dbarcodes_GW.png' %}"
+         alt="El'christo LINE公式アカウント QRコード"
+         style="width: 120px; height: 120px; display: block; margin: 0 auto 0.75rem;">
+    <a href="https://lin.ee/5vt7bxm"
+       style="display: inline-block; text-decoration: none;">
+      <img src="https://scdn.line-apps.com/n/line_add_friends/btn/ja.png"
+           alt="友だち追加" height="36" border="0">
+    </a>
+  </div>
 </div>
-
 <footer>
   <p style="margin-bottom:0.75rem;">
     <a href="https://el-christo.jp/about/">運営者情報</a>&ensp;|&ensp;
@@ -541,6 +538,5 @@
   </p>
   <p>&copy; 2026 El'christo. All Rights Reserved.</p>
 </footer>
-
 </body>
 </html>

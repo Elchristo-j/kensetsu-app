@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -16,7 +17,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
     --gold: #C9A84C;
     --gold-light: #E8C97A;
@@ -30,9 +30,7 @@
     --serif: 'Noto Serif JP', serif;
     --sans: 'Noto Sans JP', sans-serif;
   }
-
   html { scroll-behavior: smooth; }
-
   body {
     background: var(--black);
     color: var(--white);
@@ -40,7 +38,6 @@
     line-height: 1.7;
     font-size: 16px;
   }
-
   nav {
     position: fixed;
     top: 0; left: 0; right: 0;
@@ -72,7 +69,6 @@
     transition: background 0.2s;
   }
   .nav-cta:hover { background: var(--gold-light); }
-
   /* ヒーロー */
   .hero {
     min-height: 100svh;
@@ -165,9 +161,7 @@
   }
   .btn-ghost:hover { color: var(--gold-light); }
   .hero-note { font-size: 0.75rem; color: var(--gray); margin-top: 0.75rem; }
-
   .divider { border: none; border-top: 0.5px solid rgba(201,168,76,0.15); margin: 0; }
-
   section { padding: 5rem 2rem; max-width: 800px; margin: 0 auto; }
   .section-label {
     font-size: 0.75rem;
@@ -183,7 +177,6 @@
     line-height: 1.4;
     margin-bottom: 1.5rem;
   }
-
   /* 稼げる仕組み */
   .merit-list { list-style: none; display: flex; flex-direction: column; gap: 1.25rem; margin-top: 2rem; }
   .merit-item {
@@ -197,7 +190,6 @@
   .merit-icon { font-size: 1.25rem; flex-shrink: 0; margin-top: 0.1rem; }
   .merit-title { font-weight: 700; margin-bottom: 0.25rem; font-size: 0.95rem; }
   .merit-desc { font-size: 0.88rem; color: rgba(245,243,238,0.65); line-height: 1.6; }
-
   /* 対応業種 */
   .job-grid {
     display: flex;
@@ -214,7 +206,6 @@
     color: rgba(245,243,238,0.75);
     letter-spacing: 0.03em;
   }
-
   /* ステップ */
   .steps { display: flex; flex-direction: column; gap: 0; margin-top: 2rem; }
   .step {
@@ -241,7 +232,6 @@
   }
   .step-title { font-weight: 700; margin-bottom: 0.25rem; }
   .step-desc { font-size: 0.88rem; color: rgba(245,243,238,0.6); }
-
   /* 比較 */
   .compare-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; font-size: 0.88rem; }
   .compare-table th, .compare-table td {
@@ -254,7 +244,6 @@
   .compare-table .highlight { color: var(--gold); font-weight: 700; }
   .compare-table .dim { color: var(--gray); }
   .compare-table thead tr { border-bottom: 1px solid rgba(201,168,76,0.3); }
-
   /* CTA */
   .cta-section {
     padding: 5rem 2rem;
@@ -266,7 +255,6 @@
   .cta-section .section-title { margin: 0 auto 0.75rem; }
   .cta-sub { color: rgba(245,243,238,0.6); margin-bottom: 2.5rem; font-size: 0.92rem; }
   .cta-note { font-size: 0.75rem; color: var(--gray); margin-top: 0.75rem; }
-
   footer {
     text-align: center;
     padding: 2.5rem 2rem;
@@ -276,7 +264,6 @@
   }
   footer a { color: var(--gold-dark); text-decoration: none; }
   footer a:hover { color: var(--gold); }
-
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
@@ -289,12 +276,10 @@
 </style>
 </head>
 <body>
-
 <nav>
   <a href="https://el-christo.jp" class="nav-logo">El'christo</a>
   <a href="https://el-christo.jp/accounts/signup/" class="nav-cta">無料で登録</a>
 </nav>
-
 <!-- ヒーロー -->
 <div class="hero">
   <p class="hero-eyebrow">建設マッチング &mdash; El'christo</p>
@@ -320,8 +305,7 @@
   </div>
   <p class="hero-note">※ 登録・応募・成約すべて無料・本人確認で信頼バッジ取得可</p>
 </div>
-
-<!-- キャンペーンバナー -->
+<!-- 初月無料バナー -->
 <div style="
   background: linear-gradient(135deg, rgba(201,168,76,0.15) 0%, rgba(201,168,76,0.05) 100%);
   border-top: 1px solid rgba(201,168,76,0.4);
@@ -336,7 +320,7 @@
     text-transform: uppercase;
     margin-bottom: 0.5rem;
     font-weight: 500;
-  ">🎁 期間限定キャンペーン &mdash; 5月31日まで</p>
+  ">📢 発注者向け情報</p>
   <p style="
     font-family: var(--serif);
     font-size: clamp(1.1rem, 3vw, 1.5rem);
@@ -344,14 +328,13 @@
     color: var(--white);
     line-height: 1.5;
     margin-bottom: 0.5rem;
-  ">発注者のランクアップが<span style="color: var(--gold);">今だけ無料</span>で実施中</p>
+  ">案件を出す発注者が<span style="color: var(--gold);">初月無料</span>で増加中</p>
   <p style="font-size: 0.83rem; color: rgba(245,243,238,0.6); line-height: 1.7;">
-    案件を出す発注者が増えるチャンス。今のうちに登録して案件を探してみてください。
+    発注者向けに新規登録限定の初月無料キャンペーンを実施中。<br>
+    今のうちに登録して案件を探してみてください。
   </p>
 </div>
-
 <hr class="divider">
-
 <!-- なぜ稼げるか -->
 <section>
   <p class="section-label">Why El'christo</p>
@@ -380,9 +363,7 @@
     </li>
   </ul>
 </section>
-
 <hr class="divider">
-
 <!-- 比較 -->
 <section>
   <p class="section-label">Compare</p>
@@ -424,9 +405,7 @@
     </tbody>
   </table>
 </section>
-
 <hr class="divider">
-
 <!-- 対応業種 -->
 <section>
   <p class="section-label">Job Types</p>
@@ -449,9 +428,7 @@
     <span class="job-tag">その他</span>
   </div>
 </section>
-
 <hr class="divider">
-
 <!-- ステップ -->
 <section>
   <p class="section-label">How it works</p>
@@ -480,7 +457,6 @@
     </div>
   </div>
 </section>
-
 <!-- CTA -->
 <div class="cta-section">
   <p class="section-label" style="text-align:center;">Get Started</p>
@@ -488,8 +464,30 @@
   <p class="cta-sub">登録無料・手数料なし・今すぐ案件を探せる</p>
   <a href="https://el-christo.jp/accounts/signup/" class="btn-primary">無料でプロフィールを作る</a>
   <p class="cta-note">※ 登録・応募・成約すべて無料・本人確認で信頼バッジ取得可</p>
+  <!-- LINE公式アカウント -->
+  <div style="
+    margin-top: 2.5rem;
+    padding: 1.5rem 2rem;
+    border: 1px solid rgba(6,199,85,0.35);
+    border-radius: 8px;
+    background: rgba(6,199,85,0.05);
+    display: inline-block;
+    text-align: center;
+  ">
+    <p style="font-size: 0.72rem; letter-spacing: 0.15em; color: #06C755; margin-bottom: 0.5rem; font-weight: 600;">LINE公式アカウント</p>
+    <p style="font-size: 0.88rem; color: rgba(245,243,238,0.7); margin-bottom: 1rem; line-height: 1.6;">
+      お知らせ・新着案件情報を<br>LINEで受け取れます
+    </p>
+    <img src="{% static 'images/M_gainfriends_2dbarcodes_GW.png' %}"
+         alt="El'christo LINE公式アカウント QRコード"
+         style="width: 120px; height: 120px; display: block; margin: 0 auto 0.75rem;">
+    <a href="https://lin.ee/5vt7bxm"
+       style="display: inline-block; text-decoration: none;">
+      <img src="https://scdn.line-apps.com/n/line_add_friends/btn/ja.png"
+           alt="友だち追加" height="36" border="0">
+    </a>
+  </div>
 </div>
-
 <footer>
   <p style="margin-bottom:0.75rem;">
     <a href="https://el-christo.jp/about/">運営者情報</a>&ensp;|&ensp;
@@ -499,6 +497,5 @@
   </p>
   <p>&copy; 2026 El'christo. All Rights Reserved.</p>
 </footer>
-
 </body>
 </html>
