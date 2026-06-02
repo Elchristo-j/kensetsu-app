@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}建設業の外注費を下げる3つの方法｜El'christo{% endblock %}
+
+{% block extra_head %}
+<meta name="description" content="建設業の外注費が高くなる原因と、中間マージンをなくして職人と直取引するための3つの具体的な方法を解説します。">
+<meta property="og:title" content="建設業の外注費を下げる3つの方法｜El'christo">
+<meta property="og:description" content="重層下請け構造による中間マージンをなくし、外注費を削減するための実践的な3つの方法。">
+<style>
+    .article-wrap { background: #111111; color: #e8e8e8; border-radius: 12px; overflow: hidden; max-width: 720px; margin: 40px auto; }
+    .hero { background: #111111; border-bottom: 1px solid #2a2a2a; padding: 32px 28px 28px; }
+    .badge-column { display: inline-block; background: #1a1a00; color: #d4af37; border: 0.5px solid #d4af37; font-size: 11px; padding: 3px 10px; border-radius: 4px; margin-bottom: 14px; letter-spacing: 0.05em; }
+    .article-h1 { font-size: 20px; font-weight: 500; line-height: 1.5; color: #f0f0f0; margin-bottom: 12px; }
+    .meta { font-size: 12px; color: #888; display: flex; gap: 16px; }
+    .body-wrap { padding: 24px 28px; }
+    .lead { font-size: 14px; line-height: 1.8; color: #ccc; margin-bottom: 24px; border-left: 2px solid #d4af37; padding-left: 14px; }
+    .section-title { font-size: 15px; font-weight: 500; color: #d4af37; margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 0.5px solid #2a2a2a; }
+    .body-text { font-size: 13px; line-height: 1.9; color: #bbb; margin-bottom: 16px; }
+    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+    .stat-card { background: #1a1a1a; border: 0.5px solid #2a2a2a; border-radius: 8px; padding: 14px 12px; text-align: center; }
+    .stat-num { font-size: 22px; font-weight: 500; color: #d4af37; }
+    .stat-label { font-size: 11px; color: #888; margin-top: 4px; line-height: 1.4; }
+    .method-card { background: #1a1a1a; border-left: 3px solid #d4af37; border-radius: 0 8px 8px 0; padding: 18px 20px; margin: 16px 0; }
+    .method-num { font-size: 11px; color: #d4af37; font-weight: 500; margin-bottom: 6px; letter-spacing: 0.08em; }
+    .method-title { font-size: 15px; font-weight: 500; color: #f0f0f0; margin-bottom: 10px; }
+    .method-text { font-size: 13px; line-height: 1.9; color: #bbb; margin: 0; }
+    .cta-wrap { background: #1a1a1a; border-top: 1px solid #2a2a2a; padding: 24px 28px; }
+    .cta-label { font-size: 12px; color: #888; margin-bottom: 10px; }
+    .cta-title { font-size: 16px; font-weight: 500; color: #f0f0f0; margin-bottom: 8px; }
+    .cta-desc { font-size: 13px; color: #999; margin-bottom: 18px; line-height: 1.7; }
+    .cta-btn { display: inline-block; background: #d4af37; color: #111; font-size: 13px; font-weight: 500; padding: 10px 24px; border-radius: 6px; text-decoration: none; }
+    .toc { background: #1a1a1a; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; }
+    .toc-title { font-size: 12px; color: #888; margin-bottom: 10px; }
+    .toc ul { margin: 0; padding: 0; }
+    .toc li { font-size: 13px; color: #aaa; line-height: 2; list-style: none; padding-left: 16px; position: relative; }
+    .toc li::before { content: '—'; position: absolute; left: 0; color: #d4af37; font-size: 11px; }
+
+    @media (max-width: 480px) {
+        .stat-grid { grid-template-columns: 1fr; }
+        .meta { flex-direction: column; gap: 4px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<article class="article-wrap">
+
+    <!-- ① ヒーローセクション -->
+    <header class="hero">
+        <span class="badge-column">建設業コラム</span>
+        <h1 class="article-h1">建設業の外注費を下げる3つの方法｜中間マージンをなくして職人と直取引する</h1>
+        <div class="meta">
+            <span>2026年6月</span>
+            <span>El'christo 運営局</span>
+            <span>読了約4分</span>
+        </div>
+    </header>
+
+    <div class="body-wrap">
+
+        <!-- ② 目次 -->
+        <nav class="toc">
+            <div class="toc-title">この記事の内容：</div>
+            <ul>
+                <li>なぜ外注費は高くなるのか</li>
+                <li>方法① 複数の協力業者を自分で持つ</li>
+                <li>方法② 繁忙期・閑散期を読んで早めに声をかける</li>
+                <li>方法③ プラットフォームで職人と直接つながる</li>
+            </ul>
+        </nav>
+
+        <!-- ③ リード文 -->
+        <p class="lead">
+            外注費が利益を圧迫している——そう感じている現場監督や工務店は多い。
+            原因の多くは「重層下請け構造」にある。間に業者が入るたびにマージンが乗り、
+            最終的な外注費は職人への支払いの1.5〜2倍になることも珍しくない。
+        </p>
+
+        <!-- ④ なぜ外注費は高くなるのか -->
+        <h2 class="section-title">なぜ外注費は高くなるのか</h2>
+        <p class="body-text">
+            建設業は「元請け→一次下請け→二次下請け→職人」という多層構造が一般的だ。
+            各層が10〜20%のマージンを取るため、元請けが支払う外注費と
+            職人が実際に受け取る金額の間には大きな乖離が生まれる。
+            この構造を変えることが、外注費削減の本質的な解決策になる。
+        </p>
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-num">1.5〜2倍</div>
+                <div class="stat-label">実際の外注費<br>（職人単価比）</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">10〜20%</div>
+                <div class="stat-label">各層のマージン<br>（目安）</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">約30%</div>
+                <div class="stat-label">削減できる可能性<br>（直取引の場合）</div>
+            </div>
+        </div>
+
+        <!-- ⑤ 方法カード（3枚・縦並び） -->
+        <div class="method-card">
+            <div class="method-num">方法①</div>
+            <div class="method-title">複数の協力業者を自分で持つ</div>
+            <p class="method-text">
+                特定の業者に依存すると、その業者の都合や単価に左右される。
+                職種ごとに2〜3社の協力業者を持っておくことで、
+                相見積もりができ、単価交渉の余地が生まれる。
+                小規模な現場から声をかけて関係を育てておくことが重要だ。
+            </p>
+        </div>
+        <div class="method-card">
+            <div class="method-num">方法②</div>
+            <div class="method-title">繁忙期・閑散期を読んで早めに声をかける</div>
+            <p class="method-text">
+                職人の単価は需給で動く。繁忙期（春・秋）に急ぎで探すと割高になりやすい。
+                梅雨・台風時期（6〜7月）や年明けの閑散期は職人側も仕事が少なく、
+                条件が合いやすい。工期の見通しを早めに立て、閑散期に声をかけるだけで
+                外注費が変わることがある。
+            </p>
+        </div>
+        <div class="method-card">
+            <div class="method-num">方法③</div>
+            <div class="method-title">プラットフォームで職人と直接つながる</div>
+            <p class="method-text">
+                マッチングプラットフォームを使えば、中間業者を挟まずに
+                職人と直接取引できる。エージェントや紹介会社を使う場合と比べて
+                マージンが発生しないため、同じ品質の職人をより低コストで確保できる。
+                継続的に案件を出すことで、信頼できる職人との長期関係も築きやすい。
+            </p>
+        </div>
+
+    </div>
+
+    <!-- ⑥ CTAセクション -->
+    <section class="cta-wrap">
+        <div class="cta-label">この記事を読んだ方へ</div>
+        <div class="cta-title">El'christoで職人と直接つながる</div>
+        <p class="cta-desc">
+            東四国（徳島・香川）の建設業に特化したマッチングサービス。
+            中間マージンなし、登録3分で職人を探せます。
+        </p>
+        <a href="/accounts/signup/" class="cta-btn">無料で登録する →</a>
+    </section>
+
+</article>
+{% endblock %}

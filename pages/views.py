@@ -8,3 +8,6 @@ class LpWorkerView(TemplateView):
 
 class ArticleWorkerShortageView(TemplateView):
     template_name = 'pages/article_worker_shortage.html'
+
+class ArticleReduceCostView(TemplateView):
+    template_name = 'pages/article_reduce_cost.html'
