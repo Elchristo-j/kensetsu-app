@@ -208,9 +208,9 @@ STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
 
 STRIPE_PRICE_IDS = {
-    'silver': 'price_1SoEIGDADu8qJkAGq7P5azgd',
-    'gold': 'price_1SoEJMDADu8qJkAG1kNZbtM9',
-    'platinum': 'price_1SoEJyDADu8qJkAGapSq3ize',
+    'silver': 'price_1TdqlZDFW7Advb6AsoCT0CLl',
+    'gold': 'price_1TdqpbDFW7Advb6AUyb8AdhJ',
+    'platinum': 'price_1TdqqDDFW7Advb6AeKqv4CRm',
 }
 
 # ==========================================
