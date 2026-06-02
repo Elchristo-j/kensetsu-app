@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}建設業の職人不足は2030年にどうなるか｜El'christo{% endblock %}
+
+{% block extra_head %}
+<meta name="description" content="建設業の職人不足が2030年に向けてどう深刻化するか、徳島・香川の地方現場の視点からデータとともに解説します。発注者が今からできる備えとは。">
+<meta property="og:title" content="建設業の職人不足は2030年にどうなるか｜El'christo">
+<meta property="og:description" content="職人不足の現状と2030年予測。地方（徳島・香川）の建設業が直面する現実と、今からできる対策。">
+<style>
+    .article-wrap { background: #111111; color: #e8e8e8; border-radius: 12px; overflow: hidden; max-width: 720px; margin: 40px auto; }
+    .hero { background: #111111; border-bottom: 1px solid #2a2a2a; padding: 32px 28px 28px; }
+    .badge-column { display: inline-block; background: #1a1a00; color: #d4af37; border: 0.5px solid #d4af37; font-size: 11px; padding: 3px 10px; border-radius: 4px; margin-bottom: 14px; letter-spacing: 0.05em; }
+    .article-h1 { font-size: 20px; font-weight: 500; line-height: 1.5; color: #f0f0f0; margin-bottom: 12px; }
+    .meta { font-size: 12px; color: #888; display: flex; gap: 16px; }
+    .body-wrap { padding: 24px 28px; }
+    .lead { font-size: 14px; line-height: 1.8; color: #ccc; margin-bottom: 24px; border-left: 2px solid #d4af37; padding-left: 14px; }
+    .section-title { font-size: 15px; font-weight: 500; color: #d4af37; margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 0.5px solid #2a2a2a; }
+    .body-text { font-size: 13px; line-height: 1.9; color: #bbb; margin-bottom: 16px; }
+    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+    .stat-card { background: #1a1a1a; border: 0.5px solid #2a2a2a; border-radius: 8px; padding: 14px 12px; text-align: center; }
+    .stat-num { font-size: 22px; font-weight: 500; color: #d4af37; }
+    .stat-label { font-size: 11px; color: #888; margin-top: 4px; line-height: 1.4; }
+    .highlight-box { background: #1a1500; border: 0.5px solid #d4af37; border-radius: 8px; padding: 18px 20px; margin: 20px 0; }
+    .highlight-box p { font-size: 13px; line-height: 1.8; color: #d4af37; margin: 0; }
+    .cta-wrap { background: #1a1a1a; border-top: 1px solid #2a2a2a; padding: 24px 28px; }
+    .cta-label { font-size: 12px; color: #888; margin-bottom: 10px; }
+    .cta-title { font-size: 16px; font-weight: 500; color: #f0f0f0; margin-bottom: 8px; }
+    .cta-desc { font-size: 13px; color: #999; margin-bottom: 18px; line-height: 1.7; }
+    .cta-btn { display: inline-block; background: #d4af37; color: #111; font-size: 13px; font-weight: 500; padding: 10px 24px; border-radius: 6px; text-decoration: none; }
+    .toc { background: #1a1a1a; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; }
+    .toc-title { font-size: 12px; color: #888; margin-bottom: 10px; }
+    .toc ul { margin: 0; padding: 0; }
+    .toc li { font-size: 13px; color: #aaa; line-height: 2; list-style: none; padding-left: 16px; position: relative; }
+    .toc li::before { content: '—'; position: absolute; left: 0; color: #d4af37; font-size: 11px; }
+
+    @media (max-width: 480px) {
+        .stat-grid { grid-template-columns: 1fr; }
+        .meta { flex-direction: column; gap: 4px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<article class="article-wrap">
+
+    <!-- ① ヒーローセクション -->
+    <header class="hero">
+        <span class="badge-column">建設業コラム</span>
+        <h1 class="article-h1">建設業の職人不足は2030年にどうなるか｜今から備える現場の話</h1>
+        <div class="meta">
+            <span>公開日 2026.06.02</span>
+            <span>El'christo 運営局</span>
+            <span>読了約4分</span>
+        </div>
+    </header>
+
+    <div class="body-wrap">
+
+        <!-- ② 目次 -->
+        <nav class="toc">
+            <div class="toc-title">この記事の内容：</div>
+            <ul>
+                <li>職人不足の現状と数字</li>
+                <li>2030年・2035年に何が起きるか</li>
+                <li>地方（徳島・香川）はより深刻</li>
+                <li>発注者はどう備えるか</li>
+            </ul>
+        </nav>
+
+        <!-- ③ リード文 -->
+        <p class="lead">
+            「頼める職人がいない」という声が、現場でじわじわ増えている。<br>
+            今はまだ何とかなっている。でも5年後、10年後はどうか。
+        </p>
+
+        <!-- ④ 職人不足の現状 -->
+        <h2 class="section-title">職人不足の現状</h2>
+        <p class="body-text">
+            国土交通省のデータによると、建設業就業者のうち55歳以上が全体の約35%を占めており、
+            10年以内に大量離職が見込まれている。一方で29歳以下は約12%にとどまり、
+            若手の入職が追いついていない。
+        </p>
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-num">35%</div>
+                <div class="stat-label">55歳以上<br>就業者比率</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">12%</div>
+                <div class="stat-label">29歳以下<br>就業者比率</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">約30万人</div>
+                <div class="stat-label">2030年までの<br>予測不足数</div>
+            </div>
+        </div>
+
+        <!-- ⑤ 2030年に何が起きるか -->
+        <h2 class="section-title">2030年に何が起きるか</h2>
+        <p class="body-text">
+            需要は減らない。インフラ老朽化・災害復旧・民間投資など、建設需要の下支えは続く。
+            しかし供給側の職人は確実に減る。この需給ギャップが広がると、
+            「仕事はあるのに人がいない」という状況が常態化する。
+        </p>
+        <div class="highlight-box">
+            <p>
+                地方はより深刻だ。徳島・香川のような地方では人口減少も重なり、
+                都市部よりも早くこの問題が顕在化する可能性が高い。
+                今のうちに職人との繋がりを作っておくことが、将来の現場を守ることに直結する。
+            </p>
+        </div>
+
+        <!-- ⑥ 発注者はどう備えるか -->
+        <h2 class="section-title">発注者はどう備えるか</h2>
+        <p class="body-text">
+            求人サイトに掲載するだけでは限界がある。職人は「知っている人から仕事をもらう」
+            文化が根強く、プラットフォームを通じた繋がりづくりが有効になってきている。
+            今から関係を作っておくことが、5年後の差になる。
+        </p>
+
+    </div>
+
+    <!-- ⑦ CTAセクション -->
+    <section class="cta-wrap">
+        <div class="cta-label">この記事を読んだ方へ</div>
+        <div class="cta-title">El'christoで今から職人との繋がりを作る</div>
+        <p class="cta-desc">
+            東四国（徳島・香川）の建設業に特化したマッチングサービス。
+            登録3分、まず繋がりだけ作っておくことができます。
+        </p>
+        <a href="/accounts/signup/" class="cta-btn">無料で登録する →</a>
+    </section>
+
+</article>
+{% endblock %}

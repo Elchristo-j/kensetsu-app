@@ -5,3 +5,6 @@ class LpClientView(TemplateView):
 
 class LpWorkerView(TemplateView):
     template_name = 'pages/lp_worker.html'
+
+class ArticleWorkerShortageView(TemplateView):
+    template_name = 'pages/article_worker_shortage.html'

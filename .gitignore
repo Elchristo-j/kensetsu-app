@@ -2,6 +2,7 @@ db.sqlite3
 .env
 vendor/bundle/
 venv/
+.venv/
 *.sqlite3
 .DS_Store
 **/.DS_Store
