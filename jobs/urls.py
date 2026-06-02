@@ -90,4 +90,7 @@ urlpatterns = [
 
     path('job/<int:job_id>/close/', views.close_job, name='close_job'),
 
+    # AI案件説明文生成API
+    path('generate-job-description/', views.generate_job_description, name='generate_job_description'),
+
 ]

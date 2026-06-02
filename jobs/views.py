@@ -5,10 +5,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.db.models import Q, Avg
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 # アカウント関連のモデル・フォーム
 from accounts.models import Profile, FavoriteArea, PREFECTURES, Block
@@ -801,4 +802,60 @@ def scout_detail(request, pk):
 
     context = {'scout': scout}
     return render(request, 'jobs/scout_detail.html', context)
-    
+
+
+# === AI案件説明文生成API ===
+@login_required
+@require_POST
+def generate_job_description(request):
+    """AI案件説明文生成API"""
+    try:
+        import anthropic
+        import json
+        data = json.loads(request.body)
+        category = data.get('category', '')
+        work_date = data.get('work_date', '')
+        working_hours = data.get('working_hours', '')
+        price = data.get('price', '')
+        unit = data.get('unit', '日')
+        prefecture = data.get('prefecture', '')
+        city = data.get('city', '')
+        qualifications = data.get('qualifications', '')
+        headcount = data.get('headcount', 1)
+        # 職種の表示名変換（JOB_CATEGORIESから）
+        category_map = dict(JOB_CATEGORIES)
+        category_display = category_map.get(category, category)
+        # 単位の表示名変換
+        unit_map = {'日': '日給', '時': '時給', '件': '1件あたり'}
+        unit_display = unit_map.get(unit, unit)
+        if not category:
+            return JsonResponse({'error': '職種を選択してください。'}, status=400)
+        prompt = f"""あなたは建設業界の求人担当者です。
+以下の情報をもとに、建設マッチングアプリの案件投稿用「作業内容の詳細」を日本語で書いてください。
+【入力情報】
+- 職種：{category_display}
+- 勤務日・期間：{work_date or '未入力'}
+- 勤務時間帯：{working_hours or '未入力'}
+- 報酬：{price}円（{unit_display}）
+- 現場エリア：{prefecture}{city}
+- 応募資格・必要な道具：{qualifications or 'とくになし'}
+- 募集人数：{headcount}名
+【条件】
+- 150〜250文字程度の自然な日本語で書くこと
+- 職人が応募したくなるような、現場の雰囲気が伝わる文章にすること
+- 箇条書きは使わず、文章形式で書くこと
+- 説明文だけを出力し、前置きや補足は一切不要
+"""
+        client = anthropic.Anthropic()
+        message = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=500,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+        description_text = message.content[0].text.strip()
+        return JsonResponse({'description': description_text})
+    except Exception as e:
+        return JsonResponse({'error': f'生成に失敗しました：{str(e)}'}, status=500)
+

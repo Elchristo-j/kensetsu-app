@@ -34,6 +34,12 @@
           <div class="mb-3">
             <label class="form-label fw-bold small">{{ form.description.label }}</label>
             {{ form.description }}
+            <button type="button" id="generate-desc-btn"
+              style="margin-top: 8px; padding: 8px 16px; background: #1a1a2e; color: #d4af37;
+                     border: 1px solid #d4af37; border-radius: 6px; cursor: pointer; font-size: 14px;">
+              ✨ AIで説明文を生成する
+            </button>
+            <span id="generate-desc-status" style="margin-left: 10px; font-size: 13px; color: #888;"></span>
           </div>
         </div>
         
@@ -77,4 +83,59 @@
     </div>
   </div>
 </div>
+
+<script>
+document.getElementById('generate-desc-btn').addEventListener('click', function () {
+  const btn = this;
+  const status = document.getElementById('generate-desc-status');
+  // フォームから値を収集
+  const category = document.querySelector('[name="category"]')?.value || '';
+  const workDate = document.querySelector('[name="work_date"]')?.value || '';
+  const workingHours = document.querySelector('[name="working_hours"]')?.value || '';
+  const price = document.querySelector('[name="price"]')?.value || '';
+  const unit = document.querySelector('[name="unit"]')?.value || '日';
+  const prefecture = document.querySelector('[name="prefecture"]')?.value || '';
+  const city = document.querySelector('[name="city"]')?.value || '';
+  const qualifications = document.querySelector('[name="qualifications"]')?.value || '';
+  const headcount = document.querySelector('[name="headcount"]')?.value || 1;
+  if (!category) {
+    status.textContent = '職種を選択してください。';
+    status.style.color = '#e74c3c';
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = '⏳ 生成中...';
+  status.textContent = '';
+  fetch("{% url 'generate_job_description' %}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}',
+    },
+    body: JSON.stringify({
+      category, work_date: workDate, working_hours: workingHours,
+      price, unit, prefecture, city, qualifications, headcount
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.description) {
+      document.querySelector('[name="description"]').value = data.description;
+      status.textContent = '✅ 生成完了！内容を確認・編集してから投稿してください。';
+      status.style.color = '#27ae60';
+    } else {
+      status.textContent = data.error || '生成に失敗しました。';
+      status.style.color = '#e74c3c';
+    }
+  })
+  .catch(() => {
+    status.textContent = '通信エラーが発生しました。';
+    status.style.color = '#e74c3c';
+  })
+  .finally(() => {
+    btn.disabled = false;
+    btn.textContent = '✨ AIで説明文を生成する';
+  });
+});
+</script>
 {% endblock %}
