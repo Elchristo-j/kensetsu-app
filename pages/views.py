@@ -11,3 +11,6 @@ class ArticleWorkerShortageView(TemplateView):
 
 class ArticleReduceCostView(TemplateView):
     template_name = 'pages/article_reduce_cost.html'
+
+class ArticleSoloStabilityView(TemplateView):
+    template_name = 'pages/article_solo_stability.html'

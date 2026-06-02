@@ -8,4 +8,5 @@ urlpatterns = [
     path('lp/worker/', views.LpWorkerView.as_view(), name='lp_worker'),
     path('column/worker-shortage-2030/', views.ArticleWorkerShortageView.as_view(), name='article_worker_shortage'),
     path('column/reduce-outsourcing-cost/', views.ArticleReduceCostView.as_view(), name='article_reduce_cost'),
+    path('column/solo-worker-stability/', views.ArticleSoloStabilityView.as_view(), name='article_solo_stability'),
 ]
