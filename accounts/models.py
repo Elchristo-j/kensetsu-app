@@ -85,6 +85,15 @@ class Profile(models.Model):
     e_points = models.IntegerField(default=0, verbose_name="保有Eポイント")
     # ▲▲▲ 追加ここまで ▲▲▲
 
+    # ▼▼▼ 今回追加：無料ランクアップ（期限つき）の管理 ▼▼▼
+    rank_expires_at = models.DateTimeField(
+        null=True, blank=True, verbose_name="無料ランクの有効期限"
+    )
+    free_rankup_used = models.BooleanField(
+        default=False, verbose_name="無料ランクアップ使用済み"
+    )
+    # ▲▲▲ 追加ここまで ▲▲▲
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -95,7 +104,24 @@ class Profile(models.Model):
         if r in ['silver', 'gold', 'platinum']: return 999999
         if r == 'bronze': return 10
         return 3
-
+    
+    def check_and_downgrade_rank(self):
+        """
+        無料ランクの期限が切れていたら、自動でランクを戻す。
+        ・本人確認済み（is_verified=True）→ bronze へ
+        ・未確認 → iron へ
+        戻したらTrueを返す（何もしなければFalse）。
+        """
+        # 期限が設定されていて、かつ今がその期限を過ぎているか
+        if self.rank_expires_at and timezone.now() >= self.rank_expires_at:
+            # 課金ランク（silver/gold/platinum）にいる人だけが対象
+            if str(self.rank).lower() in ['silver', 'gold', 'platinum']:
+                self.rank = 'bronze' if self.is_verified else 'iron'
+                self.rank_expires_at = None  # 期限をリセット
+                self.save()
+                return True
+        return False
+        
     @property
     def posting_limit(self):
         """今月の募集投稿可能数"""
