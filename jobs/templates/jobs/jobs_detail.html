@@ -35,7 +35,7 @@
                     {% if user == target_user %}
                         <div class="d-flex justify-content-center gap-2">
                             <a href="{% url 'profile_edit' %}" class="btn btn-outline-dark rounded-pill px-4">編集</a>
-                            {% if user.profile.display_rank != 'PLATINA' %}
+                            {% if user.profile.display_rank != 'PLATINA' and not is_ios_app %}
                                 <a href="{% url 'upgrade_plan_page' %}" class="btn btn-sumi rounded-pill px-4 shadow">ランクアップ</a>
                             {% endif %}
                         </div>

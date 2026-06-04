@@ -106,6 +106,8 @@ border-bottom: 4px solid #00bcd4;
 
 </style>
 
+{% if not is_ios_app %}
+
 <div class="bg-dark text-white py-5 mb-5 position-relative overflow-hidden">
 
 <div class="position-absolute top-0 start-0 w-100 h-100" style="background: radial-gradient(circle at center, #333 0%, #000 100%); opacity: 0.8; z-index: 0;"></div>
@@ -508,5 +510,24 @@ PLATINUM<br><small class="text-paid">(有料会員)</small>
 </div>
 
 </div>
+
+{% else %}
+
+{# アプリ（iOS/Android）からのアクセス時は課金UIを一切表示しない（Apple審査要件） #}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="bg-light p-4 rounded text-center border">
+        <i class="bi bi-shield-lock fs-3 text-secondary d-block mb-2"></i>
+        <p class="fw-bold mb-1">アカウント設定</p>
+        <p class="text-secondary small mb-0">
+          現在、セキュリティ保護のため<br>アプリ内での設定変更を制限しています。
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endif %}
 
 {% endblock %}
