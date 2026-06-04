@@ -87,6 +87,8 @@ TEMPLATES = [
                 # ★これを一番下に追加してください
                 # 「プロジェクト名」の部分は、settings.pyが入っているフォルダ名に書き換えてください
                 'config.context_processors.app_detection',
+                # 無料ランクの期限切れを毎アクセスでチェックして自動降格させる
+                'accounts.context_processors.rank_downgrade_check',
             ],
         },
     },

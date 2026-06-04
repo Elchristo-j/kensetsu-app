@@ -250,6 +250,10 @@ def profile_detail(request, user_id):
     worker_stats = calculate_stats(target, 'employer_to_worker')
     employer_stats = calculate_stats(target, 'worker_to_employer')
     jobs = Job.objects.filter(created_by=target).order_by('-created_at')
+    # 本人確認が未承認のユーザーの案件は、本人以外には一覧表示しない
+    # （本人が自分の投稿を確認する導線は残す）
+    if request.user != target and not profile.is_verified:
+        jobs = jobs.none()
 
     is_contracted_partner = False
     if request.user.is_authenticated:
@@ -292,6 +296,42 @@ def delete_favorite_area(request, area_id):
 @login_required
 def upgrade_plan_page(request):
     return render(request, 'accounts/upgrade.html')
+
+
+# --- 無料ランクアップで付与する内容（将来SILVERへ変える可能性を残して定数化）---
+FREE_RANKUP_PLAN = 'gold'   # 付与するランク（Profile.RANK_CHOICES の実値）
+FREE_RANKUP_DAYS = 30       # 無料期間（日数）
+
+
+@login_required
+def free_rankup(request):
+    """
+    Stripeを通さず、Django側で rank と rank_expires_at を書き換えるだけの
+    無料ランクアップ。1人1回だけ。POSTのみ受け付ける。
+    """
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+
+    # GET等では何もせずアップグレード画面へ戻す
+    if request.method != 'POST':
+        return redirect('upgrade_plan_page')
+
+    # 1人1回だけ
+    if profile.free_rankup_used:
+        messages.warning(request, '無料ランクアップは既にご利用済みです。')
+        return redirect('upgrade_plan_page')
+
+    # rank と期限を書き換えるだけ（Stripeは一切通さない）
+    profile.rank = FREE_RANKUP_PLAN
+    profile.rank_expires_at = timezone.now() + datetime.timedelta(days=FREE_RANKUP_DAYS)
+    profile.free_rankup_used = True
+    profile.save()
+
+    messages.success(
+        request,
+        'GOLDプランを初月無料（30日間）でご利用いただけます！'
+        '募集投稿には本人確認（無料・写真1枚）が必要です。'
+    )
+    return redirect('mypage')
 
 @login_required
 def create_checkout_session(request, plan_type):

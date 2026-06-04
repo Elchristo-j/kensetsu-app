@@ -18,6 +18,9 @@ urlpatterns = [
     # --- マイページ・プランアップグレード ---
     path('mypage/', views.mypage, name='mypage'),
     path('upgrade/', views.upgrade_plan_page, name='upgrade_plan_page'),
+
+    # 無料ランクアップ（Stripeを通さず GOLD を初月無料付与・1人1回）
+    path('free-rankup/', views.free_rankup, name='free_rankup'),
     
     # 決済セッション作成（1つに整理しました）
     path('create-checkout-session/<str:plan_type>/', views.create_checkout_session, name='create_checkout_session'),

@@ -113,7 +113,12 @@ def contact(request):
 # --- 1. Home & Search ---
 def home(request):
     expiration_date = timezone.now() - timedelta(days=31)
-    jobs = Job.objects.filter(is_closed=False, created_at__gte=expiration_date).order_by('-created_at')
+    # 本人確認済み(is_verified=True)の投稿者の案件だけを一覧表示する
+    jobs = Job.objects.filter(
+        is_closed=False,
+        created_at__gte=expiration_date,
+        created_by__profile__is_verified=True,
+    ).order_by('-created_at')
     news_list = News.objects.filter(is_published=True).order_by('-created_at')[:3]
     
     if request.user.is_authenticated:
@@ -129,7 +134,12 @@ def home(request):
 
 def job_list(request):
     expiration_date = timezone.now() - timedelta(days=31)
-    jobs = Job.objects.filter(created_at__gte=expiration_date, is_closed=False).order_by('-created_at')
+    # 本人確認済み(is_verified=True)の投稿者の案件だけを一覧表示する
+    jobs = Job.objects.filter(
+        created_at__gte=expiration_date,
+        is_closed=False,
+        created_by__profile__is_verified=True,
+    ).order_by('-created_at')
 
     if request.user.is_authenticated:
         ignore_ids = get_blocked_user_ids(request.user)
@@ -165,7 +175,11 @@ def favorite_search_view(request):
         if area.city: query |= Q(prefecture=area.prefecture, city=area.city)
         else: query |= Q(prefecture=area.prefecture)
     
-    jobs = Job.objects.filter(query).filter(is_closed=False).order_by('-id')
+    # 本人確認済み(is_verified=True)の投稿者の案件だけを一覧表示する
+    jobs = Job.objects.filter(query).filter(
+        is_closed=False,
+        created_by__profile__is_verified=True,
+    ).order_by('-id')
 
     ignore_ids = get_blocked_user_ids(request.user)
     if ignore_ids:

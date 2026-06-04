@@ -154,6 +154,25 @@ border-bottom: 4px solid #00bcd4;
 
 <div class="container mb-5">
 
+{% if user.is_authenticated and not user.profile.free_rankup_used %}
+<div class="card border-warning shadow mb-5 mt-n4 position-relative" style="border-width:2px;">
+  <div class="card-body text-center p-4 p-md-5">
+    <span class="badge bg-danger fs-6 mb-3 px-3 py-2 rounded-pill shadow">🎁 初回限定・お1人さま1回</span>
+    <h2 class="fw-bold mb-3">GOLDプランを <span class="text-warning">初月無料（¥0）</span> で試す</h2>
+    <p class="mb-4 text-muted">
+      GOLDプラン初月無料（¥0）／カード登録なし／募集投稿は無制限／<br class="d-none d-md-inline">
+      投稿には本人確認（無料・写真1枚）が必要／続けたいときだけ課金
+    </p>
+    <form action="{% url 'free_rankup' %}" method="post" class="d-grid col-md-6 mx-auto">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-warning btn-lg py-3 rounded-pill fw-bold text-dark shadow">
+        無料でGOLDを始める（カード登録なし）
+      </button>
+    </form>
+  </div>
+</div>
+{% endif %}
+
 <div class="row g-4 justify-content-center mb-5">
 
 <div class="col-lg-4 col-md-6">
