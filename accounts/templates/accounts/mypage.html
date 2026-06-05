@@ -185,6 +185,26 @@
                     <p class="text-muted small mt-2 bg-light p-2 rounded">
                         ※本人確認が完了すると、<br>会員ランクがアップします。
                     </p>
+
+                {% if not user.profile.free_rankup_used and not is_ios_app %}
+<div class="card border-warning shadow-sm mt-3 mb-2" style="border-width:2px;">
+    <div class="card-body p-3 text-center">
+        <span class="badge bg-danger rounded-pill mb-2 px-3 py-1">🎁 初回限定・お1人さま1回</span>
+        <p class="fw-bold mb-2">
+            本人確認をすると<br>
+            <span style="color:#b8860b;">GOLDプランが初月無料（¥0）</span>で使えます！
+        </p>
+        <p class="text-muted small mb-3">
+            ①本人確認（無料・写真1枚）→ ②初月GOLD無料<br>
+            の順でお進みください。カード登録は不要です。
+        </p>
+        <a href="{% url 'upgrade_plan_page' %}" class="btn btn-warning rounded-pill fw-bold text-dark shadow-sm">
+            <i class="bi bi-gift"></i> 初月GOLD無料を見る
+        </a>
+    </div>
+</div>
+{% endif %}
+
                 {% else %}
                     {% if is_ios_app %}
                         <div class="bg-light p-3 rounded mt-2 text-center border">
