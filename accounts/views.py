@@ -20,6 +20,9 @@ from .forms import CustomUserCreationForm, ProfileForm
 # ▼▼ ここに Scout を追加しました ▼▼
 from jobs.models import Job, Application, Review, Scout
 
+# アプリ（iOS/Android）からの課金導線アクセスをブロックするデコレータ
+from config.utils import block_in_app
+
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
@@ -294,6 +297,7 @@ def delete_favorite_area(request, area_id):
     return redirect('profile_detail', user_id=request.user.id)
 
 @login_required
+@block_in_app
 def upgrade_plan_page(request):
     return render(request, 'accounts/upgrade.html')
 
@@ -304,6 +308,7 @@ FREE_RANKUP_DAYS = 30       # 無料期間（日数）
 
 
 @login_required
+@block_in_app
 def free_rankup(request):
     """
     Stripeを通さず、Django側で rank と rank_expires_at を書き換えるだけの
@@ -334,6 +339,7 @@ def free_rankup(request):
     return redirect('mypage')
 
 @login_required
+@block_in_app
 def create_checkout_session(request, plan_type):
     price_id = settings.STRIPE_PRICE_IDS.get(plan_type)
     if not price_id: return redirect('mypage')
