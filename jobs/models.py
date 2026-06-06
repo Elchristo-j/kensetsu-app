@@ -57,6 +57,10 @@ class Job(models.Model):
     is_closed = models.BooleanField(default=False, verbose_name="募集終了")
     headcount = models.IntegerField(default=1, verbose_name="募集人数")
 
+    class Meta:
+        verbose_name = "案件"
+        verbose_name_plural = "案件"
+
     def __str__(self):
         return self.title
 
@@ -96,6 +100,10 @@ class Application(models.Model):
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
+    class Meta:
+        verbose_name = "応募"
+        verbose_name_plural = "応募"
+
     def __str__(self):
         return f"{self.applicant.username} -> {self.job.title}"
 
@@ -106,6 +114,10 @@ class Message(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "チャット"
+        verbose_name_plural = "チャット"
 
 
 class Review(models.Model):
@@ -134,6 +146,10 @@ class Review(models.Model):
 
     comment = models.TextField('コメント', blank=True)
     created_at = models.DateTimeField('評価日時', auto_now_add=True)
+
+    class Meta:
+        verbose_name = "評価"
+        verbose_name_plural = "評価"
 
     def save(self, *args, **kwargs):
         if self.review_type == 'employer_to_worker' and self.utility_amount is not None:
@@ -165,6 +181,10 @@ class Contact(models.Model):
     message = models.TextField("お問い合わせ内容")
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        verbose_name = "お問い合わせ"
+        verbose_name_plural = "お問い合わせ"
+
     def __str__(self):
         return self.subject
 
@@ -179,6 +199,8 @@ class Notification(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        verbose_name = "通知"
+        verbose_name_plural = "通知"
 
     def __str__(self):
         return f"{self.recipient.username}宛: {self.title}"
@@ -310,6 +332,10 @@ class Scout(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        verbose_name = "スカウト"
+        verbose_name_plural = "スカウト"
+
     def __str__(self):
         return f"{self.employer.username} から {self.worker.username} へのスカウト"
 
@@ -373,4 +399,5 @@ class BlockedEmail(models.Model):
         return self.email
 
     class Meta:
-        verbose_name = "ブロックメール"       
+        verbose_name = "ブロックメールアドレス"
+        verbose_name_plural = "ブロックメールアドレス"

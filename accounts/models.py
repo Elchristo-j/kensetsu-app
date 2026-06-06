@@ -97,6 +97,10 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        verbose_name = "プロフィール"
+        verbose_name_plural = "プロフィール"
+
     @property
     def monthly_limit(self):
         """今月の応募可能数"""
@@ -163,6 +167,10 @@ class FavoriteArea(models.Model):
     prefecture = models.CharField(max_length=20, choices=PREFECTURES)
     city = models.CharField(max_length=50, blank=True, null=True, default='')
 
+    class Meta:
+        verbose_name = "お気に入りエリア"
+        verbose_name_plural = "お気に入りエリア"
+
     def __str__(self):
         return f"{self.user.username} - {self.prefecture}{self.city}"
 
@@ -172,12 +180,18 @@ class Block(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         unique_together = ('blocker', 'blocked')
+        verbose_name = "ブロック"
+        verbose_name_plural = "ブロック"
 
 class Report(models.Model):
     reporter = models.ForeignKey(User, related_name='reports_made', on_delete=models.CASCADE)
     target = models.ForeignKey(User, related_name='reports_received', on_delete=models.CASCADE)
     reason = models.TextField("通報理由")
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "通報記録"
+        verbose_name_plural = "通報記録"
 
 @receiver(post_save, sender=User)
 def handle_user_profile_sync(sender, instance, created, **kwargs):
