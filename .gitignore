@@ -6,3 +6,8 @@ venv/
 *.sqlite3
 .DS_Store
 **/.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
