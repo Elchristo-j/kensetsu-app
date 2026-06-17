@@ -27,7 +27,7 @@
 | ドメイン | お名前.com（el-christo.jp） |
 | メール | [kma.elchristo@gmail.com](mailto:kma.elchristo@gmail.com)（送受信）/ [info@el-christo.jp](mailto:info@el-christo.jp)（受信のみ確認済） |
 | バージョン管理 | GitHub（Elchristo-j/kensetsu-app） |
-| AI | Anthropic Claude API（claude-sonnet-4-20250514） |
+| AI | Anthropic Claude API（claude-sonnet-4-6） |
 
 ---
 
