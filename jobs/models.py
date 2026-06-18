@@ -347,6 +347,7 @@ class EPointHistory(models.Model):
     後から不正がないか、どのような行動でポイントを得たかを確認するための重要テーブル
     """
     ACTION_CHOICES = (
+        ('job_posted', '案件投稿'),         # 1pt
         ('job_contracted', '案件契約成立'), # 1pt
         ('job_completed', '業務完了報告'),  # 3pt
         ('scout_accepted', 'スカウト承諾'), # 2pt
