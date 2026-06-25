@@ -241,17 +241,6 @@ def create_job(request):
             j = form.save(commit=False)
             j.created_by = request.user
             j.save()
-            try:
-                EPointHistory.objects.create(
-                    user=request.user,
-                    action_type='job_posted',
-                    points=1,
-                    description=f"案件「{j.title}」の投稿",
-                    related_job=j,
-                    related_application=None
-                )
-            except Exception:
-                pass
             messages.success(request, "案件を投稿しました。現在サービス立ち上げ期のため、応募まで少しお時間をいただくことがあります。")
             return redirect('home')
     else: 
