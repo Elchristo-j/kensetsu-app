@@ -98,9 +98,11 @@ def calculate_stats(user, review_type):
 
 # --- ビュー定義 ---
 def signup(request):
+    recaptcha_site_key = os.environ.get('RECAPTCHA_SITE_KEY', '')
+
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
-        
+
         # reCAPTCHA検証
         recaptcha_response = request.POST.get('g-recaptcha-response')
         import urllib.request
@@ -112,14 +114,27 @@ def signup(request):
             'response': recaptcha_response
         }
         data = urllib.parse.urlencode(values).encode()
-        req = urllib.request.Request(url, data=data)
-        response = urllib.request.urlopen(req)
-        result = json.loads(response.read().decode())
-        
+
+        try:
+            req = urllib.request.Request(url, data=data)
+            response = urllib.request.urlopen(req, timeout=10)
+            result = json.loads(response.read().decode())
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error('reCAPTCHA verification failed: %s', e)
+            messages.error(request, 'ロボット認証サーバーに接続できませんでした。しばらく待ってもう一度お試しください。')
+            return render(request, 'accounts/signup.html', {
+                'form': form,
+                'recaptcha_site_key': recaptcha_site_key,
+            })
+
         if not result.get('success'):
             messages.error(request, 'ロボット認証に失敗しました。もう一度お試しください。')
-            return render(request, 'accounts/signup.html', {'form': form})
-        
+            return render(request, 'accounts/signup.html', {
+                'form': form,
+                'recaptcha_site_key': recaptcha_site_key,
+            })
+
         if form.is_valid():
             user = form.save(commit=False)
             user.is_active = False
@@ -141,7 +156,10 @@ def signup(request):
             return redirect('login')
     else:
         form = CustomUserCreationForm()
-    return render(request, 'accounts/signup.html', {'form': form})
+    return render(request, 'accounts/signup.html', {
+        'form': form,
+        'recaptcha_site_key': recaptcha_site_key,
+    })
 
 def activate(request, uidb64, token):
     try:
