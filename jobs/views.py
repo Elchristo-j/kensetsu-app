@@ -1,3 +1,4 @@
+import re
 import stripe
 from datetime import timedelta, date
 from django.conf import settings
@@ -61,6 +62,8 @@ def calculate_stats_for_user(user, review_type):
             'count': reviews.count()
         }
     
+JAPANESE_CHAR_PATTERN = re.compile(r'[ぁ-んァ-ヶー一-龯々]')
+
 def contact(request):
     if request.method == 'POST':
         # ハニーポットチェック
@@ -83,6 +86,12 @@ def contact(request):
             message_text = contact.message or ''
             subject_text = contact.subject if hasattr(contact, 'subject') else ''
             if any(kw.lower() in (message_text + subject_text).lower() for kw in spam_keywords):
+                messages.success(request, 'お問い合わせを受け付けました。確認後ご連絡いたします。')
+                return redirect('home')
+            if not JAPANESE_CHAR_PATTERN.search(subject_text + message_text):
+                if request.user.is_authenticated:
+                    contact.user = request.user
+                contact.save()
                 messages.success(request, 'お問い合わせを受け付けました。確認後ご連絡いたします。')
                 return redirect('home')
             if request.user.is_authenticated:
