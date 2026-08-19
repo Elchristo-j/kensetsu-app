@@ -28,6 +28,18 @@
 </style>
 
 <div class="container my-5" style="max-width: 500px;">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill me-1"></i>
+                {% elif message.tags == 'error' %}<i class="bi bi-exclamation-triangle-fill me-1"></i>
+                {% else %}<i class="bi bi-info-circle-fill me-1"></i>{% endif %}
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="閉じる"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
     <div class="card shadow border-0 overflow-hidden rounded-4">
         <div class="card-header bg-sumi text-white py-3 text-center">
             <h4 class="mb-0">🏗️ ログイン</h4>
@@ -35,6 +47,17 @@
        <div class="card-body p-4">
             <form method="post" onsubmit="let btn = this.querySelector('button[type=submit]'); btn.disabled = true; btn.innerText = 'ログイン処理中...';">
                 {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger small" role="alert">
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                        <hr class="my-2">
+                        <div class="mb-0">
+                            会員登録の直後の場合は、<strong>認証メール内のURLをクリックして本登録を完了</strong>させてからログインしてください。
+                        </div>
+                    </div>
+                {% endif %}
                 {% for field in form %}
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-secondary">{{ field.label }}</label>
