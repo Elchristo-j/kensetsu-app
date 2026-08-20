@@ -409,6 +409,10 @@ def stripe_webhook(request):
                 if ptype: 
                     p.rank = ptype
                 
+                # 課金したので無料ランクアップの期限は解除する。
+                # これを消し忘れると expire_ranks が課金ユーザーを降格させてしまう。
+                p.rank_expires_at = None
+                
                 today = datetime.date.today()
                 campaign_end = datetime.date(2026, 3, 31)
                 

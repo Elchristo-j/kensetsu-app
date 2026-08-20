@@ -625,6 +625,9 @@ def stripe_webhook(request):
                 if amount_total == 550: profile.rank = 'silver'
                 elif amount_total == 2200: profile.rank = 'gold'
                 elif amount_total == 5500: profile.rank = 'platinum'
+                # 課金したので無料ランクアップの期限は解除する。
+                # これを消し忘れると expire_ranks が課金ユーザーを降格させてしまう。
+                profile.rank_expires_at = None
                 profile.save()
             except User.DoesNotExist: pass
             except Exception: pass
