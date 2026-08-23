@@ -4,39 +4,73 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="閉じる"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
             <div class="card shadow-sm border-0 rounded-4">
                 <div class="card-body p-5">
+                    <script src="https://www.google.com/recaptcha/enterprise.js" async defer></script>
+
                     <h2 class="fw-bold text-center mb-4">お問い合わせ</h2>
                     <p class="text-muted text-center mb-5">
                         アプリに関するご質問やご要望は、<br>下記フォームよりお気軽にお問い合わせください。
                     </p>
-                    
+
                     <form method="post">
                         {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger small" role="alert">
+                                {% for error in form.non_field_errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">お名前</label>
                             {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+                            {% endif %}
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">メールアドレス</label>
                             {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                            {% endif %}
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">件名</label>
                             {{ form.subject }}
+                            {% if form.subject.errors %}
+                                <div class="text-danger small mt-1">{{ form.subject.errors }}</div>
+                            {% endif %}
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">お問い合わせ内容</label>
                             {{ form.message }}
+                            {% if form.message.errors %}
+                                <div class="text-danger small mt-1">{{ form.message.errors }}</div>
+                            {% endif %}
                         </div>
+
+                        <!-- ハニーポット（ボット対策） -->
                         <div style="display:none;">
-    <input type="text" name="website" tabindex="-1" autocomplete="off">
-</div>
-<div class="d-grid mt-4">
-                            <!-- ハニーポット（ボット対策） -->
-                            <div style="display:none;">
-                                <input type="text" name="website" tabindex="-1" autocomplete="off">
-                            </div>
+                            <input type="text" name="website" tabindex="-1" autocomplete="off">
+                        </div>
+
+                        <!-- reCAPTCHA -->
+                        <div class="g-recaptcha mb-3" data-sitekey="{{ recaptcha_site_key }}"></div>
+
+                        <div class="d-grid mt-4">
                             <button type="submit" class="btn btn-primary rounded-pill py-3 fw-bold">送信する</button>
                         </div>
                     </form>

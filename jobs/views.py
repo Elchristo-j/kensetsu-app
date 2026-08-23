@@ -1,3 +1,4 @@
+import os
 import re
 import stripe
 from datetime import timedelta, date
@@ -64,18 +65,65 @@ def calculate_stats_for_user(user, review_type):
     
 JAPANESE_CHAR_PATTERN = re.compile(r'[ぁ-んァ-ヶー一-龯々]')
 
+# 既知のスパム送信者名（部分一致・大文字小文字を区別しない）
+# 亜種（RobertHop123 等）にも対応するため部分一致で判定する
+SPAM_NAMES = [
+    'roberthop',
+]
+
 def contact(request):
+    recaptcha_site_key = os.environ.get('RECAPTCHA_SITE_KEY', '')
+
     if request.method == 'POST':
         # ハニーポットチェック
         if request.POST.get('website'):
             return redirect('home')
+
         form = ContactForm(request.POST)
+
+        # reCAPTCHA検証（signup ビューと同じ方式）
+        recaptcha_response = request.POST.get('g-recaptcha-response')
+        import urllib.request
+        import urllib.parse
+        import json
+        secret_key = os.environ.get('RECAPTCHA_SECRET_KEY')
+        verify_url = 'https://www.google.com/recaptcha/api/siteverify'
+        values = {
+            'secret': secret_key,
+            'response': recaptcha_response,
+        }
+        data = urllib.parse.urlencode(values).encode()
+        try:
+            req = urllib.request.Request(verify_url, data=data)
+            response = urllib.request.urlopen(req, timeout=10)
+            result = json.loads(response.read().decode())
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error('reCAPTCHA verification failed (contact): %s', e)
+            messages.error(request, 'ロボット認証サーバーに接続できませんでした。しばらく待ってもう一度お試しください。')
+            return render(request, 'jobs/contact.html', {
+                'form': form,
+                'recaptcha_site_key': recaptcha_site_key,
+            })
+
+        if not result.get('success'):
+            messages.error(request, 'ロボット認証に失敗しました。もう一度お試しください。')
+            return render(request, 'jobs/contact.html', {
+                'form': form,
+                'recaptcha_site_key': recaptcha_site_key,
+            })
+
         if form.is_valid():
             contact = form.save(commit=False)
             # ブロックメールチェック
             from .models import BlockedEmail
             if BlockedEmail.objects.filter(email=contact.email).exists():
                 messages.warning(request, 'お問い合わせを受け付けました。確認後ご連絡いたします。')
+                return redirect('home')
+            # スパム送信者名チェック（DBにも保存しない）
+            name_text = (contact.name or '').lower()
+            if any(spam_name in name_text for spam_name in SPAM_NAMES):
+                messages.success(request, 'お問い合わせを受け付けました。確認後ご連絡いたします。')
                 return redirect('home')
             # スパムキーワードチェック
             spam_keywords = [
@@ -88,12 +136,13 @@ def contact(request):
             if any(kw.lower() in (message_text + subject_text).lower() for kw in spam_keywords):
                 messages.success(request, 'お問い合わせを受け付けました。確認後ご連絡いたします。')
                 return redirect('home')
+            # 日本語なしチェック（海外ボット対策）
+            # 2026年8月23日変更：管理画面へのスパム蓄積が負担になったため、
+            # DBへの保存も行わない方針に変更した
             if not JAPANESE_CHAR_PATTERN.search(subject_text + message_text):
-                if request.user.is_authenticated:
-                    contact.user = request.user
-                contact.save()
                 messages.success(request, 'お問い合わせを受け付けました。確認後ご連絡いたします。')
                 return redirect('home')
+
             if request.user.is_authenticated:
                 contact.user = request.user
             contact.save()
@@ -116,8 +165,11 @@ def contact(request):
                 'email': request.user.email
             }
         form = ContactForm(initial=initial_data)
-    
-    return render(request, 'jobs/contact.html', {'form': form})
+
+    return render(request, 'jobs/contact.html', {
+        'form': form,
+        'recaptcha_site_key': recaptcha_site_key,
+    })
 
 # --- 1. Home & Search ---
 def home(request):
