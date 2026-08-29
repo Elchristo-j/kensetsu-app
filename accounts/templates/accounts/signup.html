@@ -49,6 +49,12 @@
         <!-- reCAPTCHA -->
         <div class="g-recaptcha mb-3" data-sitekey="{{ recaptcha_site_key }}"></div>
 
+        {# ハニーポット（ボット対策）。人間には見えない。値が入っていたら送信を破棄する #}
+        <div style="position:absolute; left:-9999px; top:-9999px;" aria-hidden="true">
+          <label for="id_website_hp">Website</label>
+          <input type="text" name="website" id="id_website_hp" tabindex="-1" autocomplete="off">
+        </div>
+
         <button type="submit" class="btn btn-sumi w-100 mt-3 py-2">登録する</button>
       </form>
     </div>

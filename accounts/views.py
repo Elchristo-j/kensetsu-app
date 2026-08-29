@@ -103,6 +103,13 @@ def signup(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
 
+        # --- ハニーポット判定（ボット対策）---
+        # 人には見えない隠しフィールド。値が入っていたら自動送信とみなす。
+        # DBに保存せず、成功したように見せて捨てる（黙って捨てる設計）。
+        if request.POST.get('website'):
+            messages.success(request, '仮登録が完了しました。ご入力いただいたメールアドレスに認証メールを送信しました。メール内のURLをクリックして本登録を完了させてください。')
+            return redirect('login')
+
         # reCAPTCHA検証
         recaptcha_response = request.POST.get('g-recaptcha-response')
         import urllib.request
