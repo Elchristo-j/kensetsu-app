@@ -28,3 +28,53 @@ def block_in_app(view_func):
             return redirect('home')
         return view_func(request, *args, **kwargs)
     return _wrapped
+
+
+# ---------------------------------------------------------------------------
+# 海外フリーメール／使い捨てメールのドメイン拒否リスト
+# ---------------------------------------------------------------------------
+# 目的：CAPTCHA解読サービスを使うボットの登録を、メールドメインで足切りする。
+#
+# ⚠️ 追加してよいのは「東四国の建設業者がまず使わないドメイン」だけ。
+#    日本の主要プロバイダ（gmail.com / yahoo.co.jp / icloud.com / outlook.com /
+#    hotmail.co.jp / docomo.ne.jp / ezweb.ne.jp / softbank.ne.jp / ocn.ne.jp /
+#    nifty.com / biglobe.ne.jp / so-net.ne.jp 等）は絶対に入れないこと。
+#    ここに1つ入れ間違えると、本物の登録者が「何も起きない」まま消える。
+BLOCKED_EMAIL_DOMAINS = frozenset({
+    # --- 海外フリーメール（ボットの定番） ---
+    'gmx.com', 'gmx.us', 'gmx.net', 'gmx.de', 'gmx.at', 'gmx.ch',
+    'gmx.fr', 'gmx.co.uk',
+    'mail.com', 'email.com', 'usa.com', 'consultant.com', 'post.com',
+    'mail.ru', 'bk.ru', 'list.ru', 'inbox.ru', 'internet.ru',
+    'yandex.ru', 'yandex.com', 'ya.ru',
+    'rambler.ru',
+    'seznam.cz',
+    'wp.pl', 'o2.pl', 'onet.pl', 'interia.pl',
+    'abv.bg',
+    'libero.it', 'virgilio.it', 'tiscali.it',
+    'web.de', 't-online.de', 'freenet.de',
+    'laposte.net',
+
+    # --- 使い捨てメール ---
+    'mailinator.com', 'guerrillamail.com', 'sharklasers.com', 'grr.la',
+    '10minutemail.com', 'temp-mail.org', 'tempmail.com', 'yopmail.com',
+    'dispostable.com', 'trashmail.com', 'maildrop.cc', 'getnada.com',
+    'throwawaymail.com', 'mohmal.com', 'emailondeck.com', 'fakemail.net',
+    'mytemp.email', 'moakt.com', 'tempr.email', 'spam4.me',
+})
+
+
+def is_blocked_email_domain(email):
+    """
+    メールアドレスのドメインが拒否リストに該当するかを判定する。
+    サブドメイン（例：mail.gmx.us）も同じ扱いにする。
+    判定できない入力（空・@なし）は False を返し、通常のバリデーションに任せる。
+    """
+    if not email or '@' not in email:
+        return False
+    domain = email.rsplit('@', 1)[1].strip().lower().rstrip('.')
+    if not domain:
+        return False
+    if domain in BLOCKED_EMAIL_DOMAINS:
+        return True
+    return any(domain.endswith('.' + blocked) for blocked in BLOCKED_EMAIL_DOMAINS)

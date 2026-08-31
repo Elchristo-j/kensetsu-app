@@ -21,7 +21,8 @@ from .forms import CustomUserCreationForm, ProfileForm
 from jobs.models import Job, Application, Review, Scout
 
 # アプリ（iOS/Android）からの課金導線アクセスをブロックするデコレータ
-from config.utils import block_in_app
+# ＋ 海外フリーメール／使い捨てメールのドメイン判定
+from config.utils import block_in_app, is_blocked_email_domain
 
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
@@ -107,6 +108,18 @@ def signup(request):
         # 人には見えない隠しフィールド。値が入っていたら自動送信とみなす。
         # DBに保存せず、成功したように見せて捨てる（黙って捨てる設計）。
         if request.POST.get('website'):
+            messages.success(request, '仮登録が完了しました。ご入力いただいたメールアドレスに認証メールを送信しました。メール内のURLをクリックして本登録を完了させてください。')
+            return redirect('login')
+
+        # --- メールドメイン拒否（ボット対策）---
+        # 海外フリーメール／使い捨てメールからの登録を足切りする。
+        # ハニーポットと同じく、DBに保存せず成功したように見せて捨てる。
+        # 誤爆に気づけるよう、弾いたときだけログに残す。
+        if is_blocked_email_domain(request.POST.get('email')):
+            import logging
+            logging.getLogger(__name__).warning(
+                'Signup blocked by email domain: %s', request.POST.get('email')
+            )
             messages.success(request, '仮登録が完了しました。ご入力いただいたメールアドレスに認証メールを送信しました。メール内のURLをクリックして本登録を完了させてください。')
             return redirect('login')
 
