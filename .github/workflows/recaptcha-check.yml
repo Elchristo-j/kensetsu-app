@@ -1,0 +1,63 @@
+name: reCAPTCHA点検
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'   # 毎週月曜 9:00（日本時間）
+  workflow_dispatch:       # 手動実行ボタン
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: ブラウザを準備
+        run: |
+          npm install playwright@1
+          npx playwright install --with-deps chromium
+
+      - name: 登録画面のreCAPTCHAを確認
+        run: |
+          cat > check.mjs <<'EOF'
+          import { chromium } from 'playwright';
+
+          const urls = [
+            'https://el-christo.jp/accounts/signup/',                // Web版
+            'https://kensetsu-app-1.onrender.com/accounts/signup/',  // アプリが読み込む側
+          ];
+          const bad = /ERROR for site owner|サイト所有者のエラー|Invalid domain|Invalid site key|Invalid key type/i;
+
+          const browser = await chromium.launch();
+          let failed = false;
+
+          for (const url of urls) {
+            const page = await browser.newPage();
+            try {
+              const res = await page.goto(url, { waitUntil: 'load', timeout: 60000 });
+              if (!res || res.status() !== 200) throw new Error(`ページが開けない（HTTP ${res?.status()}）`);
+
+              const el = await page.waitForSelector('iframe[src*="recaptcha"][src*="anchor"]', { timeout: 30000 })
+                .catch(() => { throw new Error('reCAPTCHAの枠が出ていない'); });
+              const frame = await el.contentFrame();
+              await page.waitForTimeout(3000);
+
+              const text = (await frame.locator('body').innerText()).replace(/\s+/g, ' ');
+              if (bad.test(text)) throw new Error(`reCAPTCHAエラー表示: ${text.slice(0, 200)}`);
+              if (await frame.locator('#recaptcha-anchor').count() === 0) throw new Error('チェックボックスが見つからない');
+
+              console.log(`OK  ${url}`);
+            } catch (e) {
+              failed = true;
+              console.log(`NG  ${url}  →  ${e.message}`);
+            } finally {
+              await page.close();
+            }
+          }
+
+          await browser.close();
+          process.exit(failed ? 1 : 0);
+          EOF
+          node check.mjs
